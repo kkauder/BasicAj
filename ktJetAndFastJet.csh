@@ -42,6 +42,7 @@ setenv STARPICOPATH /Users/kkauder/eventStructuredAu
 setenv LD_LIBRARY_PATH ${STARPICOPATH}:${PYTHIA8DIR}/lib:${LD_LIBRARY_PATH}
 setenv DYLD_LIBRARY_PATH ${STARPICOPATH}:${PYTHIA8DIR}/lib:${DYLD_LIBRARY_PATH}
 
+setenv PATH ./bin:${PATH}
 
 
 if ($?TERM == 0 || $?prompt == 0) exit 0
