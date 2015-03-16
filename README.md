@@ -1,18 +1,21 @@
 # BasicAj
 
-# Create directory structure #
+# In order to use the provided scripts, change your shell to csh #
+% csh
 
+# Create directory structure #
 mkdir src/obj
 mkdir bin
 mkdir AjResults
 
 ## create data symlinks ##
+### THIS ONLY WORKS ON rhic21.physics.wayne.edu
 ln -s ~putschke/Data
 ln -s ~kkauder/JetAnalyzer/CleanAuAu
 ln -s ~kkauder/JetAnalyzer/pytest.root
 
 # Setup environment #
-source ktJetAndFastJet.csh
+source SetEnvironment.csh
 
 # make and run #
 make
@@ -37,7 +40,6 @@ hadd -f AjResults/AuAuAj.root AjResults/AuAuAj8*root
 
 # Quickplot.cxx: Quick and dirty routine to show results.
 # You should  use something better :)
-
 
 
 

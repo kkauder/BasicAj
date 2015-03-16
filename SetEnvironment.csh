@@ -1,33 +1,29 @@
-#!/bin/csh
+#!/usr/bin/env csh
 
-if(! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH
-if(! $?DYLD_LIBRARY_PATH) setenv DYLD_LIBRARY_PATH
-
+# CHANGE the following to suit your environment
 setenv BASEDIR /Users/kkauder/software
 
-#change to your root setup!
+### ROOT
 setenv ROOTSYS ${BASEDIR}/root/
-setenv PATH ${ROOTSYS}/bin:${PATH}
-setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${LD_LIBRARY_PATH}
-setenv DYLD_LIBRARY_PATH ${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
 
-# FastJet
-#setenv FASTJETDIR ${BASEDIR}/fastjet
+### FastJet
 setenv FASTJETDIR ${BASEDIR}/fastjet3
-setenv LD_LIBRARY_PATH ${FASTJETDIR}/lib:${LD_LIBRARY_PATH}
 
-# PYTHIA8 directory
+### PYTHIA8
 setenv PYTHIA8DIR ${BASEDIR}/pythia8
 setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
 
-#TStarJetPicoDst structure
+### TStarJetPicoDst structure
 setenv STARPICOPATH ${BASEDIR}/eventStructuredAu
 
-setenv LD_LIBRARY_PATH ${STARPICOPATH}:${PYTHIA8DIR}/lib:${LD_LIBRARY_PATH}
-setenv DYLD_LIBRARY_PATH ${STARPICOPATH}:${PYTHIA8DIR}/lib:${DYLD_LIBRARY_PATH}
 
-setenv PATH ./bin:${PATH}
+###### Update paths
+if(! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH
+if(! $?DYLD_LIBRARY_PATH) setenv DYLD_LIBRARY_PATH
 
+setenv PATH ./bin:${ROOTSYS}/bin:${PATH}
+setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${FASTJETDIR}/lib:${STARPICOPATH}:${PYTHIA8DIR}/lib:${LD_LIBRARY_PATH}
+setenv DYLD_LIBRARY_PATH ${ROOTSYS}/lib:${FASTJETDIR}/lib:${STARPICOPATH}:${PYTHIA8DIR}/lib:${DYLD_LIBRARY_PATH}
 
 if ($?TERM == 0 || $?prompt == 0) exit 0
 
@@ -40,5 +36,6 @@ echo "Setting up the following environments: "
 echo "ROOT: " $ROOTSYS
 echo "PYTHIA8: " $PYTHIA8DIR
 echo "FastJet: " $FASTJETDIR
+echo "STARPICOPATH: " $STARPICOPATH
 echo "<I>---------------Info--------------------<I>"
 echo ""
