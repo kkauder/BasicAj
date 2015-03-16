@@ -28,11 +28,16 @@ ln -s ~kkauder/JetAnalyzer/pytest.root
 ### YOU NEED TO CUSTOMIZE THIS FILE FIRST!!!
 source SetEnvironment.csh
 
-# make and run #
+# make 
 make
-source ./RunPp.csh
+
+### for a small example, create a pythia tree
+./bin/SimpleTree
+
+## And run the analysis
+source ./RunPythis.csh
 # or run directly
-./binPicoAj
+./bin/PythaAj
 
 
 # That also creates doxygen documentation in html/ and latex/

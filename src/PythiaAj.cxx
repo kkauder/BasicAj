@@ -72,6 +72,9 @@ int main () {
   // --------------------
   TString OutFileName = "AjResults/pythiaAj.root";
   TFile* fout = new TFile( OutFileName, "RECREATE");
+
+  TH1::SetDefaultSumw2(true);
+  TH2::SetDefaultSumw2(true);
   
   TH2D* UnmatchedhPtHi = new TH2D( "UnmatchedhPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtHi = new TH2D( "hPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
