@@ -16,6 +16,7 @@ cd path/to/BasicAj
 mkdir src/obj
 mkdir bin
 mkdir AjResults
+mkdir logs
 
 ## create data symlinks ##
 ### THIS ONLY WORKS ON rhic21.physics.wayne.edu
