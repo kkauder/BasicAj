@@ -17,6 +17,10 @@ setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
 setenv STARPICOPATH ${BASEDIR}/eventStructuredAu
 
 
+#### On rhic21, you can use
+
+############## Done with indivivual settings.
+
 ###### Update paths
 if(! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH
 if(! $?DYLD_LIBRARY_PATH) setenv DYLD_LIBRARY_PATH

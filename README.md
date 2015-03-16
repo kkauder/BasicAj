@@ -1,7 +1,16 @@
 # BasicAj
 
+# install dAuEventstructure
+git clone https://github.com/kkauder/eventStructuredAu
+cd eventStructuredAu
+## The following should produce a lot of warnings but no errors
+make clean && make
+
 # In order to use the provided scripts, change your shell to csh #
-% csh
+csh
+
+## Work on the actual package ##
+cd path/to/BasicAj
 
 # Create directory structure #
 mkdir src/obj
@@ -14,12 +23,15 @@ ln -s ~putschke/Data
 ln -s ~kkauder/JetAnalyzer/CleanAuAu
 ln -s ~kkauder/JetAnalyzer/pytest.root
 
-# Setup environment #
+# Setup environment
+### YOU NEED TO CUSTOMIZE THIS FILE FIRST!!!
 source SetEnvironment.csh
 
 # make and run #
 make
 source ./RunPp.csh
+# or run directly
+./binPicoAj
 
 
 # That also creates doxygen documentation in html/ and latex/
