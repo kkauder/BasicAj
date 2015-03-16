@@ -1,7 +1,7 @@
 os = $(shell uname -s)
 
 #INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(STARPICOPATH)
-INCFLAGS      = -I$(ROOTSYS)/include -I/Users/kkauder/includehelper -I$(PYTHIA8DIR)/include -I$(STARPICOPATH)
+INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(PYTHIA8DIR)/include/Pythia8/ -I$(STARPICOPATH)
 
 ifeq ($(os),Linux)
 CXXFLAGS      = 
