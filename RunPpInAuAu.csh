@@ -10,7 +10,7 @@ set ErrFile     = logs/ppInAuAuAj.err
 echo "Logging output to " $LogFile
 echo "Logging errors to " $ErrFile
 
-set command = "ppInAuAuAj"
+set command = "./bin/ppInAuAuAj"
 
 # Run in the background
 # echo "Executing " $command

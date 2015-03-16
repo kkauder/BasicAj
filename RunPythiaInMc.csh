@@ -12,7 +12,7 @@ echo "Logging output to " $LogFile
 echo "Logging errors to " $ErrFile
 
 
-set command = "PythiaInMcAj"
+set command = "./bin/PythiaInMcAj"
 
 # Run in the background
 # echo "Executing " $command

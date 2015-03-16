@@ -19,7 +19,7 @@ foreach input ( ${base}* )
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
 
-    set command = "PicoAj $OutName $TriggerName $Files"
+    set command = "./bin/bin/PicoAj $OutName $TriggerName $Files"
 
     # Run in the background
     echo "Executing " $command
