@@ -35,7 +35,7 @@ make
 ./bin/SimpleTree
 
 ## And run the analysis
-source ./RunPythis.csh
+source ./RunPythia.csh
 # or run directly
 ./bin/PythaAj
 
