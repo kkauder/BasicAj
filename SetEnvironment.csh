@@ -18,12 +18,14 @@ setenv STARPICOPATH ${BASEDIR}/eventStructuredAu
 
 
 #### On rhic21, you can use
-setenv BASEDIR /Users/putschke
-setenv ROOTSYS /usr/local/root_v5.32_binary_m64/
-setenv FASTJETDIR ${BASEDIR}/fastjet3
-setenv PYTHIA8DIR ${BASEDIR}/pythia8100.new
-setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
-setenv STARPICOPATH /Users/kkauder/eventStructuredAu
+if ( `echo $HOST|grep -c rhic21` ) then
+    setenv BASEDIR /Users/putschke
+    setenv ROOTSYS /usr/local/root_v5.32_binary_m64/
+    setenv FASTJETDIR ${BASEDIR}/fastjet3
+    setenv PYTHIA8DIR ${BASEDIR}/pythia8100.new
+    setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
+    setenv STARPICOPATH /Users/kkauder/eventStructuredAu
+endif
 
 
 
