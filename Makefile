@@ -59,7 +59,9 @@ $(BDIR)/%  : $(ODIR)/%.o
 ###############################################################################
 ############################# Main Targets ####################################
 ###############################################################################
-all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
+all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
+	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
+	 $(BDIR)/SimpleTree \
 	 doxy
 
 
@@ -70,6 +72,7 @@ $(ODIR)/JetAnalyzer.o 		: $(SDIR)/JetAnalyzer.cxx $(INCS)
 $(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
 $(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
 $(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
+$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
 $(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
 $(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
 
