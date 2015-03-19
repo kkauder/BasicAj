@@ -2,6 +2,7 @@ os = $(shell uname -s)
 
 #INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(STARPICOPATH)
 INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(PYTHIA8DIR)/include/Pythia8/ -I$(STARPICOPATH)
+INCFLAGS      += -I./src
 
 ifeq ($(os),Linux)
 CXXFLAGS      = 
@@ -32,6 +33,9 @@ ROOTLIBS      = $(shell root-config --libs)
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
 LIBS          = -lfastjet -lfastjettools -lpythia8  -llhapdfdummy -lTStarJetPico
 
+LIBPATH       += -L./lib
+LIBS	      += -lMyJetlib
+
 # for cleanup
 SDIR          = src
 ODIR          = src/obj
@@ -54,6 +58,7 @@ $(BDIR)/%  : $(ODIR)/%.o
 	@echo 
 	@echo LINKING
 	$(CXX) $(LDFLAGS) $(LIBPATH) $(LIBS) $^ -o $@
+
 ###############################################################################
 
 ###############################################################################
@@ -62,19 +67,25 @@ $(BDIR)/%  : $(ODIR)/%.o
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
 	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
 	 $(BDIR)/SimpleTree \
-	 doxy
+	 lib/libMyJetlib.a \
+	lib/libMyJetlib.a \
+	doxy
 
 
+lib/libMyJetlib.a	: $(ODIR)/JetAnalyzer.o
+	@echo 
+	@echo MAKING LIBRARY
+	ar -rcs $@ $^
 
-$(ODIR)/JetAnalyzer.o 		: $(SDIR)/JetAnalyzer.cxx $(INCS)
+$(ODIR)/JetAnalyzer.o 	: $(SDIR)/JetAnalyzer.cxx $(INCS)
 
 #Aj
-$(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
-$(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
-$(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
-$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
-$(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
-$(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/JetAnalyzer.o $(ODIR)/AjAnalysis.o
+$(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o
+$(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o
+$(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o
+$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o
+$(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/AjAnalysis.o
+$(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o
 
 
 ###############################################################################

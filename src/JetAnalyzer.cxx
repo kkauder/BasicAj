@@ -318,3 +318,15 @@ fastjet::Selector SelectorChargeRange( const int cmin, const int cmax){
   return fastjet::Selector(new SelectorChargeWorker(cmin, cmax));
 };
 // ------------------------------------------------------------------------
+// Helper to get an enum from a string    
+fastjet::JetAlgorithm AlgoFromString( std::string s){
+  std::transform(s.begin(), s.end(), s.begin(), ::tolower);  
+
+  if ( s.substr(0,2) == "kt" )       return fastjet::kt_algorithm;
+  if ( s.substr(0,6) == "antikt" )   return fastjet::antikt_algorithm;
+  if ( s.substr(0,6) == "cambri" )   return fastjet::cambridge_algorithm;
+  
+  return fastjet::undefined_jet_algorithm;
+
+}
+// ------------------------------------------------------------------------

@@ -364,6 +364,11 @@ fastjet::Selector SelectorChargeRange( const int cmin=-999, const int cmax=999);
 
 // =============================================================================
 // =============================================================================
+// =============================================================================
+/** Helper to get an enum from a string
+    we'll allow some more generous spellings and abbreviations
+*/
+fastjet::JetAlgorithm AlgoFromString( std::string s);
 
 
 #endif // JETANALYZER_H

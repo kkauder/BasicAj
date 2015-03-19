@@ -14,6 +14,7 @@ cd path/to/BasicAj
 
 # Create directory structure #
 mkdir src/obj
+mkdir lib
 mkdir bin
 mkdir AjResults
 mkdir logs
