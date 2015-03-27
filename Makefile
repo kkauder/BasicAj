@@ -67,14 +67,12 @@ $(BDIR)/%  : $(ODIR)/%.o
 all    : $(BDIR)/FollowPicoAj \
 	 $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
 	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
-	 $(BDIR)/AreaTest \
 	 $(BDIR)/SimpleTree \
-	 lib/libMyJetlib.a \
 	 lib/libMyJetlib.a \
 	 doxy
 
-$(BDIR)/AreaTest : 	 $(ODIR)/AreaTest.o
-$(BDIR)/AreaTest.o : 	 $(SDIR)/AreaTest.cxx
+# $(BDIR)/AreaTest : 	 $(ODIR)/AreaTest.o
+# $(BDIR)/AreaTest.o : 	 $(SDIR)/AreaTest.cxx
 
 lib/libMyJetlib.a	: $(ODIR)/JetAnalyzer.o
 	@echo 
@@ -87,14 +85,14 @@ $(ODIR)/FollowAjAnalysis.o 	: $(SDIR)/FollowAjAnalysis.cxx $(INCS) $(SDIR)/Follo
 
 
 #Aj
-$(BDIR)/FollowPicoAj	: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o
+$(BDIR)/FollowPicoAj	: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
 
-$(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o
-$(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o
-$(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o
-$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o
-$(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/AjAnalysis.o
-$(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o
+$(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+$(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+$(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+$(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+$(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
 
 
 ###############################################################################
@@ -115,5 +113,7 @@ clean :
 	@echo CLEANING
 	rm -vf $(ODIR)/*.o
 	rm -vf $(BDIR)/*
+	rm -vf lib/*
+
 
 .PHONY : clean doxy
