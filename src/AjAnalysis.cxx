@@ -14,7 +14,8 @@ AjAnalysis::AjAnalysis ( double R,
 			 double LeadPtMin, double SubLeadPtMin, 
 			 double max_track_rap, double PtConsLo, double PtConsHi,
 			 double dPhiCut,
-			 TH2D* UnmatchedhPtHi,  TH2D* hPtHi,  TH2D* hPtLo,  
+			 TH2D* UnmatchedhPtHi,  TH2D* hPtHi,  TH2D* hPtLo,
+			 TH1D* UnmatchedhdPtHi, TH1D* hdPtHi, TH1D* hdPtLo,  
 			 TH1D* hdphiHi, TH1D* hdphiLo,
 			 TH1D* UnmatchedAJ_hi, TH1D* AJ_hi, TH1D* AJ_lo,
 			 TH3D* UsedEventsHiPhiEtaPt, TH3D* UsedEventsLoPhiEtaPt 
@@ -24,7 +25,8 @@ AjAnalysis::AjAnalysis ( double R,
     LeadPtMin(LeadPtMin), SubLeadPtMin(SubLeadPtMin),
     max_track_rap (max_track_rap), PtConsLo (PtConsLo), PtConsHi (PtConsHi),
     dPhiCut (dPhiCut),
-    UnmatchedhPtHi (UnmatchedhPtHi),  hPtHi (hPtHi),  hPtLo (hPtLo),  
+    UnmatchedhPtHi (UnmatchedhPtHi),  hPtHi (hPtHi),  hPtLo (hPtLo),
+    UnmatchedhdPtHi (UnmatchedhdPtHi),  hdPtHi (hdPtHi),  hdPtLo (hdPtLo),  
     hdphiHi (hdphiHi), hdphiLo (hdphiLo),
     UnmatchedAJ_hi (UnmatchedAJ_hi), AJ_hi(AJ_hi), AJ_lo (AJ_lo),
     UsedEventsHiPhiEtaPt (UsedEventsHiPhiEtaPt), UsedEventsLoPhiEtaPt (UsedEventsLoPhiEtaPt)
@@ -124,7 +126,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
   UnmatchedAJ_hi->Fill ( CalcAj( DiJetsHi ) );
   UnmatchedhPtHi->Fill ( DiJetsHi.at(0).pt() , DiJetsHi.at(1).pt());  
-  
+  UnmatchedhdPtHi->Fill ( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());  
+      
   // find corresponding jets with soft constituents
   // ----------------------------------------------
   JetAnalyzer JAlo( pLo, jet_def, area_def ); // WITH background subtraction
@@ -164,6 +167,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   
   hPtHi->Fill( DiJetsHi.at(0).pt(), DiJetsHi.at(1).pt());
   hPtLo->Fill( DiJetsLo.at(0).pt(), DiJetsLo.at(1).pt());
+  hdPtHi->Fill( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());
+  hdPtLo->Fill( DiJetsLo.at(0).pt() - DiJetsLo.at(1).pt());
 
   // // cleanup
   // // -------
@@ -234,20 +239,21 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString ){
   
   // Tracks: Some standard high quality cuts
   // TODO: Add track, tower quality cuts
-  // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
+  TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
   // std::cout << " dca : " << trackCuts->GetDCACut(  ) << std::endl;
   // std::cout << " nfit : " <<   trackCuts->GetMinNFitPointsCut( ) << std::endl;
   // std::cout << " nfitratio : " <<   trackCuts->GetFitOverMaxPointsCut( ) << std::endl;
   // std::cout << " maxpt : " << trackCuts->GetMaxPtCut (  ) << std::endl;
   // throw (std::string("done"));
   
-  // trackCuts->SetDCACut( 1.0 ); // maybe too high for low pT
-  // trackCuts->SetMinNFitPointsCut( 20 );
-  // trackCuts->SetFitOverMaxPointsCut( 0.52 );
-  // trackCuts->SetMaxPtCut ( 30 ); // should it be 10? 15?
+  trackCuts->SetDCACut( 1.0 ); // maybe too high for low pT
+  trackCuts->SetMinNFitPointsCut( 20 );
+  trackCuts->SetFitOverMaxPointsCut( 0.52 );
+  trackCuts->SetMaxPtCut ( 30 ); // should it be 10? 15?
   
   // Towers: Don't know. Let's print out the default
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
+  towerCuts->SetMaxEtCut(40);  // Let's try
   std::cout << "Using these tower cuts:" << std::endl;
   std::cout << "  GetMaxEtCut = " << towerCuts->GetMaxEtCut() << std::endl;
   std::cout << "  Gety8PythiaCut = " << towerCuts->Gety8PythiaCut() << std::endl;

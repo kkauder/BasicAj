@@ -64,22 +64,31 @@ $(BDIR)/%  : $(ODIR)/%.o
 ###############################################################################
 ############################# Main Targets ####################################
 ###############################################################################
-all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
+all    : $(BDIR)/FollowPicoAj \
+	 $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
 	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
+	 $(BDIR)/AreaTest \
 	 $(BDIR)/SimpleTree \
 	 lib/libMyJetlib.a \
-	lib/libMyJetlib.a \
-	doxy
+	 lib/libMyJetlib.a \
+	 doxy
 
+$(BDIR)/AreaTest : 	 $(ODIR)/AreaTest.o
+$(BDIR)/AreaTest.o : 	 $(SDIR)/AreaTest.cxx
 
 lib/libMyJetlib.a	: $(ODIR)/JetAnalyzer.o
 	@echo 
 	@echo MAKING LIBRARY
 	ar -rcs $@ $^
 
-$(ODIR)/JetAnalyzer.o 	: $(SDIR)/JetAnalyzer.cxx $(INCS)
+$(ODIR)/JetAnalyzer.o 		: $(SDIR)/JetAnalyzer.cxx $(INCS)
+$(ODIR)/AjAnalysis.o 	 	: $(SDIR)/AjAnalysis.cxx $(INCS) $(SDIR)/AjAnalysis.hh
+$(ODIR)/FollowAjAnalysis.o 	: $(SDIR)/FollowAjAnalysis.cxx $(INCS) $(SDIR)/FollowAjAnalysis.hh
+
 
 #Aj
+$(BDIR)/FollowPicoAj	: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o
+
 $(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o
 $(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o
 $(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o

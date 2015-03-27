@@ -26,14 +26,14 @@ using namespace Pythia8;
 Int_t main(int argc, char **argv) {
 
   // Set up output file
-  TFile * fout = new TFile("pytest.root","recreate");
+  TFile * fout = new TFile("pytest40.root","recreate");
   
   // Generator. Shorthand for event (use FastJet3 and Pythia8 interface!!!)
   //------------------------------------------------------------------------
-  // Float_t ptHatMin=30.0;
+  Float_t ptHatMin=40.0;
+  Float_t ptHatMax=100.0;
+  // Float_t ptHatMin=20.0;
   // Float_t ptHatMax=60.0;
-  Float_t ptHatMin=20.0;
-  Float_t ptHatMax=60.0;
 
   Pythia pythia("/Users/putschke/pythia8100/xmldoc");
   Event& event = pythia.event;
@@ -99,7 +99,7 @@ Int_t main(int argc, char **argv) {
   // Generate events
   int nEv = 0;
   // Int_t nEvent = 1000000;
-  Int_t nEvent = 1000;
+  Int_t nEvent = 100000;
   do {
     if (!pythia.next()) continue;
 

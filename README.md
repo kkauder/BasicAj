@@ -45,11 +45,11 @@ source ./RunPythia.csh
 
 ## Files: ##
 # src/JetAnalyzer.* is the basic wrapper that derives from $fastjet::ClusterSequenceArea
-#AjParameters.hh is a namespace with commonly used parameters
-#AjAnalysis.* is the analysis class
+# src/AjParameters.hh is a namespace with commonly used parameters
+# src/AjAnalysis.* is the analysis class
 
 ## Wrappers: ##
-#PicoAj.cxx : Run on any data in TStarJetPicoDst format
+# src/PicoAj.cxx : Run on any data in TStarJetPicoDst format
 #*InAuAu.cxx: Embed pythia or pp into AuAu
 #*InMC.cxx: Embed pythia or pp into a toy MC version of AuAu
 

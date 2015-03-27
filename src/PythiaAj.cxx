@@ -78,8 +78,12 @@ int main () {
   
   TH2D* UnmatchedhPtHi = new TH2D( "UnmatchedhPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtHi = new TH2D( "hPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
-  TH2D* hPtLo = new TH2D( "hPtLo","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
+  TH2D* hPtLo = new TH2D( "hPtLo","p_{T}^{C} > 0.2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
     
+  TH1D* UnmatchedhdPtHi = new TH1D( "UnmatchedhdPtHi","#Delta p_{T} for unmatched hard constituent jets", 120, -10, 50 );
+  TH1D* hdPtHi = new TH1D( "hdPtHi","#Delta p_{T} for hard constituent jets", 120, -10, 50 );
+  TH1D* hdPtLo = new TH1D( "hdPtLo","#Delta p_{T} for soft constituent jets", 120, -10, 50 );
+
   TH1D* hdphiHi = new TH1D( "hdphiHi","#Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* hdphiLo = new TH1D( "hdphiLo","#Delta#phi for soft constituent jets", 200, -2, 2 );
 
@@ -111,6 +115,7 @@ int main () {
 		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
 		  AjParameters::dPhiCut,
 		  UnmatchedhPtHi,  hPtHi, hPtLo,  
+		  UnmatchedhdPtHi, hdPtHi, hdPtLo,
 		  hdphiHi, hdphiLo,
 		  UnmatchedAJ_hi, AJ_hi, AJ_lo,
 		  UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt

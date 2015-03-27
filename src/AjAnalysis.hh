@@ -86,6 +86,10 @@ private :
   TH2D* hPtHi;           ///< Matched hard constituent jet spectrum
   TH2D* hPtLo;           ///< Matched soft constituent jet spectrum
   
+  TH1D* UnmatchedhdPtHi;  ///< Unmatched hard constituent &Delta;p<SUB>T</SUB>
+  TH1D* hdPtHi;           ///< Matched hard constituent &Delta;p<SUB>T</SUB>
+  TH1D* hdPtLo;           ///< Matched soft constituent &Delta;p<SUB>T</SUB>
+
   TH1D* hdphiHi;         ///< Matched hard constituent dijet angle
   TH1D* hdphiLo;         ///< Matched soft constituent dijet angle
 
@@ -111,6 +115,9 @@ public:
       \param UnmatchedhPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for all jets with high p<SUB>T</SUB> constituents.
       \param hPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with high p<SUB>T</SUB> constituents.
       \param hPtLo: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with low p<SUB>T</SUB> constituents.
+      \param UnmatchedhdPtHi: &Delta;p<SUB>T</SUB><SUP>sub</SUP> for all jets with high p<SUB>T</SUB> constituents.
+      \param hdPtHi: &Delta;p<SUB>T</SUB><SUP>sub</SUP> for matched jets with high p<SUB>T</SUB> constituents.
+      \param hdPtLo: &Delta;p<SUB>T</SUB><SUP>sub</SUP> for matched jets with low p<SUB>T</SUB> constituents.
       \param hdphiHi: Dijet angle for matched jets with high p<SUB>T</SUB> constituents.
       \param hdphiLo: Dijet angle for matched jets with low p<SUB>T</SUB> constituents.
       \param UnmatchedAJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for all jets with high p<SUB>T</SUB> constituents.
@@ -124,7 +131,8 @@ public:
 	       double LeadPtMin = 20.0, double SubLeadPtMin = 10, 
 	       double max_track_rap = 1.0, double PtConsLo=0.2, double PtConsHi=2.0,
 	       double dPhiCut = 0.4,
-	       TH2D* UnmatchedhPtHi=0,  TH2D* hPtHi=0,  TH2D* hPtLo=0,  
+	       TH2D* UnmatchedhPtHi=0, TH2D* hPtHi=0, TH2D* hPtLo=0,  
+	       TH1D* UnmatchedhdPtH=0, TH1D* hdPtHi=0, TH1D* hdPtLo=0,
 	       TH1D* hdphiHi=0, TH1D* hdphiLo=0,
 	       TH1D* UnmatchedAJ_hi=0, TH1D* AJ_hi=0, TH1D* AJ_lo=0,
 	       TH3D* UsedEventsHiPhiEtaPt=0, TH3D* UsedEventsLoPhiEtaPt=0

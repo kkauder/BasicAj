@@ -20,6 +20,7 @@ JetAnalyzer::JetAnalyzer( std::vector<fastjet::PseudoJet>& InOrigParticles, fast
   : fastjet::ClusterSequenceArea ( InOrigParticles, JetDef, AreaDef ), OrigParticles ( InOrigParticles ),
     selector_bkgd (selector_bkgd)
 {
+  
   CanDoBackground=true;
 	 
   // this should not be necessary :-/
