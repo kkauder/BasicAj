@@ -1,0 +1,75 @@
+## Ignore all dot files?
+.*
+
+## By default, ignore all root files
+*.root
+
+## Also ignore logs and doxygen-generated files
+html
+latex
+logs
+
+## Specific Apple stuff
+.DS_Store*
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+## Temporary and backup
+*~
+#*    
+
+# ROOT stuff
+AutoDict_*
+
+
+# pictures
+*png
+*pdf
+*gif
+*eps
+
+# Some directories
+Results
+Data
+CleanAuAu
+old
+bin
+
+
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+
+
+    
+
+    

@@ -267,7 +267,7 @@ int main () {
   // -------------
   fout->Write();
 
-  cout << "Embedded " << nJetsUsed << " in " << reader.GetNOfEvents() << " events and found " << endl
+  cout << "Embedded " << nJetsUsed << " jets above 10 GeV in " << reader.GetNOfEvents() << " events and found " << endl
        << nHardDijets << " dijets with constituents above 2 GeV," << endl
        << nCorrespondingLowDijets << " corresponding dijets with constituents above 0.2 GeV," << endl
        << " of which " <<  nMatchedDijets << " could be matched." << endl;

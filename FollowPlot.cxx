@@ -18,8 +18,12 @@ void FollowPlot() {
   TLegend* legLo = new TLegend( 0.55, 0.7, 0.88, 0.88, "  p_{T}^{C}>0.2 GeV/c" );
   TLegend* legHi = new TLegend( 0.55, 0.7, 0.88, 0.88, "  p_{T}^{C}>2 GeV/c" );
 
-  TFile *fppLarge   = TFile::Open("ppAj.root");
-  TFile *fppFollow  = TFile::Open("ppFollowAj.root");
+  TFile *fppLarge   = TFile::Open("AjResults/ppAj.root");
+  // TFile *fppFollow  = TFile::Open("AjResults/ppFollowAj.root");
+  // TFile *fppLarge   = TFile::Open("AjResults/AuAuAj.root");
+  // TFile *fppFollow  = TFile::Open("AjResults/FollowAuAuAj.root");
+  // TFile *fppLarge   = TFile::Open("AjResults/AuAuAj.root");
+  TFile *fppFollow  = TFile::Open("AjResults/ppInAuAuFollowAj.root");
   
   // --------------------------------------------------
   TH1D* origHi=(TH1D*)  fppLarge->Get( "UnmatchedAJ_hi");

@@ -1,9 +1,8 @@
-/** @file PicoFollowAj.cxx
+/** @file ppInAuAuFollowAj.cxx
     @author Kolja Kauder
     @version Revision 0.1
-    @brief Variation of Aj analysis and embedding prep in p+p.
-    @details Perform Aj analysis in a given TStarPicoJetTree chain. Can also save events with 10 GeV jets for embedding.
-    @date Mar 04, 2015
+    @brief Variation of Aj analysis on pp jets embedded into AuAu.
+    @date Mar 30, 2015
 */
 
 #include "FollowAjAnalysis.hh"
@@ -25,6 +24,8 @@
 #include "TClonesArray.h"
 
 #include <iostream>
+#include <vector>
+#include <set>
 #include <cmath>
 #include <exception>
 
@@ -32,47 +33,69 @@ using namespace std;
 using namespace fastjet;
 
 /** 
-    - Set up input tree
+    - Set up vector of pp jets
+    - Set up Au+Au input tree
     - Set up output histos and tree
-    - Initialize FollowAjAnalysis object
-    - Loop through events
-    \arg argv: List of root files. TChain can do some globbing, so you can use
-    <BR><tt>% FollowPicoAj '~putschke/Data/ppHT/&lowast;.root'</tt>
-    <BR>But ultimately, it's better to let the shell handle the globbing, especially for cases like 
-    <BR><tt>% FollowPicoAj ~putschke/Data/&lowast;/&lowast;.root</tt>
-    <BR>For a file list, simply use <BR><tt>% cat file.list | PicoAj</tt>
-
+    - First cycle over Au+Au - Determine acceptable events
+    - To each pp event, assign at random a fixed amount of Au+Au events 
+      that it wishes to be mixed with
+    - Second cycle over Au+Au - for each event, perform Aj Analysis
+      with every pp event that asks for it.
+    The idea behind this two step approach is that we avoid jumping at random through the AuAu chain,
+    the tree gets read sequentially, and exactly twice.
 */
-int main ( int argc, const char** argv ) {
+int main () {
 
-  // Set up some convenient default
-  // ------------------------------
-  const char *defaults[4] = {"FollowPicoAj","ppFollowAj.root","ppHT","~putschke/Data/ppHT/*.root"};
-  // const char *defaults[4] = {"FollowPicoAj","AuAuFollowAj.root","HT","CleanAuAu/*.root"};
-  if ( argc==1 ) {
-    argv=defaults;
-    argc=4;
+  // How many times to use every pp jet
+  // ----------------------------------
+  Int_t nMix=3;
+
+  // Load pp Jets
+  // ------------
+  TString ppAjName = "AjResults/ppFollowAj.root";
+  TChain* ppJets = new TChain("TriggeredTree");
+  ppJets->Add(ppAjName);
+  assert ( ppJets->GetEntries()>0 && "Something went wrong loading the pp jets.");
+
+  TClonesArray* pFullEvent = new TClonesArray("TLorentzVector");
+  ppJets->GetBranch("FullEvent")->SetAutoDelete(kFALSE);
+  ppJets->SetBranchAddress("FullEvent", &pFullEvent);
+
+  TClonesArray* pTriggerJet = new TClonesArray("TLorentzVector");
+  ppJets->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
+  ppJets->SetBranchAddress("TriggerJet", &pTriggerJet);
+
+  // Throw them into convenient vectors
+  // ----------------------------------
+  vector< vector<PseudoJet> > FullPpEvent;
+  vector<PseudoJet> vTriggerJet;
+  vector<PseudoJet> CurrentPpEvent;
+  for ( Long64_t ppEv = 0; ppEv< ppJets->GetEntries() ; ++ ppEv ){
+    ppJets->GetEntry(ppEv);
+    CurrentPpEvent.clear();
+    for ( int i=0 ; i<pFullEvent->GetEntries() ; ++i ){
+      CurrentPpEvent.push_back( MakePseudoJet( (TLorentzVector*) pFullEvent->At(i) ) );
+    }
+    FullPpEvent.push_back ( CurrentPpEvent );
+    if (pTriggerJet->GetEntries()!=1 ) cout << ppEv<< "  " << pTriggerJet->GetEntries() << endl;
+    vTriggerJet.push_back( MakePseudoJet( (TLorentzVector*) pTriggerJet->At(0) ) );
   }
-  
-  // Throw arguments in a vector
-  // ---------------------------
-  vector<string> arguments(argv + 1, argv + argc);
 
-  // Load and set up tree
+  // Load and set up AuAu tree
   // --------------------
   TString ChainName  = "JetTree";
-  TString OutFileName = arguments.at(0);
-  TString TriggerName = arguments.at(1);
+  TString TriggerName = "MB";
+  TString InFileName = "Data/AuAuMB_0_20/*.root";
 
   TChain* chain = new TChain( ChainName );
-  for (int i=2; i<arguments.size() ; ++i ) {
-    chain->Add( arguments.at(i).data() );
-  }
+  chain->Add( InFileName );
   
   TStarJetPicoReader reader = SetupReader( chain, TriggerName );
+  // TStarJetPicoDefinitions::SetDebugLevel(10);
 
   // Files and histograms
   // --------------------
+  TString OutFileName = "AjResults/ppInAuAuFollowAj.root";
   TFile* fout = new TFile( OutFileName, "RECREATE");
   assert ( fout->IsOpen() );
   cout << " ################################################### " << endl;
@@ -116,26 +139,61 @@ int main ( int argc, const char** argv ) {
 
   TH3D* UsedEventsHiPhiEtaPt=new TH3D("UsedEventsHiPhiEtaPt","UsedEventsHiPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA
   TH3D* UsedEventsLoPhiEtaPt=new TH3D("UsedEventsLoPhiEtaPt","UsedEventsLoPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA  
-
-  // Save the full event and the trigger jet if this is pp and there's at least a 10 GeV jet.
-  // ----------------------------------------------------------------------------------------
-  // This is somewhat wasteful, we could instead read the original trees.
-
-  bool SaveFullEvents = TriggerName.Contains("ppHT");
-  TTree* TriggeredTree=0;
-
-  TClonesArray TriggerJet( "TLorentzVector",1 ); 
-  static const Int_t kmaxT=5000; // max # of particles
-  TClonesArray FullEvent("TLorentzVector",kmaxT);
-  if (SaveFullEvents) {
-    TriggeredTree = new TTree("TriggeredTree","Triggered Events");
-    // NOTE: Ignore "Warning in <TTree::Bronch>: Using split mode on a class: TLorentzVector with a custom Streamer"
-    // See: https://root.cern.ch/phpBB3/viewtopic.php?p=18269
-    TriggeredTree->Branch("FullEvent", &FullEvent );
-    TriggeredTree->Branch("TriggerJet", &TriggerJet);
-  } 
   
+  // Helpers
+  // -------
+  vector<PseudoJet> particles;
+  vector<PseudoJet> AuAuparticles;
+  TStarJetVectorContainer<TStarJetVector>* container;
+  TLorentzVector* lv;
   
+  int nHardDijets = 0;
+  int nLargeToSmallHiMatched=0;
+  int nLargeToSmallLoMatched=0;
+  int nCorrespondingLowDijets = 0;
+  int nMatchedDijets=0;
+  
+  // For pp jet selection
+  // --------------------
+  gRandom->SetSeed(1);
+
+  // Long64_t nEvents=99; // -1 for all
+  Long64_t nEvents=-1;
+  reader.Init(nEvents);
+
+  // First round - initialize AuAu data
+  // ----------------------------------
+  cout << "First round - find acceptable AuAu events" << endl;
+  // NOTE: This could be a problem if we ever have more than INTMAX events :-/
+  // Could solve using http://en.cppreference.com/w/cpp/numeric/random
+  vector <Int_t> AcceptedEvents; 
+  while ( reader.NextEvent() ) {
+    reader.PrintStatus(10);      
+    AcceptedEvents.push_back( reader.GetNOfCurrentEvent() );
+  }
+  
+  // Now every pp jet gets assigned nMix many events to be embedded in
+  // This way we can cycle through the potentially large AuAu chain sequentially
+  // ---------------------------------------------------------------------------
+  cout << "Initializing mixing pools." << endl;
+  Int_t random;
+  int emergencystop=nMix*100;
+  vector< set<Int_t> > MixingPool;
+  for ( int i =0; i< FullPpEvent.size() ; ++i ){
+    set<Int_t> EventNos;
+    int tries=0;
+    while ( EventNos.size() < nMix ){
+      if ( tries++ > emergencystop ) { cerr << "Stuck in endless loop - aborting." << endl; return -1;}
+      random = gRandom->Integer (AcceptedEvents.size() );
+      EventNos.insert(AcceptedEvents.at(random) );	 
+    }
+    MixingPool.push_back( EventNos );
+  }  
+
+  // Second round - actual analysis
+  // ------------------------------
+  cout << "Second round - embed" << endl;  
+
   // Initialize analysis class
   // -------------------------
   FollowAjAnalysis AjA( SmallR, LargeR,
@@ -154,48 +212,52 @@ int main ( int argc, const char** argv ) {
 			UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
 			);  
   
-  // Cycle through events
-  // --------------------
-  vector<PseudoJet> particles;
-  TStarJetVectorContainer<TStarJetVector>* container;
-  TStarJetVector* sv; // TLorentzVector* would be sufficient. 
-  
-  int nHardDijets = 0;
-  int nLargeToSmallHiMatched=0;
-  int nLargeToSmallLoMatched=0;
-  int nCorrespondingLowDijets = 0;
-  int nMatchedDijets=0;
-  
-  Long64_t nEvents=-1; // -1 for all
-  // Long64_t nEvents=10;
+  // Reset the reader
+  // ----------------
+  reader.ResetEventCounters();
   reader.Init(nEvents);
-
-  PseudoJet pj;
-  try{
-    while ( reader.NextEvent() ) {
-      reader.PrintStatus(10);
-      
-      // Load event
-      // ----------
-      container = reader.GetOutputContainer();
-
-      // Make particle vector
-      // --------------------
-      particles.clear();
+  
+  Long64_t nJetsUsed=0;
+  while ( reader.NextEvent() ) {
+    reader.PrintStatus(10);      
     
-      for (int ip = 0; ip<container->GetEntries() ; ++ip ){
-	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
-	// mostly for demonstration, add charge information
-	pj=MakePseudoJet( sv );
-	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
-	particles.push_back ( pj );
-      }    
+    // Load event
+    // ----------
+    container = reader.GetOutputContainer();
 
+    // Make AuAu vector
+    // ----------------
+    AuAuparticles.clear();
+    for (int ip = 0; ip<container->GetEntries() ; ++ip ){
+      lv = container->Get(ip);
+      AuAuparticles.push_back ( MakePseudoJet( lv ) );
+    }
+
+    // Find jets that want this event
+    // ------------------------------
+    vector <int> JetIndices;
+    for ( int i =0; i< MixingPool.size() ; ++i ){
+      set<Int_t>& EventNos = MixingPool.at(i);
+      if ( EventNos.find( reader.GetNOfCurrentEvent() ) != EventNos.end() ) {
+	JetIndices.push_back( i );
+      }
+    }
+
+    // And run analysis individually for each of these pp events
+    // ---------------------------------------------------------- 
+    for ( vector<int>::iterator jit=JetIndices.begin(); jit!=JetIndices.end(); ++ jit ){
+      // Add pp jets
+      // -----------
+      particles = AuAuparticles;
+      for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
+	particles.push_back( FullPpEvent.at(*jit).at(i) );
+      }
+      
       // Run analysis
       // ------------
       int ret;
       ret =AjA.AnalyzeAndFill( particles );
-      
+
       // Intercept return value for radius matching
       if ( ret == 101 || ret == 102 ){
 	nLargeToSmallHiMatched++;
@@ -207,7 +269,6 @@ int main ( int argc, const char** argv ) {
 	ret-=100;
       }
 
-	    
       switch ( ret ){
       case 3 : nMatchedDijets++;
 	// FALLTHROUGH
@@ -222,42 +283,22 @@ int main ( int argc, const char** argv ) {
 	throw(-1);
 	return -1;
 	break;      
-      }
-    
-      // Save the full event for embedding if there's at least one 10 GeV jet
-      // --------------------------------------------------------------------
-      if (SaveFullEvents){
-	FullEvent.Clear();
-	TriggerJet.Clear();
-	if ( AjA.Has10Gev )  { 
-	  for ( int i = 0; i<particles.size() ; ++i ){
-	    if ( particles.at(i).pt() >100 ) { 
-	      cerr << " =====> " <<particles.at(i).pt() << "  " << particles.at(i).phi() << "  " << particles.at(i).eta() << endl;  
-	    } 
-	    new (FullEvent[i])   TLorentzVector ( MakeTLorentzVector( particles.at(i) )  );
-	  } // for particles
-	  // Save trigger jet as well
-	  vector<PseudoJet> JAhiResult = AjA.GetSmallJAhiResult();
-	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );
-	  TriggeredTree->Fill();
-	} // has Trigger
-      } // SaveFullEvents
-    } // while NextEvent
-  } catch ( exception& e) {
-    cerr << "Caught " << e.what() << endl;
-    return -1;
-  }
-  
+      } //  switch (ret)
+      nJetsUsed++;
+    } // jit
+  } // reader.NextEvent()
   cout << "##################################################################" << endl;
-  
-  Long64_t nEventsUsed=reader.GetNOfEvents();  
-  UsedEventsHiPhiEtaPt->Scale( 1./nEventsUsed );
+
+
+  // Scale per used pp event
+  // ------------------------
+  UsedEventsHiPhiEtaPt->Scale( 1./nJetsUsed ); 
 
   // Close up shop
   // -------------
   fout->Write();
 
-  cout << "In " << nEventsUsed << " events, found " << endl
+  cout << "Embedded " << nJetsUsed << " jets above 10 GeV in " << reader.GetNOfEvents() << " events and found " << endl
        << nHardDijets << " dijets with constituents above 2 GeV and R=" << SmallR << "," << endl
        << nCorrespondingLowDijets << " corresponding dijets with constituents above 0.2 GeV," << endl
        << " of which " <<  nMatchedDijets << " could be matched." << endl;
@@ -266,7 +307,6 @@ int main ( int argc, const char** argv ) {
        << nLargeToSmallHiMatched << " dijets with R=" << LargeR << "," << endl
        << "and the " << nMatchedDijets << " matched corresponding soft constituent dijets " 
        << " were matched to " <<  nLargeToSmallLoMatched << " larger radius ones." << endl;
-
 
   cout << "Wrote to " << fout->GetName() << endl;
   cout << "Bye." << endl;
