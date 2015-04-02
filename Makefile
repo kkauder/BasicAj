@@ -64,7 +64,7 @@ $(BDIR)/%  : $(ODIR)/%.o
 ###############################################################################
 ############################# Main Targets ####################################
 ###############################################################################
-all    : $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj \
+all    : $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj $(BDIR)/FollowPythiaAj \
 	 $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
 	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
 	 $(BDIR)/SimpleTree \
@@ -86,6 +86,7 @@ $(ODIR)/FollowAjAnalysis.o 	: $(SDIR)/FollowAjAnalysis.cxx $(INCS) $(SDIR)/Follo
 
 #Aj
 $(BDIR)/FollowPicoAj		: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
+$(BDIR)/FollowPythiaAj		: $(ODIR)/FollowPythiaAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
 $(BDIR)/ppInAuAuFollowAj	: $(ODIR)/ppInAuAuFollowAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
 
 $(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a

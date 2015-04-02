@@ -18,12 +18,16 @@ void FollowPlot() {
   TLegend* legLo = new TLegend( 0.55, 0.7, 0.88, 0.88, "  p_{T}^{C}>0.2 GeV/c" );
   TLegend* legHi = new TLegend( 0.55, 0.7, 0.88, 0.88, "  p_{T}^{C}>2 GeV/c" );
 
-  TFile *fppLarge   = TFile::Open("AjResults/ppAj.root");
+  TFile *fppLarge   = TFile::Open("AjResults/pythiaAj.root");
+  TFile *fppFollow  = TFile::Open("AjResults/pythiaFollowAj.root");
+  // TFile *fppLarge   = TFile::Open("AjResults/pythiaAj_gg.root");
+  // TFile *fppFollow  = TFile::Open("AjResults/pythiaFollowAj_gg.root");
+  // TFile *fppLarge   = TFile::Open("AjResults/ppAj.root");
   // TFile *fppFollow  = TFile::Open("AjResults/ppFollowAj.root");
   // TFile *fppLarge   = TFile::Open("AjResults/AuAuAj.root");
   // TFile *fppFollow  = TFile::Open("AjResults/FollowAuAuAj.root");
   // TFile *fppLarge   = TFile::Open("AjResults/AuAuAj.root");
-  TFile *fppFollow  = TFile::Open("AjResults/ppInAuAuFollowAj.root");
+  // TFile *fppFollow  = TFile::Open("AjResults/ppInAuAuFollowAj.root");
   
   // --------------------------------------------------
   TH1D* origHi=(TH1D*)  fppLarge->Get( "UnmatchedAJ_hi");
@@ -36,7 +40,8 @@ void FollowPlot() {
   LargeHi->Rebin(2);
   LargeHi->SetLineColor( kGreen+1 );  LargeHi->SetLineWidth( 2 );  LargeHi->SetTitle( ";A_{J};fraction" );  LargeHi->Scale(1./LargeHi->Integral());
   
-  origHi->SetAxisRange( -0.02, 0.3, "y");
+  origHi->SetAxisRange( -0.02, 0.5, "y");
+  // origHi->SetAxisRange( -0.02, 0.3, "y");
   origHi->SetAxisRange( -0.1, 0.75, "x");
 
   // --------------------------------------------------
@@ -50,7 +55,8 @@ void FollowPlot() {
   LargeLo->Rebin(2);
   LargeLo->SetLineColor( kGreen+1 );  LargeLo->SetLineWidth( 2 );  LargeLo->SetTitle( ";A_{J};fraction" );  LargeLo->Scale(1./LargeLo->Integral());
   
-  origLo->SetAxisRange( -0.02, 0.3, "y");
+  origLo->SetAxisRange( -0.02, 0.5, "y");
+  // origLo->SetAxisRange( -0.02, 0.3, "y");
   origLo->SetAxisRange( -0.1, 0.75, "x");
 
   // --------------------------------------------------
@@ -79,6 +85,18 @@ void FollowPlot() {
   gPad->SaveAs("plots/ppFollowLo.png");
 
 
+
+  new TCanvas;
+  TH1D* SmallHiX = ((TH2D*) fppFollow->Get( "SmallhPtHi"))->ProjectionX("SmallHiX");
+  TH1D* LargeHiX = ((TH2D*) fppFollow->Get( "LargehPtHi"))->ProjectionX("LargeHiX");
+  
+  SmallHiX->Draw();
+  LargeHiX->Draw("same");
+  // fppLarge->Get( "UnmatchedAJ_hi");
+
+
+  return;
+  
   // --------------------------------------------------
   // --------------------------------------------------
   // --------------------------------------------------

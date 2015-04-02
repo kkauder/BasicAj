@@ -1,8 +1,7 @@
-/** @file FollowPicoAj.cxx
+/** @file FollowPythiaAj.cxx
     @author Kolja Kauder
     @version Revision 0.1
-    @brief Variation of Aj analysis and embedding prep in p+p.
-    @details Perform Aj analysis in a given TStarPicoJetTree chain. Can also save events with 10 GeV jets for embedding.
+    @brief Variation of Aj analysis in Pythia.
     @date Mar 04, 2015
 */
 
@@ -32,47 +31,101 @@ using namespace std;
 using namespace fastjet;
 
 /** 
-    - Set up input tree
+    - Set up vector of pythia events
     - Set up output histos and tree
-    - Initialize FollowAjAnalysis object
-    - Loop through events
-    \arg argv: List of root files. TChain can do some globbing, so you can use
-    <BR><tt>% FollowPicoAj '~putschke/Data/ppHT/&lowast;.root'</tt>
-    <BR>But ultimately, it's better to let the shell handle the globbing, especially for cases like 
-    <BR><tt>% FollowPicoAj ~putschke/Data/&lowast;/&lowast;.root</tt>
-    <BR>For a file list, simply use <BR><tt>% cat file.list | PicoAj</tt>
-
+    - For each Pythia event, perform Aj Analysis
 */
 int main ( int argc, const char** argv ) {
+  TString triggertype="";
+  // TString triggertype="qq";
+  // TString triggertype="gg";
 
-  // Set up some convenient default
-  // ------------------------------
-  const char *defaults[4] = {"FollowPicoAj","ppFollowAj.root","ppHT","~putschke/Data/ppHT/*.root"};
-  // const char *defaults[4] = {"FollowPicoAj","AuAuFollowAj.root","HT","CleanAuAu/*.root"};
-  if ( argc==1 ) {
-    argv=defaults;
-    argc=4;
-  }
+  gRandom->SetSeed(1);
+
+  // Load pythia Jets
+  // ----------------
+  TString PythiaName = "pytest.root";
+  TChain* PythiaJets = new TChain("tree");
+  PythiaJets->Add(PythiaName);
+  assert ( PythiaJets->GetEntries()>0 && "Something went wrong loading the Pythia jets.");
   
-  // Throw arguments in a vector
-  // ---------------------------
-  vector<string> arguments(argv + 1, argv + argc);
+  // Throw them into convenient vectors
+  // ----------------------------------
+  TClonesArray* pFullEvent = new TClonesArray("TLorentzVector");
+  PythiaJets->GetBranch("Particles")->SetAutoDelete(kFALSE);
+  PythiaJets->SetBranchAddress("Particles", &pFullEvent);
 
-  // Load and set up tree
-  // --------------------
-  TString ChainName  = "JetTree";
-  TString OutFileName = arguments.at(0);
-  TString TriggerName = arguments.at(1);
-
-  TChain* chain = new TChain( ChainName );
-  for (int i=2; i<arguments.size() ; ++i ) {
-    chain->Add( arguments.at(i).data() );
-  }
+  TClonesArray* pHardPartons= new TClonesArray("TLorentzVector");
+  PythiaJets->GetBranch("HardPartons")->SetAutoDelete(kFALSE);
+  PythiaJets->SetBranchAddress("HardPartons", &pHardPartons);
   
-  TStarJetPicoReader reader = SetupReader( chain, TriggerName );
+  TClonesArray* pHardPartonNames= new TClonesArray("TObjString");
+  PythiaJets->GetBranch("HardPartonNames")->SetAutoDelete(kFALSE);
+  PythiaJets->SetBranchAddress("HardPartonNames", &pHardPartonNames);
+  
+  vector< vector<PseudoJet> > FullPythiaEvent;
+  vector<PseudoJet> CurrentPythiaEvent;
+  TLorentzVector* lv;
+
+  vector< vector<PseudoJet> > TriggerPartons;
+  vector<PseudoJet> CurrentTriggerPartons;
+  
+  Int_t NPythiaEvents=PythiaJets->GetEntries();
+  // Int_t NPythiaEvents=10000;
+  cout << "Filling pythia vector" << endl;
+  for ( Long64_t pythiaEv = 0; pythiaEv< NPythiaEvents ; ++ pythiaEv ){
+    if ( !(pythiaEv%1000) ) cout << "Working on " << pythiaEv << " / " << NPythiaEvents << endl;
+    PythiaJets->GetEntry(pythiaEv);
+    CurrentPythiaEvent.clear();
+    for ( int i=0 ; i<pFullEvent->GetEntries() ; ++i ){
+      lv = (TLorentzVector*) pFullEvent->At(i);
+      // Ensure kinematic similarity
+      if ( lv->Pt()< AjParameters::PtConsLo ) continue;
+      if ( fabs( lv->Eta()>1) ) continue;
+      CurrentPythiaEvent.push_back( PseudoJet (*lv ) );
+    }
+
+    // Save original hard partons
+    // --------------------------
+    CurrentTriggerPartons.clear();
+    for ( int i=0 ; i<pHardPartons->GetEntries() ; ++i ){
+      lv = (TLorentzVector*) pHardPartons->At(i);
+      PseudoJet pj = PseudoJet (*lv );
+
+      // flavor info
+      TString& s = ((TObjString*)(pHardPartonNames->At(i)))->String();
+      int qcharge=-999;
+      if ( s=="g" ) qcharge = 0;
+      
+      if ( s(0)=='u' || s(0)=='c' || s(0)=='t' ) qcharge  = 2;
+      if ( s(0)=='d' || s(0)=='s' || s(0)=='b' ) qcharge = -1;
+      if ( s.Contains("bar") ) qcharge*=-1;
+      
+      if ( abs ( qcharge ) >3 ) cout<< s << endl;
+
+      pj.set_user_info ( new JetAnalysisUserInfo( qcharge ) );
+      CurrentTriggerPartons.push_back( pj );
+    }
+
+    // quick and dirty trigger type selection
+    if ( triggertype == "qq" || triggertype == "gg" ) {
+      if ( CurrentTriggerPartons.size()!=2 ) continue;
+      int aqcharge0= abs (CurrentTriggerPartons.at(0).user_info<JetAnalysisUserInfo>().GetQuarkCharge());
+      int aqcharge1= abs (CurrentTriggerPartons.at(1).user_info<JetAnalysisUserInfo>().GetQuarkCharge());
+      if ( aqcharge0 >2 || aqcharge1 >2 ) continue;
+    
+      if ( triggertype == "qq" && !(aqcharge0>0  && aqcharge1> 0) ) continue;
+      if ( triggertype == "gg" && !(aqcharge0==0 && aqcharge1==0) ) continue;
+    }    
+
+    FullPythiaEvent.push_back ( CurrentPythiaEvent );
+    TriggerPartons.push_back( CurrentTriggerPartons );  
+  }
 
   // Files and histograms
   // --------------------
+  TString OutFileName = "AjResults/pythiaFollowAj.root";
+  if ( triggertype== "qq" || triggertype== "gg" ) OutFileName.ReplaceAll(".root", TString("_")+triggertype+TString(".root") );
   TFile* fout = new TFile( OutFileName, "RECREATE");
   assert ( fout->IsOpen() );
   cout << " ################################################### " << endl;
@@ -117,24 +170,14 @@ int main ( int argc, const char** argv ) {
   TH3D* UsedEventsHiPhiEtaPt=new TH3D("UsedEventsHiPhiEtaPt","UsedEventsHiPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA
   TH3D* UsedEventsLoPhiEtaPt=new TH3D("UsedEventsLoPhiEtaPt","UsedEventsLoPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA  
 
-  // Save the full event and the trigger jet if this is pp and there's at least a 10 GeV jet.
-  // ----------------------------------------------------------------------------------------
-  // This is somewhat wasteful, we could instead read the original trees.
+  // Helpers
+  // -------
+  vector<PseudoJet> particles;
+  vector<PseudoJet> PythiaParticles;
+  TStarJetVectorContainer<TStarJetVector>* container;
 
-  bool SaveFullEvents = TriggerName.Contains("ppHT");
-  TTree* TriggeredTree=0;
-
-  TClonesArray TriggerJet( "TLorentzVector",1 ); 
-  static const Int_t kmaxT=5000; // max # of particles
-  TClonesArray FullEvent("TLorentzVector",kmaxT);
-  if (SaveFullEvents) {
-    TriggeredTree = new TTree("TriggeredTree","Triggered Events");
-    // NOTE: Ignore "Warning in <TTree::Bronch>: Using split mode on a class: TLorentzVector with a custom Streamer"
-    // See: https://root.cern.ch/phpBB3/viewtopic.php?p=18269
-    TriggeredTree->Branch("FullEvent", &FullEvent );
-    TriggeredTree->Branch("TriggerJet", &TriggerJet);
-  } 
-  
+  const double M = 0.13957;  // set pi+ mass
+  PseudoJet v; // helper
   
   // Initialize analysis class
   // -------------------------
@@ -155,109 +198,76 @@ int main ( int argc, const char** argv ) {
 			);  
   
   // Cycle through events
-  // --------------------
-  vector<PseudoJet> particles;
-  TStarJetVectorContainer<TStarJetVector>* container;
-  TStarJetVector* sv; // TLorentzVector* would be sufficient. 
-  
+  // --------------------  
+  Long64_t nJetsUsed=0;
   int nHardDijets = 0;
   int nLargeToSmallHiMatched=0;
   int nLargeToSmallLoMatched=0;
   int nCorrespondingLowDijets = 0;
   int nMatchedDijets=0;
   
-  Long64_t nEvents=-1; // -1 for all
-  // Long64_t nEvents=10;
-  reader.Init(nEvents);
+  // Cycle through pythia jets
+  // ---------------------
+  for ( int pythiai =0; pythiai< FullPythiaEvent.size() ; ++pythiai ){
 
-  PseudoJet pj;
-  try{
-    while ( reader.NextEvent() ) {
-      reader.PrintStatus(10);
-      
-      // Load event
-      // ----------
-      container = reader.GetOutputContainer();
+    // Base pythia vector
+    // --------------
+    PythiaParticles.clear();
+    for ( int i=0; i < FullPythiaEvent.at(pythiai).size() ; ++i ){
+      PythiaParticles.push_back( FullPythiaEvent.at( pythiai).at(i) );
+    }
 
-      // Make particle vector
-      // --------------------
-      particles.clear();
+    particles=PythiaParticles;      
     
-      for (int ip = 0; ip<container->GetEntries() ; ++ip ){
-	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
-	// mostly for demonstration, add charge information
-	pj=MakePseudoJet( sv );
-	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
-	particles.push_back ( pj );
-      }    
+    // Run analysis
+    // ------------
+    int ret;
 
-      // Run analysis
-      // ------------
-      int ret;
-      ret =AjA.AnalyzeAndFill( particles );
-      
-      // Intercept return value for radius matching
-      if ( ret == 101 || ret == 102 ){
-	nLargeToSmallHiMatched++;
-	ret-=100;
-      }
-      if ( ret == 103 ){
-	nLargeToSmallHiMatched++;
-	nLargeToSmallLoMatched++;
-	ret-=100;
-      }
-
-	    
-      switch ( ret ){
-      case 3 : nMatchedDijets++;
-	// FALLTHROUGH
-      case 2 : nCorrespondingLowDijets++;
-	// FALLTHROUGH
-      case 1 : nHardDijets++;
-	// FALLTHROUGH
-      case 0 : /* Nothing found */
-	break;
-      default :
-	cerr << "Unrecognized return value!" << endl;
-	throw(-1);
-	return -1;
-	break;      
-      }
+    ret =AjA.AnalyzeAndFill( particles );
+          
+    // Intercept return value for radius matching
+    if ( ret == 101 || ret == 102 ){
+      nLargeToSmallHiMatched++;
+      ret-=100;
+    }
+    if ( ret == 103 ){
+      nLargeToSmallHiMatched++;
+      nLargeToSmallLoMatched++;
+      ret-=100;
+    }
     
-      // Save the full event for embedding if there's at least one 10 GeV jet
-      // --------------------------------------------------------------------
-      if (SaveFullEvents){
-	FullEvent.Clear();
-	TriggerJet.Clear();
-	if ( AjA.Has10Gev )  { 
-	  for ( int i = 0; i<particles.size() ; ++i ){
-	    if ( particles.at(i).pt() >100 ) { 
-	      cerr << " =====> " <<particles.at(i).pt() << "  " << particles.at(i).phi() << "  " << particles.at(i).eta() << endl;  
-	    } 
-	    new (FullEvent[i])   TLorentzVector ( MakeTLorentzVector( particles.at(i) )  );
-	  } // for particles
-	  // Save trigger jet as well
-	  vector<PseudoJet> JAhiResult = AjA.GetSmallJAhiResult();
-	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );
-	  TriggeredTree->Fill();
-	} // has Trigger
-      } // SaveFullEvents
-    } // while NextEvent
-  } catch ( exception& e) {
-    cerr << "Caught " << e.what() << endl;
-    return -1;
-  }
+    
+    switch ( ret ){
+    case 3 : nMatchedDijets++;
+      // FALLTHROUGH
+    case 2 : nCorrespondingLowDijets++;
+      // FALLTHROUGH
+    case 1 : nHardDijets++;
+      // FALLTHROUGH
+    case 0 : /* Nothing found */
+      break;
+    default :
+      cerr << "Unrecognized return value!" << endl;
+      throw(-1);
+      return -1;
+      break;      
+    }
+
+    nJetsUsed++;    
+    if ( !(nJetsUsed%1000) ) cout << "Used " << nJetsUsed << " / " << FullPythiaEvent.size() << endl;
+  } // pythiai< FullPythiaEvent.size()
   
   cout << "##################################################################" << endl;
   
-  Long64_t nEventsUsed=reader.GetNOfEvents();  
-  UsedEventsHiPhiEtaPt->Scale( 1./nEventsUsed );
+  // Scale per used pythia event
+  // ------------------------
+  UsedEventsHiPhiEtaPt->Scale( 1./nJetsUsed ); 
 
   // Close up shop
   // -------------
   fout->Write();
 
-  cout << "In " << nEventsUsed << " events, found " << endl
+  cout << "Analyzed " << nJetsUsed << " events and found " << endl
        << nHardDijets << " dijets with constituents above 2 GeV and R=" << SmallR << "," << endl
        << nCorrespondingLowDijets << " corresponding dijets with constituents above 0.2 GeV," << endl
        << " of which " <<  nMatchedDijets << " could be matched." << endl;
