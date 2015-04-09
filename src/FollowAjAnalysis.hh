@@ -88,14 +88,17 @@ private :
   
   // Histos to fill
   // --------------
+  TH1D* LeadDeltaPtHi;        ///< Matched, hard constituents, p_T^{Lead} difference between small and large R
+  TH1D* SubLeadDeltaPtHi;     ///< Matched, hard constituents, p_T^{Sub} difference between small and large R
+  TH1D* LeadDeltaPtLo;        ///< Matched, soft constituents, p_T^{Lead} difference between small and large R
+  TH1D* SubLeadDeltaPtLo;     ///< Matched, soft constituents, p_T^{Sub} difference between small and large R
+  
+  TH1D* hdPtLo;               ///< Matched, soft constituents, p_T difference between small and large R
+
   TH2D* SmallUnmatchedhPtHi;  ///< Unmatched hard constituent jet spectrum, small R
   TH2D* SmallhPtHi;           ///< Matched hard constituent jet spectrum, small R
   TH2D* SmallhPtLo;           ///< Matched soft constituent jet spectrum, small R
   
-  TH1D* SmallUnmatchedhdPtHi;  ///< Unmatched hard constituent p_T difference, small R
-  TH1D* SmallhdPtHi;           ///< Matched hard constituent p_T difference, small R
-  TH1D* SmallhdPtLo;           ///< Matched soft constituent p_T difference, small R
-
   TH1D* SmallhdphiHi;         ///< Matched hard constituent dijet angle, small R
   TH1D* SmallhdphiLo;         ///< Matched soft constituent dijet angle, small R
 
@@ -107,10 +110,6 @@ private :
   TH2D* LargehPtHi;           ///< Matched hard constituent jet spectrum, large R
   TH2D* LargehPtLo;           ///< Matched soft constituent jet spectrum, large R
   
-  TH1D* LargeUnmatchedhdPtHi;  ///< Unmatched hard constituent p_T difference, large R
-  TH1D* LargehdPtHi;           ///< Matched hard constituent p_T difference, large R
-  TH1D* LargehdPtLo;           ///< Matched soft constituent p_T difference, large R
-
   TH1D* LargehdphiHi;         ///< Matched hard constituent dijet angle, large R
   TH1D* LargehdphiLo;         ///< Matched soft constituent dijet angle, large R
 
@@ -121,6 +120,10 @@ private :
   TH3D* UsedEventsHiPhiEtaPt; ///< phi, eta, p<SUB>T</SUB> of hard constituents
   TH3D* UsedEventsLoPhiEtaPt; ///< phi, eta, p<SUB>T</SUB> of soft constituents
 
+  TH1D* SmallDeltaAJ_hilo;    ///< Small R, A_J (hard) - A_J (soft)
+  TH1D* LargeDeltaAJ_hilo;    ///< Large R, A_J (hard) - A_J (soft)
+  TH1D* DeltaAJ_hi;           ///< Matched, hard constituents, A_J (Small R) - A_J (Large R)
+  TH1D* DeltaAJ_lo;           ///< Matched, soft constituents, A_J (Small R) - A_J (Large R)
   
 public:
   /** Standard constructor. Set up analysis parameters.
@@ -150,15 +153,16 @@ public:
 		     double LeadPtMin = 20.0, double SubLeadPtMin = 10, 
 		     double max_track_rap = 1.0, double PtConsLo=0.2, double PtConsHi=2.0,
 		     double dPhiCut = 0.4,
+		     TH1D* LeadDeltaPtHi=0,  TH1D* SubLeadDeltaPtHi=0, TH1D* LeadDeltaPtLo=0,  TH1D* SubLeadDeltaPtLo=0,
 		     TH2D* SmallUnmatchedhPtHi=0,  TH2D* SmallhPtHi=0,  TH2D* SmallhPtLo=0,
-		     TH1D* SmallUnmatchedhdPtHi=0,  TH1D* SmallhdPtHi=0,  TH1D* SmallhdPtLo=0,
 		     TH1D* SmallhdphiHi=0, TH1D* SmallhdphiLo=0,
 		     TH1D* SmallUnmatchedAJ_hi=0, TH1D* SmallAJ_hi=0, TH1D* SmallAJ_lo=0,
 		     TH2D* LargeUnmatchedhPtHi=0,  TH2D* LargehPtHi=0,  TH2D* LargehPtLo=0,
-		     TH1D* LargeUnmatchedhdPtHi=0,  TH1D* LargehdPtHi=0,  TH1D* LargehdPtLo=0,  
 		     TH1D* LargehdphiHi=0, TH1D* LargehdphiLo=0,
 		     TH1D* LargeUnmatchedAJ_hi=0, TH1D* LargeAJ_hi=0, TH1D* LargeAJ_lo=0,
-		     TH3D* UsedEventsHiPhiEtaPt=0, TH3D* UsedEventsLoPhiEtaPt=0
+		     TH3D* UsedEventsHiPhiEtaPt=0, TH3D* UsedEventsLoPhiEtaPt=0,
+		     TH1D* SmallDeltaAJ_hilo=0, TH1D* LargeDeltaAJ_hilo=0,
+		     TH1D* DeltaAJ_hi=0, TH1D* DeltaAJ_lo=0
 		     );
   /** Dijet asymmetry A<SUB>J</SUB> = &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> */
   inline double CalcAj ( std::vector<fastjet::PseudoJet>& jets ){

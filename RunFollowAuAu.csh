@@ -5,6 +5,10 @@ make bin/FollowPicoAj || exit
 
 # split into chunks
 set base = CleanAuAu/Clean8
+
+set LeadMin=20
+set SubLeadMin=10
+
 foreach input ( ${base}* )
     # arguments
     set OutBase=`basename $input | sed 's/.root//g'`
@@ -19,7 +23,7 @@ foreach input ( ${base}* )
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
 
-    set command = "./bin/FollowPicoAj $OutName $TriggerName $Files"
+    set command = "./bin/FollowPicoAj $OutName $LeadMin $SubLeadMin $TriggerName $Files"
 
     # Run in the background
     echo "Executing " $command

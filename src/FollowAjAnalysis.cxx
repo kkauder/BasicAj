@@ -14,30 +14,34 @@ FollowAjAnalysis::FollowAjAnalysis ( double SmallR, double LargeR,
 				     double LeadPtMin, double SubLeadPtMin, 
 				     double max_track_rap, double PtConsLo, double PtConsHi,
 				     double dPhiCut,
-				     TH2D* SmallUnmatchedhPtHi,  TH2D* SmallhPtHi,  TH2D* SmallhPtLo,  
-				     TH1D* SmallUnmatchedhdPtHi,  TH1D* SmallhdPtHi,  TH1D* SmallhdPtLo,  
+				     TH1D* LeadDeltaPtHi,  TH1D* SubLeadDeltaPtHi, TH1D* LeadDeltaPtLo,  TH1D* SubLeadDeltaPtLo,
+				     TH2D* SmallUnmatchedhPtHi,  TH2D* SmallhPtHi,  TH2D* SmallhPtLo,
 				     TH1D* SmallhdphiHi, TH1D* SmallhdphiLo,
 				     TH1D* SmallUnmatchedAJ_hi, TH1D* SmallAJ_hi, TH1D* SmallAJ_lo,
 				     TH2D* LargeUnmatchedhPtHi,  TH2D* LargehPtHi,  TH2D* LargehPtLo,
-				     TH1D* LargeUnmatchedhdPtHi,  TH1D* LargehdPtHi,  TH1D* LargehdPtLo,
 				     TH1D* LargehdphiHi, TH1D* LargehdphiLo,
 				     TH1D* LargeUnmatchedAJ_hi, TH1D* LargeAJ_hi, TH1D* LargeAJ_lo,
-				     TH3D* UsedEventsHiPhiEtaPt, TH3D* UsedEventsLoPhiEtaPt 
+				     TH3D* UsedEventsHiPhiEtaPt, TH3D* UsedEventsLoPhiEtaPt,
+				     TH1D* SmallDeltaAJ_hilo, TH1D* LargeDeltaAJ_hilo,
+				     TH1D* DeltaAJ_hi, TH1D* DeltaAJ_lo
+
 				     )
   : SmallR(SmallR), LargeR(LargeR),
     jet_ptmin(jet_ptmin), jet_ptmax(jet_ptmax),
     LeadPtMin(LeadPtMin), SubLeadPtMin(SubLeadPtMin),
     max_track_rap (max_track_rap), PtConsLo (PtConsLo), PtConsHi (PtConsHi),
     dPhiCut (dPhiCut),
+    LeadDeltaPtHi (LeadDeltaPtHi),  SubLeadDeltaPtHi (SubLeadDeltaPtHi),
+    LeadDeltaPtLo (LeadDeltaPtLo),  SubLeadDeltaPtLo (SubLeadDeltaPtLo),
     SmallUnmatchedhPtHi (SmallUnmatchedhPtHi),  SmallhPtHi (SmallhPtHi),  SmallhPtLo (SmallhPtLo),
-    SmallUnmatchedhdPtHi (SmallUnmatchedhdPtHi),  SmallhdPtHi (SmallhdPtHi),  SmallhdPtLo (SmallhdPtLo),  
     SmallhdphiHi (SmallhdphiHi), SmallhdphiLo (SmallhdphiLo),
     SmallUnmatchedAJ_hi (SmallUnmatchedAJ_hi), SmallAJ_hi(SmallAJ_hi), SmallAJ_lo (SmallAJ_lo),
     LargeUnmatchedhPtHi (LargeUnmatchedhPtHi),  LargehPtHi (LargehPtHi),  LargehPtLo (LargehPtLo),
-    LargeUnmatchedhdPtHi (LargeUnmatchedhdPtHi),  LargehdPtHi (LargehdPtHi),  LargehdPtLo (LargehdPtLo),  
     LargehdphiHi (LargehdphiHi), LargehdphiLo (LargehdphiLo),
     LargeUnmatchedAJ_hi (LargeUnmatchedAJ_hi), LargeAJ_hi(LargeAJ_hi), LargeAJ_lo (LargeAJ_lo),
-    UsedEventsHiPhiEtaPt (UsedEventsHiPhiEtaPt), UsedEventsLoPhiEtaPt (UsedEventsLoPhiEtaPt)
+    UsedEventsHiPhiEtaPt (UsedEventsHiPhiEtaPt), UsedEventsLoPhiEtaPt (UsedEventsLoPhiEtaPt),
+    SmallDeltaAJ_hilo (SmallDeltaAJ_hilo),  LargeDeltaAJ_hilo (LargeDeltaAJ_hilo),
+    DeltaAJ_hi(DeltaAJ_hi),  DeltaAJ_lo(DeltaAJ_lo)
 {
   // derived rapidity cuts
   // ---------------------
@@ -164,11 +168,9 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
   // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
   SmallUnmatchedAJ_hi->Fill ( CalcAj( SmallDiJetsHi ) );
   SmallUnmatchedhPtHi->Fill ( SmallDiJetsHi.at(0).pt() , SmallDiJetsHi.at(1).pt());
-  SmallUnmatchedhdPtHi->Fill ( SmallDiJetsHi.at(0).pt() - SmallDiJetsHi.at(1).pt());  
   if ( LargeToSmallHiMatched ){
     LargeUnmatchedAJ_hi->Fill ( CalcAj( LargeDiJetsHi ) );
     LargeUnmatchedhPtHi->Fill ( LargeDiJetsHi.at(0).pt() , LargeDiJetsHi.at(1).pt());
-    LargeUnmatchedhdPtHi->Fill ( LargeDiJetsHi.at(0).pt() - LargeDiJetsHi.at(1).pt());  
   }
 
   // find corresponding jets with soft constituents
@@ -239,19 +241,26 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
   SmallhdphiLo->Fill( JetAnalyzer::phimod2pi( SmallDiJetsLo.at(0).phi() - SmallDiJetsLo.at(1).phi() - TMath::Pi()) );  
   SmallhPtHi->Fill( SmallDiJetsHi.at(0).pt(), SmallDiJetsHi.at(1).pt());
   SmallhPtLo->Fill( SmallDiJetsLo.at(0).pt(), SmallDiJetsLo.at(1).pt());
-  SmallhdPtHi->Fill( SmallDiJetsHi.at(0).pt() - SmallDiJetsHi.at(1).pt());
-  SmallhdPtLo->Fill( SmallDiJetsLo.at(0).pt() - SmallDiJetsLo.at(1).pt());
 
+  if ( SmallDeltaAJ_hilo ) SmallDeltaAJ_hilo->Fill( CalcAj( SmallDiJetsHi ) - CalcAj( SmallDiJetsLo ) );
   
   if (LargeToSmallLoMatched){
     LargeAJ_hi->Fill( CalcAj( LargeDiJetsHi ) );
     LargeAJ_lo->Fill( CalcAj( LargeDiJetsLo ) );
+
+    if ( DeltaAJ_hi )         DeltaAJ_hi->Fill( CalcAj( SmallDiJetsHi ) - CalcAj( LargeDiJetsHi ) );
+    if ( DeltaAJ_hi )         DeltaAJ_lo->Fill( CalcAj( SmallDiJetsLo ) - CalcAj( LargeDiJetsLo ) );
+    if ( LargeDeltaAJ_hilo )  LargeDeltaAJ_hilo->Fill( CalcAj( LargeDiJetsHi ) - CalcAj( LargeDiJetsLo ) );
+    
     LargehdphiHi->Fill( JetAnalyzer::phimod2pi( LargeDiJetsHi.at(0).phi() - LargeDiJetsHi.at(1).phi() - TMath::Pi()) );
     LargehdphiLo->Fill( JetAnalyzer::phimod2pi( LargeDiJetsLo.at(0).phi() - LargeDiJetsLo.at(1).phi() - TMath::Pi()) );  
     LargehPtHi->Fill( LargeDiJetsHi.at(0).pt(), LargeDiJetsHi.at(1).pt());
     LargehPtLo->Fill( LargeDiJetsLo.at(0).pt(), LargeDiJetsLo.at(1).pt());
-    LargehdPtHi->Fill( LargeDiJetsHi.at(0).pt() - LargeDiJetsHi.at(1).pt());
-    LargehdPtLo->Fill( LargeDiJetsLo.at(0).pt() - LargeDiJetsLo.at(1).pt());
+
+    LeadDeltaPtHi   ->Fill( SmallDiJetsHi.at(0).pt() - LargeDiJetsHi.at(0).pt());
+    SubLeadDeltaPtHi->Fill( SmallDiJetsHi.at(1).pt() - LargeDiJetsHi.at(1).pt());
+    LeadDeltaPtLo   ->Fill( SmallDiJetsLo.at(0).pt() - LargeDiJetsLo.at(0).pt());
+    SubLeadDeltaPtLo->Fill( SmallDiJetsLo.at(1).pt() - LargeDiJetsLo.at(1).pt());
   } else {
     std::cout << "Nothing found for large R." << std::endl;
   }

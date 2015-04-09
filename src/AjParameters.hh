@@ -17,6 +17,7 @@ namespace AjParameters{
   const double LeadPtMin=20.0;      ///< Min leading jet pT 
   const double SubLeadPtMin=10.0;   ///< Min sub-leading jet pT 
   const double dPhiCut = 0.4;       ///< Dijet acceptance angle,  |&phi;1 - &phi;2 -&pi;| < dPhiCut
+  // const double dPhiCut = 3.1415926/3.0;       ///< Dijet acceptance angle,  |&phi;1 - &phi;2 -&pi;| < dPhiCut
   
   const double max_track_rap = 1.0; ///< Constituent &eta; acceptance
   const double PtConsLo=0.2;        ///< Low constituent pT cut

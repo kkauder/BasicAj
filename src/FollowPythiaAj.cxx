@@ -137,14 +137,16 @@ int main ( int argc, const char** argv ) {
   
   float SmallR=0.2; // DEBUG
   float LargeR=0.4;
+
+  TH1D* LeadDeltaPtHi    = new TH1D( "LeadDeltaPtHi",   "Matched, hard constituents, p_T^{Lead} difference between small and large R", 200, -30, 10 );
+  TH1D* SubLeadDeltaPtHi = new TH1D( "SubLeadDeltaPtHi","Matched, hard constituents, p_T^{Sub} difference between small and large R", 200, -30, 10 );
+  TH1D* LeadDeltaPtLo    = new TH1D( "LeadDeltaPtLo",   "Matched, soft constituents, p_T^{Lead} difference between small and large R", 200, -30, 10 );
+  TH1D* SubLeadDeltaPtLo = new TH1D( "SubLeadDeltaPtLo","Matched, soft constituents, p_T^{Sub} difference between small and large R", 200, -30, 10 );
+    
   TH2D* SmallUnmatchedhPtHi = new TH2D( "SmallUnmatchedhPtHi","R=0.2, p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* SmallhPtHi = new TH2D( "SmallhPtHi","R=0.2, p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* SmallhPtLo = new TH2D( "SmallhPtLo","R=0.2, p_{T}^{C} > 0.2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
     
-  TH1D* SmallUnmatchedhdPtHi = new TH1D( "SmallUnmatchedhdPtHi","R=0.2, #Delta p_{T} for unmatched hard constituent jets", 120, -10, 50 );
-  TH1D* SmallhdPtHi = new TH1D( "SmallhdPtHi","R=0.2, #Delta p_{T} for hard constituent jets", 120, -10, 50 );
-  TH1D* SmallhdPtLo = new TH1D( "SmallhdPtLo","R=0.2, #Delta p_{T} for soft constituent jets", 120, -10, 50 );
-
   TH1D* SmallhdphiHi        = new TH1D( "SmallhdphiHi","R=0.2, #Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* SmallhdphiLo        = new TH1D( "SmallhdphiLo","R=0.2, #Delta#phi for soft constituent jets", 200, -2, 2 );
 
@@ -158,10 +160,6 @@ int main ( int argc, const char** argv ) {
     
   TH1D* LargehdphiHi = new TH1D( "LargehdphiHi","R=0.4, #Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* LargehdphiLo = new TH1D( "LargehdphiLo","R=0.4, #Delta#phi for soft constituent jets", 200, -2, 2 );
-
-  TH1D* LargeUnmatchedhdPtHi = new TH1D( "LargeUnmatchedhdPtHi","R=0.4, #Delta p_{T} for unmatched hard constituent jets", 120, -10, 50 );
-  TH1D* LargehdPtHi = new TH1D( "LargehdPtHi","R=0.4, #Delta p_{T} for hard constituent jets", 120, -10, 50 );
-  TH1D* LargehdPtLo = new TH1D( "LargehdPtLo","R=0.4, #Delta p_{T} for soft constituent jets", 120, -10, 50 );
   
   TH1D* LargeUnmatchedAJ_hi = new TH1D( "LargeUnmatchedAJ_hi","R=0.4, Unmatched A_{J} for hard constituent jets", 40, -0.3, 0.9 );
   TH1D* LargeAJ_hi = new TH1D( "LargeAJ_hi","R=0.4, A_{J} for hard constituent jets", 40, -0.3, 0.9 );
@@ -169,6 +167,11 @@ int main ( int argc, const char** argv ) {
 
   TH3D* UsedEventsHiPhiEtaPt=new TH3D("UsedEventsHiPhiEtaPt","UsedEventsHiPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA
   TH3D* UsedEventsLoPhiEtaPt=new TH3D("UsedEventsLoPhiEtaPt","UsedEventsLoPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA  
+
+  TH1D* SmallDeltaAJ_hilo = new TH1D( "SmallDeltaAJ_hilo","Small R, A_J (hard) - A_J (soft);#Delta A_{J}", 100, -1, 1);
+  TH1D* LargeDeltaAJ_hilo = new TH1D( "LargeDeltaAJ_hilo","Large R, A_J (hard) - A_J (soft);#Delta A_{J}", 100, -1, 1);
+  TH1D* DeltaAJ_hi = new TH1D( "DeltaAJ_hi","Matched, hard constituents, A_J (Small R) - A_J (Large R);#Delta A_{J}", 100, -1, 1);
+  TH1D* DeltaAJ_lo = new TH1D( "DeltaAJ_lo","Matched, soft constituents, A_J (Small R) - A_J (Large R);#Delta A_{J}", 100, -1, 1);
 
   // Helpers
   // -------
@@ -186,15 +189,16 @@ int main ( int argc, const char** argv ) {
 			AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
 			AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
 			AjParameters::dPhiCut,
+			LeadDeltaPtHi, SubLeadDeltaPtHi, LeadDeltaPtLo, SubLeadDeltaPtLo,
 			SmallUnmatchedhPtHi,  SmallhPtHi, SmallhPtLo,
-			SmallUnmatchedhdPtHi, SmallhdPtHi, SmallhdPtLo,
 			SmallhdphiHi, SmallhdphiLo,
 			SmallUnmatchedAJ_hi, SmallAJ_hi, SmallAJ_lo,
 			LargeUnmatchedhPtHi,  LargehPtHi, LargehPtLo,
-			LargeUnmatchedhdPtHi, LargehdPtHi, LargehdPtLo,  
 			LargehdphiHi, LargehdphiLo,
 			LargeUnmatchedAJ_hi, LargeAJ_hi, LargeAJ_lo,
-			UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
+			UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt,
+			SmallDeltaAJ_hilo,  LargeDeltaAJ_hilo,
+			DeltaAJ_hi,  DeltaAJ_lo			
 			);  
   
   // Cycle through events

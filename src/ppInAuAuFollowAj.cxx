@@ -44,15 +44,46 @@ using namespace fastjet;
     The idea behind this two step approach is that we avoid jumping at random through the AuAu chain,
     the tree gets read sequentially, and exactly twice.
 */
-int main () {
+int main ( int argc, const char** argv ) {
 
+  // Set up some convenient default
+  // ------------------------------
+  const char *defaults[5] = {"ppInAuAuFollowAj","AjResults/ppInAuAuFollowAj.root","AjResults/ppFollowAj.root","-1", "-1" };
+  if ( argc==1 ) {
+    argv=defaults;
+    argc=5;
+  }
+  
+  
+  // Throw arguments in a vector
+  // ---------------------------
+  vector<string> arguments(argv + 1, argv + argc);
+
+  // Output file
+  // -----------
+  TString OutFileName = arguments.at(0);
+
+  // pp File
+  // -------
+  TString ppAjName = arguments.at(1);
+    
+  // trigger cut
+  // -----------
+  float LeadPtMin=AjParameters::LeadPtMin;
+  float SubLeadPtMin=AjParameters::SubLeadPtMin;
+  if ( atof(arguments.at(2).c_str()) > 0 ) LeadPtMin    = atof( (arguments.at(2).c_str()) );
+  if ( atof(arguments.at(3).c_str()) > 0 ) SubLeadPtMin = atof( (arguments.at(3).c_str()) );
+
+  cout << " Leading Jets above     " <<    LeadPtMin << " GeV/c" << endl;
+  cout << " Sub-Leading Jets above " << SubLeadPtMin << " GeV/c" << endl;
+
+  
   // How many times to use every pp jet
   // ----------------------------------
   Int_t nMix=3;
 
   // Load pp Jets
   // ------------
-  TString ppAjName = "AjResults/ppFollowAj.root";
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
   assert ( ppJets->GetEntries()>0 && "Something went wrong loading the pp jets.");
@@ -95,7 +126,6 @@ int main () {
 
   // Files and histograms
   // --------------------
-  TString OutFileName = "AjResults/ppInAuAuFollowAj.root";
   TFile* fout = new TFile( OutFileName, "RECREATE");
   assert ( fout->IsOpen() );
   cout << " ################################################### " << endl;
@@ -107,14 +137,16 @@ int main () {
   
   float SmallR=0.2; // DEBUG
   float LargeR=0.4;
+
+  TH1D* LeadDeltaPtHi    = new TH1D( "LeadDeltaPtHi",   "Matched, hard constituents, p_T^{Lead} difference between small and large R", 200, -30, 10 );
+  TH1D* SubLeadDeltaPtHi = new TH1D( "SubLeadDeltaPtHi","Matched, hard constituents, p_T^{Sub} difference between small and large R", 200, -30, 10 );
+  TH1D* LeadDeltaPtLo    = new TH1D( "LeadDeltaPtLo",   "Matched, soft constituents, p_T^{Lead} difference between small and large R", 200, -30, 10 );
+  TH1D* SubLeadDeltaPtLo = new TH1D( "SubLeadDeltaPtLo","Matched, soft constituents, p_T^{Sub} difference between small and large R", 200, -30, 10 );
+
   TH2D* SmallUnmatchedhPtHi = new TH2D( "SmallUnmatchedhPtHi","R=0.2, p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* SmallhPtHi = new TH2D( "SmallhPtHi","R=0.2, p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* SmallhPtLo = new TH2D( "SmallhPtLo","R=0.2, p_{T}^{C} > 0.2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
     
-  TH1D* SmallUnmatchedhdPtHi = new TH1D( "SmallUnmatchedhdPtHi","R=0.2, #Delta p_{T} for unmatched hard constituent jets", 120, -10, 50 );
-  TH1D* SmallhdPtHi = new TH1D( "SmallhdPtHi","R=0.2, #Delta p_{T} for hard constituent jets", 120, -10, 50 );
-  TH1D* SmallhdPtLo = new TH1D( "SmallhdPtLo","R=0.2, #Delta p_{T} for soft constituent jets", 120, -10, 50 );
-
   TH1D* SmallhdphiHi        = new TH1D( "SmallhdphiHi","R=0.2, #Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* SmallhdphiLo        = new TH1D( "SmallhdphiLo","R=0.2, #Delta#phi for soft constituent jets", 200, -2, 2 );
 
@@ -129,10 +161,6 @@ int main () {
   TH1D* LargehdphiHi = new TH1D( "LargehdphiHi","R=0.4, #Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* LargehdphiLo = new TH1D( "LargehdphiLo","R=0.4, #Delta#phi for soft constituent jets", 200, -2, 2 );
 
-  TH1D* LargeUnmatchedhdPtHi = new TH1D( "LargeUnmatchedhdPtHi","R=0.4, #Delta p_{T} for unmatched hard constituent jets", 120, -10, 50 );
-  TH1D* LargehdPtHi = new TH1D( "LargehdPtHi","R=0.4, #Delta p_{T} for hard constituent jets", 120, -10, 50 );
-  TH1D* LargehdPtLo = new TH1D( "LargehdPtLo","R=0.4, #Delta p_{T} for soft constituent jets", 120, -10, 50 );
-  
   TH1D* LargeUnmatchedAJ_hi = new TH1D( "LargeUnmatchedAJ_hi","R=0.4, Unmatched A_{J} for hard constituent jets", 40, -0.3, 0.9 );
   TH1D* LargeAJ_hi = new TH1D( "LargeAJ_hi","R=0.4, A_{J} for hard constituent jets", 40, -0.3, 0.9 );
   TH1D* LargeAJ_lo = new TH1D( "LargeAJ_lo","R=0.4, A_{J} for soft constituent jets", 40, -0.3, 0.9 );
@@ -198,15 +226,14 @@ int main () {
   // -------------------------
   FollowAjAnalysis AjA( SmallR, LargeR,
 			AjParameters::jet_ptmin, AjParameters::jet_ptmax,
-			AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
+			LeadPtMin, SubLeadPtMin, 
 			AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
 			AjParameters::dPhiCut,
+			LeadDeltaPtHi, SubLeadDeltaPtHi, LeadDeltaPtLo, SubLeadDeltaPtLo,
 			SmallUnmatchedhPtHi,  SmallhPtHi, SmallhPtLo,
-			SmallUnmatchedhdPtHi, SmallhdPtHi, SmallhdPtLo,
 			SmallhdphiHi, SmallhdphiLo,
 			SmallUnmatchedAJ_hi, SmallAJ_hi, SmallAJ_lo,
 			LargeUnmatchedhPtHi,  LargehPtHi, LargehPtLo,
-			LargeUnmatchedhdPtHi, LargehdPtHi, LargehdPtLo,  
 			LargehdphiHi, LargehdphiLo,
 			LargeUnmatchedAJ_hi, LargeAJ_hi, LargeAJ_lo,
 			UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
