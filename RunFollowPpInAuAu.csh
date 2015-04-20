@@ -1,7 +1,7 @@
 #!/usr/bin/env csh
 
 # make sure executable exists
-make bin/PpInAuAuFollowAj || exit
+make bin/ppInAuAuFollowAj || exit
 
 # arguments
 set OutName     = AjResults/ppInAuAuFollowAj.root

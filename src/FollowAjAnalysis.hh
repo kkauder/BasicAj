@@ -106,14 +106,12 @@ private :
   TH1D* SmallAJ_hi;           ///< Matched hard constituent A_J, small R
   TH1D* SmallAJ_lo;           ///< Matched soft constituent A_J, small R
 
-  TH2D* LargeUnmatchedhPtHi;  ///< Unmatched hard constituent jet spectrum, large R
   TH2D* LargehPtHi;           ///< Matched hard constituent jet spectrum, large R
   TH2D* LargehPtLo;           ///< Matched soft constituent jet spectrum, large R
   
   TH1D* LargehdphiHi;         ///< Matched hard constituent dijet angle, large R
   TH1D* LargehdphiLo;         ///< Matched soft constituent dijet angle, large R
 
-  TH1D* LargeUnmatchedAJ_hi;  ///< Unmatched hard constituent A_J, large R
   TH1D* LargeAJ_hi;           ///< Matched hard constituent A_J, large R
   TH1D* LargeAJ_lo;           ///< Matched soft constituent A_J, large R
 
@@ -157,9 +155,9 @@ public:
 		     TH2D* SmallUnmatchedhPtHi=0,  TH2D* SmallhPtHi=0,  TH2D* SmallhPtLo=0,
 		     TH1D* SmallhdphiHi=0, TH1D* SmallhdphiLo=0,
 		     TH1D* SmallUnmatchedAJ_hi=0, TH1D* SmallAJ_hi=0, TH1D* SmallAJ_lo=0,
-		     TH2D* LargeUnmatchedhPtHi=0,  TH2D* LargehPtHi=0,  TH2D* LargehPtLo=0,
+		     TH2D* LargehPtHi=0,  TH2D* LargehPtLo=0,
 		     TH1D* LargehdphiHi=0, TH1D* LargehdphiLo=0,
-		     TH1D* LargeUnmatchedAJ_hi=0, TH1D* LargeAJ_hi=0, TH1D* LargeAJ_lo=0,
+		     TH1D* LargeAJ_hi=0, TH1D* LargeAJ_lo=0,
 		     TH3D* UsedEventsHiPhiEtaPt=0, TH3D* UsedEventsLoPhiEtaPt=0,
 		     TH1D* SmallDeltaAJ_hilo=0, TH1D* LargeDeltaAJ_hilo=0,
 		     TH1D* DeltaAJ_hi=0, TH1D* DeltaAJ_lo=0
@@ -251,11 +249,13 @@ public:
  */
 TStarJetPicoReader GetReader ( TString ChainPattern="~putschke/Data/Pico_ppHT/*.root", 
 			       TString TriggerString="ppHT",
-			       TString ChainName="JetTree" );
+			       TString ChainName="JetTree",
+			       const double RefMultCut=0
+			       );
 
 /** Slightly different, preferred version of GetReader
  */
-TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString );
+TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const double RefMultCut=0 );
 
 
 #endif // __AJANALYSIS_HH

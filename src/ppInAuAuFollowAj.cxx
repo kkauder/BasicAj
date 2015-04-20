@@ -121,7 +121,9 @@ int main ( int argc, const char** argv ) {
   TChain* chain = new TChain( ChainName );
   chain->Add( InFileName );
   
-  TStarJetPicoReader reader = SetupReader( chain, TriggerName );
+  double RefMultCut = 0;
+  RefMultCut=AjParameters::AuAuRefMultCut;
+  TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   // TStarJetPicoDefinitions::SetDebugLevel(10);
 
   // Files and histograms
@@ -154,14 +156,12 @@ int main ( int argc, const char** argv ) {
   TH1D* SmallAJ_hi = new TH1D( "SmallAJ_hi","R=0.2, A_{J} for hard constituent jets", 40, -0.3, 0.9 );
   TH1D* SmallAJ_lo = new TH1D( "SmallAJ_lo","R=0.2, A_{J} for soft constituent jets", 40, -0.3, 0.9 );
 
-  TH2D* LargeUnmatchedhPtHi = new TH2D( "LargeUnmatchedhPtHi","R=0.4, p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* LargehPtHi = new TH2D( "LargehPtHi","R=0.4, p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* LargehPtLo = new TH2D( "LargehPtLo","R=0.4, p_{T}^{C} > 0.2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
     
   TH1D* LargehdphiHi = new TH1D( "LargehdphiHi","R=0.4, #Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* LargehdphiLo = new TH1D( "LargehdphiLo","R=0.4, #Delta#phi for soft constituent jets", 200, -2, 2 );
 
-  TH1D* LargeUnmatchedAJ_hi = new TH1D( "LargeUnmatchedAJ_hi","R=0.4, Unmatched A_{J} for hard constituent jets", 40, -0.3, 0.9 );
   TH1D* LargeAJ_hi = new TH1D( "LargeAJ_hi","R=0.4, A_{J} for hard constituent jets", 40, -0.3, 0.9 );
   TH1D* LargeAJ_lo = new TH1D( "LargeAJ_lo","R=0.4, A_{J} for soft constituent jets", 40, -0.3, 0.9 );
 
@@ -233,9 +233,9 @@ int main ( int argc, const char** argv ) {
 			SmallUnmatchedhPtHi,  SmallhPtHi, SmallhPtLo,
 			SmallhdphiHi, SmallhdphiLo,
 			SmallUnmatchedAJ_hi, SmallAJ_hi, SmallAJ_lo,
-			LargeUnmatchedhPtHi,  LargehPtHi, LargehPtLo,
+			LargehPtHi, LargehPtLo,
 			LargehdphiHi, LargehdphiLo,
-			LargeUnmatchedAJ_hi, LargeAJ_hi, LargeAJ_lo,
+			LargeAJ_hi, LargeAJ_lo,
 			UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
 			);  
   

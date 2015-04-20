@@ -47,8 +47,9 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[4] = {"PicoAj","ppAj.root","ppHT","~putschke/Data/ppHT/*.root"};
-  // const char *defaults[4] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/*.root"};
+  // const char *defaults[4] = {"PicoAj","ppAj.root","ppHT","~putschke/Data/ppHT/*.root"};
+  // const char *defaults[4] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/Clean809.root"};
+  const char *defaults[4] = {"PicoAj","test.root","HT","/Users/putschke/Data/Pico_Eflow/auau_ht_pico_20_R_0.4_ptcut_2.0_bin_36.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=4;
@@ -65,12 +66,19 @@ int main ( int argc, const char** argv ) {
   TString TriggerName = arguments.at(1);
 
   TChain* chain = new TChain( ChainName );
+  bool isAuAu=false;
   for (int i=2; i<arguments.size() ; ++i ) {
     chain->Add( arguments.at(i).data() );
+    if (arguments.at(i).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
   }
   
-  TStarJetPicoReader reader = SetupReader( chain, TriggerName );
 
+  double RefMultCut = 0;
+  if ( isAuAu ) RefMultCut=AjParameters::AuAuRefMultCut;
+  // WARNING: ~putschke/Data/Pico_Eflow/auau_ht* is cut off at 351!
+  TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
+  TStarJetPicoDefinitions::SetDebugLevel(0);
+    
   // Files and histograms
   // --------------------
   TFile* fout = new TFile( OutFileName, "RECREATE");
@@ -100,6 +108,19 @@ int main ( int argc, const char** argv ) {
   TH3D* UsedEventsHiPhiEtaPt=new TH3D("UsedEventsHiPhiEtaPt","UsedEventsHiPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA
   TH3D* UsedEventsLoPhiEtaPt=new TH3D("UsedEventsLoPhiEtaPt","UsedEventsLoPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA  
 
+  // Save results
+  // ------------
+  TTree* ResultTree=new TTree("ResultTree","Result Jets");
+  TLorentzVector j1, j2, jm1, jm2;
+  ResultTree->Branch("j1",&j1);
+  ResultTree->Branch("j2",&j2);
+  ResultTree->Branch("jm1",&jm1);
+  ResultTree->Branch("jm2",&jm2);
+  int eventid;
+  int runid;
+  ResultTree->Branch("eventid",&eventid, "eventid/i");
+  ResultTree->Branch("runid",&runid, "runid/i");
+
   // Save the full event and the trigger jet if this is pp and there's at least a 10 GeV jet.
   // ----------------------------------------------------------------------------------------
   // This is somewhat wasteful, we could instead read the original trees.
@@ -116,9 +137,14 @@ int main ( int argc, const char** argv ) {
     // See: https://root.cern.ch/phpBB3/viewtopic.php?p=18269
     TriggeredTree->Branch("FullEvent", &FullEvent );
     TriggeredTree->Branch("TriggerJet", &TriggerJet);
+    TriggeredTree->Branch("eventid",&eventid, "eventid/i");
+    TriggeredTree->Branch("runid",&runid, "runid/i");
+
   } 
   
+
   
+	      
   // Initialize analysis class
   // -------------------------
   AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
@@ -126,7 +152,7 @@ int main ( int argc, const char** argv ) {
 		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
 		  AjParameters::dPhiCut,
 		  UnmatchedhPtHi,  hPtHi, hPtLo,
-		  UnmatchedhdPtHi, hdPtHi, hdPtLo,  
+		  UnmatchedhdPtHi, hdPtHi, hdPtLo,
 		  hdphiHi, hdphiLo,
 		  UnmatchedAJ_hi, AJ_hi, AJ_lo,
 		  UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
@@ -150,7 +176,11 @@ int main ( int argc, const char** argv ) {
   try{
     while ( reader.NextEvent() ) {
       reader.PrintStatus(10);
+      TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
       
+      eventid = header->GetEventId();
+      runid   = header->GetRunId();
+
       // Load event
       // ----------
       container = reader.GetOutputContainer();
@@ -190,13 +220,13 @@ int main ( int argc, const char** argv ) {
       }
     
       // Save the full event for embedding if there's at least one 10 GeV jet
-      // --------------------------------------------------------------------
+      // ------------------------------------------------------------------
       if (SaveFullEvents){
 	FullEvent.Clear();
 	TriggerJet.Clear();
 	if ( AjA.Has10Gev )  { 
 	  for ( int i = 0; i<particles.size() ; ++i ){
-	    if ( particles.at(i).pt() >100 ) { 
+	    if ( particles.at(i).pt() >50 ) { 
 	      cerr << " =====> " <<particles.at(i).pt() << "  " << particles.at(i).phi() << "  " << particles.at(i).eta() << endl;  
 	    } 
 	    new (FullEvent[i])   TLorentzVector ( MakeTLorentzVector( particles.at(i) )  );
@@ -207,6 +237,62 @@ int main ( int argc, const char** argv ) {
 	  TriggeredTree->Fill();
 	} // has Trigger
       } // SaveFullEvents
+
+      // Save results
+      vector<PseudoJet> DiJetsHi = AjA.GetDiJetsHi();
+      vector<PseudoJet> DiJetsLo = AjA.GetDiJetsLo();
+
+      // Check for matching? yes, for now.
+      // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
+      // cout << " going in"  << endl;
+
+      // cout << reader.GetNOfCurrentEvent() << endl;
+      if ( reader.GetNOfCurrentEvent() == 43 && false) {
+	cout << "Jet 1:" << endl;
+	cout << "pt = " << DiJetsHi.at(0).pt() << endl;
+	cout << "eta = " << DiJetsHi.at(0).eta() << endl;
+	cout << "phi = " << DiJetsHi.at(0).phi() << endl;
+	// cout << "area = " << DiJetsHi.at(0).area() << endl;
+	cout << "Jet 2:" << endl;
+	cout << "pt = " << DiJetsHi.at(1).pt() << endl;
+	cout << "eta = " << DiJetsHi.at(1).eta() << endl;
+	cout << "phi = " << DiJetsHi.at(1).phi() << endl;
+	// cout << "area = " << DiJetsHi.at(1).area() << endl;
+	cout << endl;
+	cout << "|dPhi-pi|=" << fabs(DiJetsHi.at(0).phi() - DiJetsHi.at(1).phi()-TMath::Pi()) << endl;
+	cout << "|dPhi+pi|=" << fabs(DiJetsHi.at(0).phi() - DiJetsHi.at(1).phi()+TMath::Pi()) << endl;
+	
+	// for (int i=0; i< container->GetEntries() ; ++i ){
+	//   if ( container->Get(i)->Pt()>2 )
+	//     container->Get(i)->Print();
+	// }
+	// return -1;
+      }
+      
+      if ( DiJetsLo.size()==2 ){
+	// cout << "Event # = "<< reader.GetNOfCurrentEvent() << endl;
+	// cout << "Jet 1:" << endl;
+	// cout << "pt = " << DiJetsHi.at(0).pt() << endl;
+	// cout << "eta = " << DiJetsHi.at(0).eta() << endl;
+	// cout << "phi = " << DiJetsHi.at(0).phi() << endl;
+	// // cout << "area = " << DiJetsHi.at(0).area() << endl;
+	// cout << "Jet 2:" << endl;
+	// cout << "pt = " << DiJetsHi.at(1).pt() << endl;
+	// cout << "eta = " << DiJetsHi.at(1).eta() << endl;
+	// cout << "phi = " << DiJetsHi.at(1).phi() << endl;
+	// // cout << "area = " << DiJetsHi.at(1).area() << endl;
+	// cout << endl;
+	// if ( fabs( DiJetsHi.at(0).pt() - 21.785988 )< 0.00001 ) { cout << reader.GetNOfCurrentEvent() << endl; return -1;}
+  
+	// cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
+	j1 = MakeTLorentzVector( DiJetsHi.at(0) );
+	j2 = MakeTLorentzVector( DiJetsHi.at(1) );
+	jm1 = MakeTLorentzVector( DiJetsLo.at(0) );
+	jm2 = MakeTLorentzVector( DiJetsLo.at(1) );
+	ResultTree->Fill();
+      }
+      // cout << " Coming out"  << endl;
+	
     } // while NextEvent
   } catch ( exception& e) {
     cerr << "Caught " << e.what() << endl;
@@ -230,7 +316,11 @@ int main ( int argc, const char** argv ) {
 
   cout << "Wrote to " << fout->GetName() << endl;
   cout << "Bye." << endl;
+
+  // cout << "Aj->GetEntries() = " << AJ_hi->GetEntries() << endl;
+  // cout << "Unmatched GetEntries() = " << UnmatchedAJ_hi->GetEntries() << endl;
   
+  cout << "Aj->GetEntries() = " << UnmatchedAJ_hi->GetEntries() << endl;
   return 0;
   
 }

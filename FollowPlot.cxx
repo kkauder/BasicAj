@@ -18,8 +18,10 @@ void FollowPlot() {
   TLegend* legLo = new TLegend( 0.55, 0.7, 0.88, 0.88, "  p_{T}^{C}>0.2 GeV/c" );
   TLegend* legHi = new TLegend( 0.55, 0.7, 0.88, 0.88, "  p_{T}^{C}>2 GeV/c" );
 
-  TFile *fppLarge   = TFile::Open("AjResults/pythiaAj.root");
-  TFile *fppFollow  = TFile::Open("AjResults/pythiaFollowAj.root");
+  // TFile *fppLarge   = TFile::Open("AjResults/pythiaAj.root");
+  // TFile *fppFollow  = TFile::Open("AjResults/pythiaFollowAj.root");
+  TFile *fppLarge   = TFile::Open("AjResults/pythiaAj_qq.root");
+  TFile *fppFollow  = TFile::Open("AjResults/pythiaFollowAj_qq.root");
   // TFile *fppLarge   = TFile::Open("AjResults/pythiaAj_gg.root");
   // TFile *fppFollow  = TFile::Open("AjResults/pythiaFollowAj_gg.root");
   // TFile *fppLarge   = TFile::Open("AjResults/ppAj.root");
@@ -32,7 +34,7 @@ void FollowPlot() {
   // --------------------------------------------------
   TH1D* origHi=(TH1D*)  fppLarge->Get( "UnmatchedAJ_hi");
   TH1D* SmallHi=(TH1D*) fppFollow->Get( "SmallUnmatchedAJ_hi");
-  TH1D* LargeHi=(TH1D*) fppFollow->Get( "LargeUnmatchedAJ_hi");
+  TH1D* LargeHi=(TH1D*) fppFollow->Get( "LargeAJ_hi");
   origHi->Rebin(2);
   origHi->SetLineColor( kGray+2 );  origHi->SetLineWidth( 2 );  origHi->SetTitle( ";A_{J};fraction" );  origHi->Scale(1./origHi->Integral());
   SmallHi->Rebin(2);

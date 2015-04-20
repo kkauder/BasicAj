@@ -242,13 +242,13 @@ struct sort_IntDoubleByDouble {
     return left.second < right.second;
   }
 };
-
-
 /** Determines whether two vector sets are matched 1 to 1.
     Actual Dijet selector
     \param dPhi: Dijet acceptance angle &Delta;&phi;
  */
 fastjet::Selector SelectorDijets( const double dPhi=0.4);
+
+
 
 // =============================================================================
 /** Determines whether two vector sets are matched 1 to 1.

@@ -102,7 +102,8 @@ int main () {
 
     TChain* chain = new TChain( ChainName );
     chain->Add( InFileName );
-    TStarJetPicoReader reader = SetupReader( chain, TriggerName );
+    double RefMultCut = 0;
+    TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
     
     // Output Histos
     // -------------

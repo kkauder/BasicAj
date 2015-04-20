@@ -44,7 +44,7 @@
 class AjAnalysis {
 private :
 
-  double R; ///< jet radius
+  double R;              ///< Resolution parameter ("jet radius")
   double jet_ptmin;      ///< minimum jet p<SUB>T</SUB>
   double jet_ptmax;      ///< maximum jet p<SUB>T</SUB>
   double LeadPtMin;      ///< leading jet minimum p<SUB>T</SUB>
@@ -76,9 +76,11 @@ private :
   fastjet::GhostedAreaSpec area_spec;      ///< ghosted area specification
   fastjet::AreaDefinition area_def;        ///< jet area definition
 
-
   std::vector<fastjet::PseudoJet> JAhiResult;  ///< Unaltered clustering result with high pT constituents
   std::vector<fastjet::PseudoJet> JAloResult;  ///< Unaltered clustering result with low pT constituents
+
+  std::vector<fastjet::PseudoJet> DiJetsHi;    ///< Dijet result with high pT constituents
+  std::vector<fastjet::PseudoJet> DiJetsLo;    ///< Dijet result with low pT constituents
 
   // Histos to fill
   // --------------
@@ -132,7 +134,7 @@ public:
 	       double max_track_rap = 1.0, double PtConsLo=0.2, double PtConsHi=2.0,
 	       double dPhiCut = 0.4,
 	       TH2D* UnmatchedhPtHi=0, TH2D* hPtHi=0, TH2D* hPtLo=0,  
-	       TH1D* UnmatchedhdPtH=0, TH1D* hdPtHi=0, TH1D* hdPtLo=0,
+	       TH1D* UnmatchedhdPtHi=0, TH1D* hdPtHi=0, TH1D* hdPtLo=0,
 	       TH1D* hdphiHi=0, TH1D* hdphiLo=0,
 	       TH1D* UnmatchedAJ_hi=0, TH1D* AJ_hi=0, TH1D* AJ_lo=0,
 	       TH3D* UsedEventsHiPhiEtaPt=0, TH3D* UsedEventsLoPhiEtaPt=0
@@ -218,17 +220,25 @@ public:
   /// Handle to unaltered clustering result with low pT constituents
   inline std::vector<fastjet::PseudoJet> GetJAloResult() {return JAloResult; };
 
+
+  /// Handle to Dijet result with high pT constituents
+  inline std::vector<fastjet::PseudoJet> GetDiJetsHi() {return DiJetsHi; };
+  /// Handle to Dijet result with low pT constituents
+  inline std::vector<fastjet::PseudoJet> GetDiJetsLo() {return DiJetsLo; };
+
 };  
 
 /** Helper to perform the TStarJetPicoReader initialization
  */
 TStarJetPicoReader GetReader ( TString ChainPattern="~putschke/Data/Pico_ppHT/*.root", 
 			       TString TriggerString="ppHT",
-			       TString ChainName="JetTree" );
+			       TString ChainName="JetTree",
+			       const double RefMultCut=0
+			       );
 
 /** Slightly different, preferred version of GetReader
  */
-TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString );
+TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const double RefMultCut=0 );
 
 
 #endif // __AJANALYSIS_HH
