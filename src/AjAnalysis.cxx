@@ -13,23 +13,13 @@ AjAnalysis::AjAnalysis ( double R,
 			 double jet_ptmin, double jet_ptmax,
 			 double LeadPtMin, double SubLeadPtMin, 
 			 double max_track_rap, double PtConsLo, double PtConsHi,
-			 double dPhiCut,
-			 TH2D* UnmatchedhPtHi,  TH2D* hPtHi,  TH2D* hPtLo,
-			 TH1D* UnmatchedhdPtHi, TH1D* hdPtHi, TH1D* hdPtLo,  
-			 TH1D* hdphiHi, TH1D* hdphiLo,
-			 TH1D* UnmatchedAJ_hi, TH1D* AJ_hi, TH1D* AJ_lo,
-			 TH3D* UsedEventsHiPhiEtaPt, TH3D* UsedEventsLoPhiEtaPt 
+			 double dPhiCut
 			 )
   : R(R),
     jet_ptmin(jet_ptmin), jet_ptmax(jet_ptmax),
     LeadPtMin(LeadPtMin), SubLeadPtMin(SubLeadPtMin),
     max_track_rap (max_track_rap), PtConsLo (PtConsLo), PtConsHi (PtConsHi),
-    dPhiCut (dPhiCut),
-    UnmatchedhPtHi (UnmatchedhPtHi),  hPtHi (hPtHi),  hPtLo (hPtLo),
-    UnmatchedhdPtHi (UnmatchedhdPtHi),  hdPtHi (hdPtHi),  hdPtLo (hdPtLo),  
-    hdphiHi (hdphiHi), hdphiLo (hdphiLo),
-    UnmatchedAJ_hi (UnmatchedAJ_hi), AJ_hi(AJ_hi), AJ_lo (AJ_lo),
-    UsedEventsHiPhiEtaPt (UsedEventsHiPhiEtaPt), UsedEventsLoPhiEtaPt (UsedEventsLoPhiEtaPt)
+    dPhiCut (dPhiCut)
 {
   // derived rapidity cuts
   // ---------------------
@@ -77,7 +67,14 @@ AjAnalysis::AjAnalysis ( double R,
 
 // Main analysis method
 // ====================
-int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch ){
+int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch,
+				 Double_t EventClassifier,
+				 TH2D* UnmatchedAJ_hi, TH2D* AJ_hi, TH2D* AJ_lo,
+
+				 TH2D* UnmatchedhPtHi,  TH2D* hPtHi,  TH2D* hPtLo,
+				 TH1D* UnmatchedhdPtHi, TH1D* hdPtHi, TH1D* hdPtLo,  
+				 TH1D* hdphiHi, TH1D* hdphiLo
+				 ){
   DiJetsHi.clear();
   DiJetsLo.clear();
   Has10Gev=false;
@@ -86,14 +83,6 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   // ---------------------------------------
   std::vector<fastjet::PseudoJet> pLo = slo( particles );
   std::vector<fastjet::PseudoJet> pHi = shi( particles );
-
-  // Save for QA
-  // -----------
-  for ( int i = 0; i< pHi.size(); ++i )
-    UsedEventsHiPhiEtaPt->Fill( JetAnalyzer::phimod2pi( pHi.at(i).phi() ), pHi.at(i).eta(),pHi.at(i).pt() );
-  
-  for ( int i = 0; i< pLo.size(); ++i )
-    UsedEventsLoPhiEtaPt->Fill( JetAnalyzer::phimod2pi( pLo.at(i).phi()) , pLo.at(i).eta(),pLo.at(i).pt() );
   
   // find high constituent pT jets
   // -----------------------------
@@ -123,7 +112,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   }
 
   // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
-  UnmatchedAJ_hi->Fill ( CalcAj( DiJetsHi ) );
+  UnmatchedAJ_hi->Fill ( CalcAj( DiJetsHi ), EventClassifier );
   UnmatchedhPtHi->Fill ( DiJetsHi.at(0).pt() , DiJetsHi.at(1).pt());  
   UnmatchedhdPtHi->Fill ( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());  
       
@@ -185,8 +174,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   
   // And we're done! Calculate A_J
   // -----------------------------
-  AJ_hi->Fill( CalcAj( DiJetsHi ) );
-  AJ_lo->Fill( CalcAj( DiJetsLo ) );
+  AJ_hi->Fill( CalcAj( DiJetsHi ), EventClassifier );
+  AJ_lo->Fill( CalcAj( DiJetsLo ), EventClassifier );
 
   // Also fill some diagnostic histos
   // -----------------------------

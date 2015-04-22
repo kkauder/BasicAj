@@ -20,6 +20,7 @@
 #include <tBranch.h>
 #include <TMath.h>
 #include <TRandom.h>
+#include <TSystem.h>
 
 #include "TClonesArray.h"
 
@@ -44,15 +45,35 @@ using namespace fastjet;
     The idea behind this two step approach is that we avoid jumping at random through the AuAu chain,
     the tree gets read sequentially, and exactly twice.
 */
-int main () {
+int main ( int argc, const char** argv ) {
 
   // How many times to use every pp jet
-  // ----------------------------------
-  Int_t nMix=3;
+  // THIS SHOULD BE ONE IN THE FINAL VERSION!!
+  // -----------------------------------------
+  Int_t nMix=6;
+  if ( nMix !=1 ){
+    cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
+    cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
+  }
+  
+  // const char *defaults[4] = {"ppInAuAuAj","351ppInAuAuAj.root","MB","Data/AuAuMB_0_20/*.root"}; // CUT OFF at refmult<351
+  const char *defaults[4] = {"ppInAuAuAj","ppInAuAuAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"}; // CUT OFF at refmult<351
+  if ( argc==1 ) {
+    argv=defaults;
+    argc=4;
+  }
+  // Throw arguments in a vector
+  // ---------------------------
+  vector<string> arguments(argv + 1, argv + argc);
 
   // Load pp Jets
   // ------------
   TString ppAjName = "AjResults/ppAj.root";
+  if ( AjParameters::R==0.2 ){
+    ppAjName.ReplaceAll ( gSystem->BaseName(ppAjName), TString ("R0.2_")+ gSystem->BaseName(ppAjName));
+  }
+
+    
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
   assert ( ppJets->GetEntries()>0 && "Something went wrong loading the pp jets.");
@@ -84,24 +105,33 @@ int main () {
   // Load and set up AuAu tree
   // --------------------
   TString ChainName  = "JetTree";
-  TString TriggerName = "MB";
-  TString InFileName = "Data/AuAuMB_0_20/*.root";
-
+  TString TriggerName = arguments.at(1);
   TChain* chain = new TChain( ChainName );
-  chain->Add( InFileName );
-  
-  int RefMultCut=AjParameters::AuAuRefMultCut;
+  for (int i=2; i<arguments.size() ; ++i ) {
+    chain->Add( arguments.at(i).data() );
+  }
+
+  // int RefMultCut=AjParameters::AuAuRefMultCut;
+  int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   // TStarJetPicoDefinitions::SetDebugLevel(10);
 
   // Files and histograms
   // --------------------
-  TString OutFileName = "AjResults/ppInAuAuAj.root";
+  TString OutFileName = arguments.at(0);
+  if ( AjParameters::R==0.2 ){
+    OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("R0.2_")+ gSystem->BaseName(OutFileName));
+  }
+
   TFile* fout = new TFile( OutFileName, "RECREATE");
   
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
   
+  TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+
   TH2D* UnmatchedhPtHi = new TH2D( "UnmatchedhPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtHi = new TH2D( "hPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtLo = new TH2D( "hPtLo","p_{T}^{C} > 0.2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
@@ -112,13 +142,6 @@ int main () {
 
   TH1D* hdphiHi = new TH1D( "hdphiHi","#Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* hdphiLo = new TH1D( "hdphiLo","#Delta#phi for soft constituent jets", 200, -2, 2 );
-
-  TH1D* UnmatchedAJ_hi = new TH1D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets", 40, -0.3, 0.9 );
-  TH1D* AJ_hi = new TH1D( "AJ_hi","A_{J} for hard constituent jets", 40, -0.3, 0.9 );
-  TH1D* AJ_lo = new TH1D( "AJ_lo","A_{J} for soft constituent jets", 40, -0.3, 0.9 );
-
-  TH3D* UsedEventsHiPhiEtaPt=new TH3D("UsedEventsHiPhiEtaPt","UsedEventsHiPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA
-  TH3D* UsedEventsLoPhiEtaPt=new TH3D("UsedEventsLoPhiEtaPt","UsedEventsLoPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA  
   
   // Helpers
   // -------
@@ -177,13 +200,8 @@ int main () {
   AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
 		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
-		  AjParameters::dPhiCut,
-		  UnmatchedhPtHi,  hPtHi, hPtLo,  
-		  UnmatchedhdPtHi, hdPtHi, hdPtLo,
-		  hdphiHi, hdphiLo,
-		  UnmatchedAJ_hi, AJ_hi, AJ_lo,
-		  UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
-		  );
+		  AjParameters::dPhiCut
+		  );  
 
   // Reset the reader
   // ----------------
@@ -191,12 +209,18 @@ int main () {
   reader.Init(nEvents);
   
   Long64_t nJetsUsed=0;
+  double refmult; // Really an int, but may change if using refmultcorr
   while ( reader.NextEvent() ) {
     reader.PrintStatus(10);      
     
     // Load event
     // ----------
     container = reader.GetOutputContainer();
+
+    // event info
+    // ----------
+    TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
+    refmult=header->GetGReferenceMultiplicity();
 
     // Make AuAu vector
     // ----------------
@@ -216,6 +240,7 @@ int main () {
       }
     }
 
+    
     // And run analysis individually for each of these pp events
     // ---------------------------------------------------------- 
     for ( vector<int>::iterator jit=JetIndices.begin(); jit!=JetIndices.end(); ++ jit ){
@@ -229,15 +254,15 @@ int main () {
       // Run analysis
       // ------------
       int ret;
-      ret =AjA.AnalyzeAndFill( particles );
+      ret =AjA.AnalyzeAndFill( particles, 0,refmult,
+      // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
+			      UnmatchedAJ_hi, AJ_hi, AJ_lo,
+			      
+			      UnmatchedhPtHi,  hPtHi, hPtLo,
+			      UnmatchedhdPtHi, hdPtHi, hdPtLo,
+			      hdphiHi, hdphiLo
+			      );
       // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)) ); // Force matching to original trigger
-      // try{
-      // 	// ret =AjA.AnalyzeAndFill( particles );
-      // 	ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)) ); // Force matching to original trigger
-      // } catch ( exception& e) {
-      // 	cerr << "Caught " << e.what() << endl;
-      // 	return -1;
-      // }
 
       switch ( ret ){
       case 3 : nMatchedDijets++;
@@ -259,11 +284,6 @@ int main () {
   } // reader.NextEvent()
   cout << "##################################################################" << endl;
 
-
-  // Scale per used pp event
-  // ------------------------
-  UsedEventsHiPhiEtaPt->Scale( 1./nJetsUsed ); 
-
   // Close up shop
   // -------------
   fout->Write();
@@ -277,6 +297,11 @@ int main () {
   cout << "Wrote to " << fout->GetName() << endl;
   cout << "Bye." << endl;
   
+  if ( nMix !=1 ){
+    cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
+    cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
+  }
+
   return 0;
   
 }

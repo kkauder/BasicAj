@@ -10,7 +10,7 @@
 #define AJPARAMETERS_HH
 
 namespace AjParameters{
-  const double R = 0.4;             ///< Resolution parameter ("radius").
+  const double R = 0.2;             ///< Resolution parameter ("radius").
   const double jet_ptmin = 10.0;    ///< Min jet pT
   // const double jet_ptmax = 100.0;   ///< Max jet pT
   const double jet_ptmax = 1000.0;   ///< DEBUG
@@ -24,7 +24,7 @@ namespace AjParameters{
   const double PtConsHi=2.0;        ///< High constituent pT cut  
 
   const double VzCut=30;            ///< Vertex z 
-  const double AuAuRefMultCut=268;  ///< Reference multiplicity cut for Au+Au data
+  // const double AuAuRefMultCut=268;  ///< Reference multiplicity cut for Au+Au data -- NOT USED ANYMORE
   const double VzDiffCut=6;         ///< |Vz(TPC) - Vz(VPD)|
 
   const double DcaCut=1.0;          ///< track dca

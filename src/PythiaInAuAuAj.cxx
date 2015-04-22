@@ -1,7 +1,7 @@
 /** @file PythiaInAuAuAj.cxx
     @author Kolja Kauder
     @version Revision 0.1
-    @brief Similar to ppInAuAuAj, but use pythia events
+    @brief Similar to ppInAuAuAj, but use pythia events - CURRENTLY NEEDS REFMULT FIX
     @date Mar 04, 2015
 */
 
@@ -93,7 +93,7 @@ int main () {
   TChain* chain = new TChain( ChainName );
   chain->Add( InFileName );
   
-  int RefMultCut=AjParameters::AuAuRefMultCut;
+  int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   // TStarJetPicoDefinitions::SetDebugLevel(10);
 
@@ -105,6 +105,10 @@ int main () {
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
   
+  TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+
   TH2D* UnmatchedhPtHi = new TH2D( "UnmatchedhPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtHi = new TH2D( "hPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtLo = new TH2D( "hPtLo","p_{T}^{C} > 0.2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
@@ -112,16 +116,9 @@ int main () {
   TH1D* UnmatchedhdPtHi = new TH1D( "UnmatchedhdPtHi","#Delta p_{T} for unmatched hard constituent jets", 120, -10, 50 );
   TH1D* hdPtHi = new TH1D( "hdPtHi","#Delta p_{T} for hard constituent jets", 120, -10, 50 );
   TH1D* hdPtLo = new TH1D( "hdPtLo","#Delta p_{T} for soft constituent jets", 120, -10, 50 );
-    
+
   TH1D* hdphiHi = new TH1D( "hdphiHi","#Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* hdphiLo = new TH1D( "hdphiLo","#Delta#phi for soft constituent jets", 200, -2, 2 );
-
-  TH1D* UnmatchedAJ_hi = new TH1D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets", 40, -0.3, 0.9 );
-  TH1D* AJ_hi = new TH1D( "AJ_hi","A_{J} for hard constituent jets", 40, -0.3, 0.9 );
-  TH1D* AJ_lo = new TH1D( "AJ_lo","A_{J} for soft constituent jets", 40, -0.3, 0.9 );
-
-  TH3D* UsedEventsHiPhiEtaPt=new TH3D("UsedEventsHiPhiEtaPt","UsedEventsHiPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA
-  TH3D* UsedEventsLoPhiEtaPt=new TH3D("UsedEventsLoPhiEtaPt","UsedEventsLoPhiEtaPt",20, -pi, pi, 20, -1, 1, 100, 0.0, 10); // QA  
   
   // Helpers
   // -------
@@ -179,13 +176,8 @@ int main () {
   AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
 		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
-		  AjParameters::dPhiCut,
-		  UnmatchedhPtHi,  hPtHi, hPtLo,  
-		  UnmatchedhdPtHi, hdPtHi, hdPtLo,
-		  hdphiHi, hdphiLo,
-		  UnmatchedAJ_hi, AJ_hi, AJ_lo,
-		  UsedEventsHiPhiEtaPt, UsedEventsLoPhiEtaPt
-		  );
+		  AjParameters::dPhiCut
+		  );  
 
   // Reset the reader
   // ----------------
@@ -193,6 +185,7 @@ int main () {
   reader.Init(nEvents);
   
   Long64_t nJetsUsed=0;
+  double refmult; // Really an int, but may change if using refmultcorr
   while ( reader.NextEvent() ) {
     reader.PrintStatus(10);      
     
@@ -200,6 +193,11 @@ int main () {
     // ----------
     container = reader.GetOutputContainer();
 
+    // event info
+    // ----------
+    TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
+    refmult=header->GetGReferenceMultiplicity();
+    
     // Make AuAu vector
     // ----------------
     AuAuparticles.clear();
@@ -230,7 +228,13 @@ int main () {
       
       // Run analysis
       // ------------
-      int ret =AjA.AnalyzeAndFill( particles );
+      int ret =AjA.AnalyzeAndFill( particles, 0,refmult, 
+				   UnmatchedAJ_hi, AJ_hi, AJ_lo,
+				   
+				   UnmatchedhPtHi,  hPtHi, hPtLo,
+				   UnmatchedhdPtHi, hdPtHi, hdPtLo,
+				   hdphiHi, hdphiLo
+				   );
       
       switch ( ret ){
       case 3 : nMatchedDijets++;
@@ -251,11 +255,6 @@ int main () {
     } // jit
   } // reader.NextEvent()
   cout << "##################################################################" << endl;
-
-
-  // Scale per used pythia event
-  // ------------------------
-  UsedEventsHiPhiEtaPt->Scale( 1./nJetsUsed ); 
 
   // Close up shop
   // -------------

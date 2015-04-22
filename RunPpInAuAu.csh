@@ -3,18 +3,32 @@
 # make sure executable exists
 make bin/ppInAuAuAj || exit
 
-# Logfiles. Thanks cshell for this "elegant" syntax to split err and out
-set LogFile     = logs/ppInAuAuAj.out
-set ErrFile     = logs/ppInAuAuAj.err
+# split into chunks
+set base = Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root
+foreach input ( ${base}* )
+    # arguments
+    set OutBase=`basename $input | sed 's/.root//g'`
+    set OutName    = AjResults/ppInAuAuAj_${OutBase}.root
+    set TriggerName = MB
+    set Files      = ${input}
 
-echo "Logging output to " $LogFile
-echo "Logging errors to " $ErrFile
+    # Logfiles. Thanks cshell for this "elegant" syntax to split err and out
+    set LogFile     = logs/ppInAuAuAj_${OutBase}.out
+    set ErrFile     = logs/ppInAuAuAj_${OutBase}.err
 
-set command = "./bin/ppInAuAuAj"
+    echo "Logging output to " $LogFile
+    echo "Logging errors to " $ErrFile
 
-# Run in the background
-# echo "Executing " $command
-( $command > $LogFile ) >& $ErrFile &
+    set command = "./bin/ppInAuAuAj $OutName $TriggerName $Files"
+
+    # Run in the background
+    echo "Executing " $command
+    ( $command > $LogFile ) >& $ErrFile &
+end
+
+
+
+
 
 
 

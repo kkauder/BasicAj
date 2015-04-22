@@ -64,12 +64,16 @@ $(BDIR)/%  : $(ODIR)/%.o
 ###############################################################################
 ############################# Main Targets ####################################
 ###############################################################################
-all    : $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj $(BDIR)/FollowPythiaAj \
-	 $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  $(BDIR)/ppInMcAj \
-	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj $(BDIR)/PythiaInMcAj \
+all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
+	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj  \
 	 $(BDIR)/SimpleTree \
+	 $(BDIR)/MakeSmallerTrees \
 	 lib/libMyJetlib.a \
 	 doxy
+
+# 	 $(BDIR)/ppInMcAj $(BDIR)/PythiaInMcAj \
+# 	 $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj $(BDIR)/FollowPythiaAj \
+
 
 # $(BDIR)/AreaTest : 	 $(ODIR)/AreaTest.o
 # $(BDIR)/AreaTest.o : 	 $(SDIR)/AreaTest.cxx
@@ -95,6 +99,10 @@ $(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
 $(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
 $(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
 $(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+
+
+# helper
+$(BDIR)/MakeSmallerTrees	: $(ODIR)/MakeSmallerTrees.o	 	lib/libMyJetlib.a
 
 
 ###############################################################################
