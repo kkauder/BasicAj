@@ -19,7 +19,8 @@ AjAnalysis::AjAnalysis ( double R,
     jet_ptmin(jet_ptmin), jet_ptmax(jet_ptmax),
     LeadPtMin(LeadPtMin), SubLeadPtMin(SubLeadPtMin),
     max_track_rap (max_track_rap), PtConsLo (PtConsLo), PtConsHi (PtConsHi),
-    dPhiCut (dPhiCut)
+    dPhiCut (dPhiCut),
+    pJAhi (0), pJAlo(0), pOtherJAlo(0)
 {
   // derived rapidity cuts
   // ---------------------
@@ -54,14 +55,28 @@ AjAnalysis::AjAnalysis ( double R,
   // ghosts should go up to the acceptance of the detector or
   // (with infinite acceptance) at least 2R beyond the region
   // where you plan to investigate jets.
-  fastjet::GhostedAreaSpec area_spec( ghost_maxrap );
-  fastjet::AreaDefinition  area_def(fastjet::active_area, area_spec);
+  area_spec = fastjet::GhostedAreaSpec( ghost_maxrap, AjParameters::ghost_repeat, AjParameters::ghost_area );
+  // // DEBUG
+  // // area_spec.set_grid_scatter(0);
+  // // area_spec.set_pt_scatter(0);
+  area_def = fastjet::AreaDefinition(fastjet::active_area_explicit_ghosts, area_spec);
+
+  // DEBUG
+  // area_spec = fastjet::VoronoiAreaSpec( 0.9 );
+  // area_def = fastjet::AreaDefinition( fastjet::VoronoiAreaSpec( 0.9 ) );
   
   std::cout << " ################################################### " << std::endl;
+  std::cout << "Leading jet above " << LeadPtMin << std::endl;
+  std::cout << "Sub-Leading jet above " << SubLeadPtMin << std::endl;
   std::cout << "Clustered with " << jet_def.description() << std::endl;
   std::cout << "Area Spec " << area_spec.description() << std::endl;
   std::cout << "Area Def  " << area_def.description() << std::endl;
   std::cout << " ################################################### " << std::endl;
+
+  // std::cout << slo.applies_jet_by_jet() << std::endl;
+  // std::cout << shi.applies_jet_by_jet() << std::endl;
+  // std::cout << sjet.applies_jet_by_jet() << std::endl;  
+  // std::cout << " ################################################### " << std::endl;
 
 }
 
@@ -73,21 +88,47 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
 
 				 TH2D* UnmatchedhPtHi,  TH2D* hPtHi,  TH2D* hPtLo,
 				 TH1D* UnmatchedhdPtHi, TH1D* hdPtHi, TH1D* hdPtLo,  
-				 TH1D* hdphiHi, TH1D* hdphiLo
+				 TH1D* hdphiHi, TH1D* hdphiLo,
+
+				 TH2D* OtherAJ_lo, TH2D* OtherLeadPtLoss_lo, TH2D* OtherSubLeadPtLoss_lo, float OtherR,
+
+				 TH2D* hdPtLead, TH2D* hdPtSubLead,
+				 TH2D* SpecialhdPtLead, TH2D* SpecialhdPtSubLead
 				 ){
+
+  // We want to hold onto the jetanalyzer objects, so they're created dynamically
+  // Need to delete them by hand
+  if (pJAhi){    delete pJAhi;    pJAhi=0;  }
+  if (pJAlo){    delete pJAlo;    pJAlo=0;  }
+  if ( pOtherJAlo ){    delete pOtherJAlo; pOtherJAlo=0;  }
+
   DiJetsHi.clear();
   DiJetsLo.clear();
+  OtherDiJetsLo.clear();
+  
+  pLo.clear();
+  pHi.clear();
+
   Has10Gev=false;
 
   // Select particles to perform analysis on
   // ---------------------------------------
-  std::vector<fastjet::PseudoJet> pLo = slo( particles );
-  std::vector<fastjet::PseudoJet> pHi = shi( particles );
+  pLo = slo( particles );
+  pHi = shi( particles );
   
+  // Background selector
+  // -------------------
+  // It is unclear to me why, but it leads to segfaults if only a once-initialized member :-/
+  fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( max_rap ) * (!fastjet::SelectorNHardest(2));
+  // selector_bkgd=fastjet::SelectorAbsRapMax( max_rap );
+
   // find high constituent pT jets
   // -----------------------------
-  JetAnalyzer JAhi ( pHi, jet_def ); // NO background subtraction
+  pJAhi = new JetAnalyzer( pHi, jet_def ); // NO background subtraction
+  JetAnalyzer& JAhi = *pJAhi;
+  // std::cout << 0 << std::endl;
   JAhiResult = fastjet::sorted_by_pt( sjet ( JAhi.inclusive_jets() ) );
+  // std::cout << 1 << std::endl;
   
   if ( JAhiResult.size() < 1 )                 {     return 0; }
   if ( JAhiResult.at(0).pt() > 10 )            { Has10Gev=true; }
@@ -104,7 +145,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
     return 0;
   }
   assert ( DiJetsHi.size() == 2 && "SelectorDijets returned impossible number of Dijets." );  
-
+  
   // FOR EMBEDDING: At least one matched to the reference jet?
   // ---------------------------------------------------------
   if ( ToMatch ){
@@ -118,10 +159,13 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
       
   // find corresponding jets with soft constituents
   // ----------------------------------------------
-  JetAnalyzer JAlo( pLo, jet_def, area_def ); // WITH background subtraction
+  pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
+  JetAnalyzer& JAlo = *pJAlo;
+  // std::cout << 2 << std::endl;
   fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
   JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
-  
+  // std::cout << 3 << std::endl;
+
   // Old logic: Run the same logic on JAloResult, then reject the event if DiJetsLo is not matched to DiJetsHi
   // std::vector<fastjet::PseudoJet> DiJetsLo = SelectorDijets ( dPhiCut ) ( sjet ( JAloResult)  );
   // if ( DiJetsLo.size() == 0 ) {
@@ -182,18 +226,56 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   hdphiHi->Fill( JetAnalyzer::phimod2pi( DiJetsHi.at(0).phi() - DiJetsHi.at(1).phi() - TMath::Pi()) );
   hdphiLo->Fill( JetAnalyzer::phimod2pi( DiJetsLo.at(0).phi() - DiJetsLo.at(1).phi() - TMath::Pi()) );
   
+  if ( hdPtLead )    hdPtLead->Fill( DiJetsLo.at(0).pt() - DiJetsHi.at(0).pt(), EventClassifier );
+  if ( hdPtSubLead ) hdPtSubLead->Fill( DiJetsLo.at(1).pt() - DiJetsHi.at(1).pt(), EventClassifier );
+
+  if ( CalcAj( DiJetsHi )>0.25 ){
+    if ( SpecialhdPtLead )    SpecialhdPtLead->Fill( DiJetsLo.at(0).pt() - DiJetsHi.at(0).pt(), EventClassifier );
+    if ( SpecialhdPtSubLead ) SpecialhdPtSubLead->Fill( DiJetsLo.at(1).pt() - DiJetsHi.at(1).pt(), EventClassifier );
+  }
+
   hPtHi->Fill( DiJetsHi.at(0).pt(), DiJetsHi.at(1).pt());
   hPtLo->Fill( DiJetsLo.at(0).pt(), DiJetsLo.at(1).pt());
   hdPtHi->Fill( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());
   hdPtLo->Fill( DiJetsLo.at(0).pt() - DiJetsLo.at(1).pt());
 
-  // // cleanup
-  // // -------
-  // delete JAhi;
-  // delete JAlo;
-  // pLo.clear();
-  // pHi.clear();
+  // If requested, also see how much is recovered in a other R
+  // -----------------------------------------------------------
+  if ( OtherAJ_lo ){
+    // need new jet definition
+    other_jet_def = fastjet::JetDefinition( fastjet::antikt_algorithm, OtherR);
+      
+    // find jets and subtract background
+    pOtherJAlo = new JetAnalyzer( pLo, other_jet_def, area_def, selector_bkgd );
+    JetAnalyzer& OtherJAlo = *pOtherJAlo;
 
+    fastjet::Subtractor* OtherBackgroundSubtractor =  OtherJAlo.GetBackgroundSubtractor();
+    OtherJAloResult = fastjet::sorted_by_pt( (*OtherBackgroundSubtractor)( OtherJAlo.inclusive_jets() ) );
+
+    // Unclear whether to match in R or OtherR. Using R for now.
+    fastjet::Selector SelectClose = fastjet::SelectorCircle( R );
+    SelectClose.set_reference( DiJetsHi.at(0) );
+    std::vector<fastjet::PseudoJet> OtherMatchedToLead = sorted_by_pt( SelectClose( OtherJAloResult ) );
+    if ( OtherMatchedToLead.size() == 0 ) {
+      std::cerr << "OTHER R PROBLEM: SelectorClose returned no match to leading jet." << std::endl;
+      return 3;
+    }
+    OtherDiJetsLo.push_back ( OtherMatchedToLead.at(0) );
+    
+    SelectClose.set_reference( DiJetsHi.at(1) );
+    std::vector<fastjet::PseudoJet> OtherMatchedToSubLead = sorted_by_pt(SelectClose( OtherJAloResult ));
+    if ( OtherMatchedToSubLead.size() == 0 ) {
+      std::cerr << "OTHER R PROBLEM: SelectorClose returned no match to sub-leading jet." << std::endl;
+      return 3;
+    }
+    OtherDiJetsLo.push_back ( OtherMatchedToSubLead.at(0) );
+
+    // And fill
+    OtherAJ_lo->Fill( CalcAj( OtherDiJetsLo ), EventClassifier );
+    OtherLeadPtLoss_lo->Fill( DiJetsLo.at(0).pt() - OtherDiJetsLo.at(0).pt() , EventClassifier );
+    OtherSubLeadPtLoss_lo->Fill( DiJetsLo.at(1).pt() - OtherDiJetsLo.at(1).pt() , EventClassifier );
+
+  }
 
   return 3;
   
@@ -215,6 +297,9 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   evCuts->SetVertexZCut (AjParameters::VzCut);
   evCuts->SetRefMultCut ( RefMultCut );
   evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
+
+  evCuts->SetMaxEventPtCut ( AjParameters::MaxEventPtCut );
+  evCuts->SetMaxEventEtCut ( AjParameters::MaxEventEtCut );
   
   // Tracks cuts
   TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();

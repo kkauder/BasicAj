@@ -50,6 +50,28 @@ int main () {
   // ----------------------------------
   Int_t nMix=3;
 
+  // File name
+  // ---------
+  TString OutFileName = "AjResults/PythiaInAuAuAj.root";
+  TFile* fout = new TFile( OutFileName, "RECREATE");
+
+  // jet resolution parameter
+  // ------------------------
+  float R = 0.4;
+  // Follow to different R
+  // float OtherR = 0.2;   // will be set to 0.4 if we trigger on 0.2, i.e., we can follow in either direction
+  if ( OutFileName.Contains ("R0.2") ){
+    R=0.2;
+    // OtherR=0.4;    
+  }
+
+  // soft constituent cut
+  // --------------------
+  float PtConsLo=0.2;
+  if ( OutFileName.Contains ("Pt1") ){
+    PtConsLo=1.0;
+  }
+
   gRandom->SetSeed(1);
 
   // Load pythia Jets
@@ -97,11 +119,8 @@ int main () {
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   // TStarJetPicoDefinitions::SetDebugLevel(10);
 
-  // Files and histograms
-  // --------------------
-  TString OutFileName = "AjResults/PythiaInAuAuAj.root";
-  TFile* fout = new TFile( OutFileName, "RECREATE");
-  
+  // Histograms
+  // ----------  
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
   
@@ -173,9 +192,12 @@ int main () {
 
   // Initialize analysis class
   // -------------------------
-  AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
+  AjAnalysis AjA( R,
+		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
-		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
+		  AjParameters::max_track_rap,
+		  PtConsLo,
+		  AjParameters::PtConsHi,
 		  AjParameters::dPhiCut
 		  );  
 

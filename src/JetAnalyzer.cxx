@@ -28,6 +28,15 @@ JetAnalyzer::JetAnalyzer( std::vector<fastjet::PseudoJet>& InOrigParticles, fast
   jet_def_bkgd = 0;
   bkgd_estimator = 0;
   bkgd_subtractor = 0;
+  area_def_bkgd = new fastjet::AreaDefinition( AreaDef );
+  // DEBUG
+  // area_def_bkgd = new fastjet::AreaDefinition( fastjet::VoronoiAreaSpec( 1.0 ) );
+
+  // // std::cout << "Area Spec " << area_spec.description() << std::endl;
+  // std::cout << "Area Def given: " << std::endl << AreaDef.description() << std::endl;
+  // std::cout << "Area Def Bkgd:  " << std::endl << area_def_bkgd->description() << std::endl;
+  // std::cout << "This:  " << std::endl << this->area_def().description() << std::endl;
+      
 }
 // ------------------------------------------------------------------------
 
@@ -62,26 +71,28 @@ fastjet::Subtractor* JetAnalyzer::GetBackgroundSubtractor(){
     return 0;
   }
 
-  // Area
-  // ----
-  // Construct from jet definition and radius
-  double ymin, ymax;
-  selector_bkgd.get_rapidity_extent (ymin, ymax);
-  assert ( !std::isinf(ymin) && !std::isinf(ymax)   && "Can't handle unrestricted area." );
-  assert ( ymin == -ymax                            && "Can't construct ghosted area for asymmetric rapidity cuts.");
+  // // Area
+  // // ----
+  // // Construct from jet definition and radius
+  // double ymin, ymax;
+  // selector_bkgd.get_rapidity_extent (ymin, ymax);
+  // assert ( !std::isinf(ymin) && !std::isinf(ymax)   && "Can't handle unrestricted area." );
+  // assert ( ymin == -ymax                            && "Can't construct ghosted area for asymmetric rapidity cuts.");
 
-  double ghost_maxrap = ymax + 2.0*jet_def().R();  
-  area_def_bkgd = new fastjet::AreaDefinition (fastjet::active_area_explicit_ghosts, 
-  					       fastjet::GhostedAreaSpec(ghost_maxrap));
+  // double ghost_maxrap = ymax + 2.0*jet_def().R();  
+  // area_def_bkgd = new fastjet::AreaDefinition (fastjet::active_area_explicit_ghosts, 
+  // 					       fastjet::GhostedAreaSpec( ghost_maxrap ));
 
   // Background jet definition
   // -------------------------
   jet_def_bkgd = new fastjet::JetDefinition (fastjet::kt_algorithm, jet_def().R());
-
+  
   // Estimator and subtractor
   // ------------------------
-
-  bkgd_estimator = new fastjet::JetMedianBackgroundEstimator(selector_bkgd, *jet_def_bkgd, *area_def_bkgd);
+  // std::cout << area_def_bkgd->description() << std::endl;
+  // std::cout << selector_bkgd.description() << std::endl; 
+  // std::cout << "selector.has_finite_area() = "<< selector_bkgd.has_finite_area() << std::endl; 
+  bkgd_estimator  = new fastjet::JetMedianBackgroundEstimator(selector_bkgd, *jet_def_bkgd, *area_def_bkgd);
   bkgd_subtractor = new fastjet::Subtractor(bkgd_estimator);
 
   // since FastJet 3.1.0, rho_m is supported natively in background
@@ -110,54 +121,6 @@ fastjet::Subtractor* JetAnalyzer::GetBackgroundSubtractor(){
 // ----------------
 // Analysis methods
 // ----------------
-std::vector<fastjet::PseudoJet>* JetAnalyzer::GetDiJets( fastjet::Selector& sjet, double dPhi ){  
-  std::vector<fastjet::PseudoJet>* ret=0;
-
-  std::vector<fastjet::PseudoJet> jets;
-  if ( bkgd_subtractor ){
-    jets = sjet ( fastjet::sorted_by_pt( (*bkgd_subtractor)(inclusive_jets()) ) );
-  } else {
-    jets = sjet ( fastjet::sorted_by_pt( inclusive_jets() ) );
-  }
-  
-  if ( jets.size() < 2 ) {
-    // std::cout << "  -------------------- Not enough jets" << std::endl;
-    return 0;
-  }
-  
-  // Question: Accept any dijet, or only leading <-> subleading?
-  // More general case:
-  // for ( int j1 = 0 ; j1<jets.size() ; ++j1 ){
-  //   fastjet::PseudoJet& jet1 = jets.at(j1);
-  //   for ( int j2 = j1+1 ; j2<jets.size() ; ++j2 ){
-  //     fastjet::PseudoJet& jet2 = jets.at(j2);
-  //     std::cout << jet1.pt() << "  " 
-  // 		<< jet2.pt() << "  " 
-  // 		<< jet1.phi() << "  "
-  // 		<< jet2.phi() << "  " 
-  // 		<< fabs ( phimod2pi( jet1.phi() - jet2.phi() - pi ) )  << std::endl;
-  //     if ( fabs ( phimod2pi( jet1.phi() - jet2.phi() - pi) ) < dPhi ) return true;      
-  //   }    
-  // }
-  
-  // What we use is the top two jets though
-  if ( fabs ( phimod2pi( jets.at(0).phi() - jets.at(1).phi() - pi) ) < dPhi ) {
-  // if ( fabs ( phimod2pi( jets.at(0).phi() - jets.at(1).phi() ) ) > pi - 0.4 ) {
-    // std::cout << jets.at(0).pt() << "  " 
-    // 	      << jets.at(1).pt() << "  " 
-    // 	      << jets.at(0).phi() << "  "
-    // 	      << jets.at(1).phi() << "  " 
-    // 	      << fabs ( phimod2pi( jets.at(0).phi() - jets.at(1).phi() - pi ) )  << std::endl;
-    
-    ret = new std::vector<fastjet::PseudoJet>;
-    *ret = jets;
-  }
-  
-  
-  return ret;
-  
-}
-
 // Dijet finding as a Selector
 void SelectorDijetWorker::terminator(std::vector<const fastjet::PseudoJet *> & jets) const{
   // For each jet that does not pass the cuts, this routine sets the 
@@ -192,10 +155,6 @@ void SelectorDijetWorker::terminator(std::vector<const fastjet::PseudoJet *> & j
     // clarified for readability
     double phi0 = jets.at(i0)->phi();
     double phi1 = jets.at(i1)->phi();
-
-    // double pt2_0 = -IndexPt.at(0).second;
-    // double pt2_1 = -IndexPt.at(1).second;
-    // std::cout << pt0 << "  " << pt1 << std::endl;
 
     if ( ! (fabs ( JetAnalyzer::phimod2pi( phi0 - phi1 - JetAnalyzer::pi) ) < dPhi) ) {
       // Nope, don't save them after all
@@ -300,14 +259,13 @@ bool IsMatched ( const fastjet::PseudoJet& jet1, const fastjet::PseudoJet& jet2,
 TLorentzVector MakeTLorentzVector ( const fastjet::PseudoJet& pj ){
   return TLorentzVector( pj.px(), pj.py(), pj.pz(), pj.E() );
   // Below could be slightly faster but circumvents encapsulation.
-  // four_mom() is a vallaray<double> which is NOT guaranteed to be contiguous
+  // four_mom() is a valarray<double> which is NOT guaranteed to be contiguous
   // return TLorentzVector( (Double_t*) &pj.four_mom()[0] );
 }
 // ------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------
 fastjet::PseudoJet MakePseudoJet ( const TLorentzVector* const lv ){
-  //return fastjet::PseudoJet ( lv->Px(), lv->Py(), lv->Pz(), lv->E() );
   return fastjet::PseudoJet ( *lv );
 }
 

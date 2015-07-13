@@ -8,6 +8,7 @@
 
 #include "AjAnalysis.hh"
 #include "AjParameters.hh"
+#include "ktTrackEff.hh"
 
 #include <TH1.h>
 #include <TH2.h>
@@ -28,35 +29,44 @@
 #include <iostream>
 #include <cmath>
 #include <exception>
+#include <cstdlib>      // std::rand, std::srand
+#include <algorithm>    // std::random_shuffle
 
 using namespace std;
 using namespace fastjet;
 
+bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap );
+
+  
 /** 
     - Set up input tree
     - Set up output histos and tree
     - Initialize AjAnalysis object
     - Loop through events
-    \arg argv: List of root files. TChain can do some globbing, so you can use
+    \arg argv: List of root files. Let TChain handle the globbing, i.e. use for example
     <BR><tt>% PicoAj '~putschke/Data/ppHT/&lowast;.root'</tt>
-    <BR>But ultimately, it's better to let the shell handle the globbing, especially for cases like 
+    <BR>For cases like 
     <BR><tt>% PicoAj ~putschke/Data/&lowast;/&lowast;.root</tt>
-    <BR>For a file list, simply use <BR><tt>% cat file.list | PicoAj</tt>
-
+    <BR>change this macro
 */
 int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[4] = {"PicoAj","AjResults/ppAj.root","ppHT","~putschke/Data/ppHT/*.root"};
-  // const char *defaults[4] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/Clean809.root"};
-  // const char *defaults[4] = {"PicoAj","AuAuAj.root","HT","SmallAuAu/Small_Clean810*.root"};
-  // const char *defaults[4] = {"PicoAj","test.root","HT","/Users/putschke/Data/Pico_Eflow/auau_ht_pico_20_R_0.4_ptcut_2.0_bin_36.root"};
+  // const char *defaults[] = {"PicoAj","AjResults/HP4_ppAj.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
+  const char *defaults[] = {"PicoAj","test.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","AjResults/Test11_ppAj.root","HT","/data3/AuAu11picoNPE15_150424/AuAu11Pico_1800-899.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/Clean809.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean816*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","/data4/HaddedAuAu11picoNPE25_150526/AuAu11Pico_C_0-99.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean810_0*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","CleanAuAu/Clean810_0*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","/Users/putschke/Data/Pico_Eflow/auau_ht_pico_20_R_0.4_ptcut_2.0_bin_36.root", "0", "0" };
   if ( argc==1 ) {
     argv=defaults;
-    argc=4;
+    argc=sizeof (defaults ) / sizeof (defaults[0] );
   }
-  
+
   // Throw arguments in a vector
   // ---------------------------
   vector<string> arguments(argv + 1, argv + argc);
@@ -65,20 +75,121 @@ int main ( int argc, const char** argv ) {
   // --------------------
   TString ChainName  = "JetTree";
   TString OutFileName = arguments.at(0);
-  if ( AjParameters::R==0.2 ){
-    OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("R0.2_")+ gSystem->BaseName(OutFileName));
+  
+  // jet resolution parameter
+  // ------------------------
+  float R = 0.4;
+  // Follow to different R
+  float OtherR = 0.2;   // will be set to 0.4 if we trigger on 0.2, i.e., we can follow in either direction
+
+  if ( OutFileName.Contains ("R0.2") ){
+    R=0.2;
+    OtherR=0.4;    
   }
+
+  // soft constituent cut
+  // --------------------
+  float PtConsLo=0.2;
+  if ( OutFileName.Contains ("Pt1") ){
+    PtConsLo=1.0;
+  }
+
+  // Jet Pt cuts
+  // -----------
+  float LeadPtMin = AjParameters::LeadPtMin;
+  float SubLeadPtMin = AjParameters::SubLeadPtMin;
+  if ( OutFileName.Contains ("R0.2") ){
+    LeadPtMin=16.0;
+    SubLeadPtMin=8.0;
+  }
+		    
+
+  
+  // Also pull a random offset from the file name
+  // --------------------------------------------
+  // To seed the backgrounder in different ways
+  // allows for patterns like output/rndm0/test.root
+  // ONLY pulls one digit
+  int randomoff = TString( OutFileName( OutFileName.Index("rndm") + 4,  1 )).Atoi(); // defaults to zero
+  // eventid: typically < 1M --> shift by 10M
+  // runid: typically 8XXYYYY --> shift by 10M
+  randomoff *= 10000000;
+  cout << " ################################################### " << endl;
+  cout << "   FastJet random seeds offset by " << randomoff << endl;
+  cout << " ################################################### " << endl;
+  
+
+   // if ( AjParameters::R==0.2 ){
+  //   OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("R0.2_")+ gSystem->BaseName(OutFileName));
+  // }
+  // if ( AjParameters::PtConsLo==1.0 ){
+  //   OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Pt1_")+ gSystem->BaseName(OutFileName));
+  // }
+
+  cout << " ################################################### " << endl;
+  cout << "Triggering with R=" << R << endl;
+  cout << "Following to R=" << OtherR << endl;
+  cout << "Low pT cut =" << PtConsLo << endl;
+  cout << " ################################################### " << endl;
 
   TString TriggerName = arguments.at(1);
 
   TChain* chain = new TChain( ChainName );
-  bool isAuAu=false;
-  for (int i=2; i<arguments.size() ; ++i ) {
-    chain->Add( arguments.at(i).data() );
-    if (arguments.at(i).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
-    if (arguments.at(i).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  }  
+  chain->Add( arguments.at(2).data() );
 
+  // Au+Au?
+  // ------
+  bool isAuAu=false;
+  if (arguments.at(2).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
+  if (arguments.at(2).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
+  
+  // for (int i=2; i<arguments.size() ; ++i ) {
+  //   chain->Add( arguments.at(i).data() );
+  //   if (arguments.at(i).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
+  //   if (arguments.at(i).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
+  // }  
+
+  // for systematics
+  // ---------------
+  Int_t IntTowScale=atoi( arguments.at(3).data() ); // +/- 2%
+  Float_t fTowScale = 1.0 + IntTowScale*0.02;
+  Int_t mEffUn=atoi( arguments.at(4).data() ) ;
+  
+  switch ( mEffUn ){
+  case 0 :
+    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff0_")+ gSystem->BaseName(OutFileName));
+    break;
+  case 1 :
+    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff1_")+ gSystem->BaseName(OutFileName));
+    break;
+  case -1 :
+    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff-1_")+ gSystem->BaseName(OutFileName));
+    break;
+  default :
+    cerr << "mEffUn = " << mEffUn << " not supported." <<endl;
+    return -1;
+  }
+
+  switch ( IntTowScale ){
+  case 0 :
+    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow0_")+ gSystem->BaseName(OutFileName));
+    break;
+  case 1 :
+    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow1_")+ gSystem->BaseName(OutFileName));
+    break;
+  case -1 :
+    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow-1_")+ gSystem->BaseName(OutFileName));
+    break;
+  default :
+    cerr << "IntTowScale = " << IntTowScale << " not supported." <<endl;
+    return -1;
+  }
+  if ( isAuAu && IntTowScale ){
+    cerr << "IntTowScale = " << IntTowScale << " not supported in AuAu." <<endl;
+    return -1;    
+  }
+
+  
   double RefMultCut = 0;
   // if ( isAuAu ) RefMultCut=AjParameters::AuAuRefMultCut;
   // WARNING: ~putschke/Data/Pico_Eflow/auau_ht* is cut off at 351!
@@ -95,6 +206,7 @@ int main ( int argc, const char** argv ) {
   
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
+  TH3::SetDefaultSumw2(true);
   
   TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
   TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
@@ -108,30 +220,56 @@ int main ( int argc, const char** argv ) {
   TH1D* hdPtHi = new TH1D( "hdPtHi","#Delta p_{T} for hard constituent jets", 120, -10, 50 );
   TH1D* hdPtLo = new TH1D( "hdPtLo","#Delta p_{T} for soft constituent jets", 120, -10, 50 );
 
+  TH2D* hdPtLead = new TH2D( "hdPtLead","#Delta p_{T} soft-hard, leading jets;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+  TH2D* hdPtSubLead = new TH2D( "hdPtSubLead","#Delta p_{T} soft-hard, subleading jets;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+  TH2D* SpecialhdPtLead = new TH2D( "SpecialhdPtLead","#Delta p_{T} soft-hard, leading jets, |A_{J}|>0.25 ;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+  TH2D* SpecialhdPtSubLead = new TH2D( "SpecialhdPtSubLead","#Delta p_{T} soft-hard, subleading jets, |A_{J}|>0.25;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+
   TH1D* hdphiHi = new TH1D( "hdphiHi","#Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* hdphiLo = new TH1D( "hdphiLo","#Delta#phi for soft constituent jets", 200, -2, 2 );
 
-  // // Histos to fill
-  // // --------------
-  // TH2D* UnmatchedhPtHi;  ///< Unmatched hard constituent jet spectrum
-  // TH2D* hPtHi;           ///< Matched hard constituent jet spectrum
-  // TH2D* hPtLo;           ///< Matched soft constituent jet spectrum
+  // Follow to different R
+  TH2D* OtherAJ_lo = new TH2D( "OtherAJ_lo","A_{J} for soft constituent jets with other R ;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* OtherLeadPtLoss_lo    = new TH2D( "OtherLeadPtLoss_lo","Leading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
+  TH2D* OtherSubLeadPtLoss_lo = new TH2D( "OtherSubLeadPtLoss_lo","SubLeading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
+
+  // eta shift destroys "true" soft jet components
+  TH2D* EtaShiftAJ_lo = new TH2D( "EtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+	
+  // DEBUG histos
+  // ------------
+  TH3D* ptphieta = new TH3D("ptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  TH1D* csize = new TH1D("csize","",5000, -0.5, 4999.5 );
+  // Find some info on the background
+  TH1D* hrho = new TH1D( "hrho","#rho", 240, 0, 120 );
+  TH1D* hrhoerr = new TH1D( "hrhoerr","#sigma_{#rho}", 100, 0, 50 );
+
+  // can't compute area_error(), take rms of this instead
+  TH1D* hj1area    = new TH1D( "hj1area","j1 area", 320, 0.0, 0.8 );
+  TH1D* hj2area    = new TH1D( "hj2area","j2 area", 320, 0.0, 0.8 );
+  TH1D* hrestarea    = new TH1D( "hrestarea","restarea", 160, 0.0, 0.8 );
+
+  TChain* OrigJets = new TChain("ResultTree");
+  OrigJets->Add("AjResults/Presel_AuAuAj.root");
+  TLorentzVector *pJ1 = new TLorentzVector();
+  OrigJets->SetBranchAddress("j1", &pJ1);
+  TLorentzVector *pJ2 = new TLorentzVector();
+  OrigJets->SetBranchAddress("j2", &pJ2);
+  int Origeventid;
+  int Origrunid;
+  double Origrefmult;
+  OrigJets->SetBranchAddress("eventid", &Origeventid);
+  OrigJets->SetBranchAddress("runid", &Origrunid);
+  OrigJets->SetBranchAddress("refmult", &Origrefmult);
+
+  // gRandom->SetSeed(0); // totally random seed. not good for reproducibility
   
-  // TH1D* UnmatchedhdPtHi;  ///< Unmatched hard constituent &Delta;p<SUB>T</SUB>
-  // TH1D* hdPtHi;           ///< Matched hard constituent &Delta;p<SUB>T</SUB>
-  // TH1D* hdPtLo;           ///< Matched soft constituent &Delta;p<SUB>T</SUB>
+  vector<int> OrigEvents;
+  // Random selection: shuffle event indices then take from the top 
+  for ( int i=0 ; i< OrigJets->GetEntries() ; ++ i )	  OrigEvents.push_back(i);
 
-  // TH1D* hdphiHi;         ///< Matched hard constituent dijet angle
-  // TH1D* hdphiLo;         ///< Matched soft constituent dijet angle
-
-  // TH1D* UnmatchedAJ_hi;  ///< Unmatched hard constituent A_J
-  // TH1D* AJ_hi;           ///< Matched hard constituent A_J
-  // TH1D* AJ_lo;           ///< Matched soft constituent A_J
-
-  // TH3D* UsedEventsHiPhiEtaPt; ///< phi, eta, p<SUB>T</SUB> of hard constituents
-  // TH3D* UsedEventsLoPhiEtaPt; ///< phi, eta, p<SUB>T</SUB> of soft constituents
-
-
+  // END Experimental
+  
   // Save results
   // ------------
   TTree* ResultTree=new TTree("ResultTree","Result Jets");
@@ -142,13 +280,32 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("jm2",&jm2);
   int eventid;
   int runid;
+  double refmult; // Really an int, but may change if using refmultcorr
+  float rho;
+  float rhoerr;
+  float j1area;
+  float j2area;
+
   ResultTree->Branch("eventid",&eventid, "eventid/i");
   ResultTree->Branch("runid",&runid, "runid/i");
+  ResultTree->Branch("refmult",&refmult, "refmult/d");
+  ResultTree->Branch("rho",&rho, "rho/f");
+  ResultTree->Branch("rhoerr",&rhoerr, "rhoerr/f");
+  ResultTree->Branch("j1area",&j1area, "j1area/f");
+  ResultTree->Branch("j2area",&j2area, "j2area/f");
 
+  // area and pT of all remaining jets (those used for rho)
+  static const Int_t kmaxJ=500; // max # of jets
+  int nRestJ=0;
+  float RestArea[kmaxJ];
+  float RestPt[kmaxJ];
+  ResultTree->Branch("nRestJ",&nRestJ, "nRestJ/i");
+  ResultTree->Branch("RestArea",RestArea, "RestArea[nRestJ]/f");
+  ResultTree->Branch("RestPt",  RestPt,   "RestPt[nRestJ]/f");
+  
   // Save the full event and the trigger jet if this is pp and there's at least a 10 GeV jet.
   // ----------------------------------------------------------------------------------------
   // This is somewhat wasteful, we could instead read the original trees.
-
   bool SaveFullEvents = TriggerName.Contains("ppHT");
   TTree* TriggeredTree=0;
 
@@ -165,15 +322,27 @@ int main ( int argc, const char** argv ) {
     TriggeredTree->Branch("runid",&runid, "runid/i");
 
   } 
+    
+  // Initialize tracking efficiency
+  // ------------------------------
+  ktTrackEff* tEff=0;
+  if ( !isAuAu ) {
+    tEff = new ktTrackEff();
+    tEff->SetSysUncertainty(mEffUn);
+    cout<<endl;
+    tEff->PrintInfo();
+    cout<<endl;
+  }
   
-
-  
-	      
   // Initialize analysis class
   // -------------------------
-  AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
-		  AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
-		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
+  AjAnalysis AjA( R,
+		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
+		  LeadPtMin, SubLeadPtMin, 
+		  // AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
+		  AjParameters::max_track_rap,
+		  PtConsLo,
+		  AjParameters::PtConsHi,
 		  AjParameters::dPhiCut
 		  );  
   
@@ -188,20 +357,45 @@ int main ( int argc, const char** argv ) {
   int nMatchedDijets=0;
   
   Long64_t nEvents=-1; // -1 for all
-  // Long64_t nEvents=10;
+  //nEvents=100000;
   reader.Init(nEvents);
 
-  double refmult; // Really an int, but may change if using refmultcorr
-
   PseudoJet pj;
+  float pt1, pt2;
+	
+  fastjet::GhostedAreaSpec TmpArea; // for access to static random seed
+  vector<int> SeedStatus;
+  
+  fastjet::Selector GrabCone = fastjet::SelectorCircle( R );    
   try{
     while ( reader.NextEvent() ) {
       reader.PrintStatus(10);
+
+      // event info
+      // ----------
       TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
       
       eventid = header->GetEventId();
       runid   = header->GetRunId();
 
+      // Let's use the eventid as random seed.
+      // that way things stay reproducible between different trees
+      // but at the same time there's enough randomness
+      gRandom->SetSeed( eventid ); 
+      
+      // NEW 05/07/15: For repeatability across different picoDSTs, set random seed
+      // Static member, so we can set it here
+      // Annoyingly, the getter and setter isn't static, so we need to instantiate
+      // Apparently, the seed is always an int[2], so it's natural to seed it with runid and eventid      
+      TmpArea.get_random_status(SeedStatus);
+      if ( SeedStatus.size() !=2 ) {
+	throw std::string("SeedStatus.size() !=2");
+	return -1;
+      } 
+      SeedStatus.at(0) = runid   + randomoff;
+      SeedStatus.at(1) = eventid + randomoff;
+      TmpArea.set_random_status(SeedStatus);
+      
       refmult=0;
       if ( isAuAu ) refmult=header->GetGReferenceMultiplicity();
       
@@ -215,24 +409,38 @@ int main ( int argc, const char** argv ) {
     
       for (int ip = 0; ip<container->GetEntries() ; ++ip ){
 	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
-	// mostly for demonstration, add charge information
+	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
 	pj=MakePseudoJet( sv );
 	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
-	particles.push_back ( pj );
+
+	if ( sv->GetCharge()!=0 && tEff ) {
+	  Double_t reff=tEff->EffRatio_20(sv->Eta(),sv->Pt());
+	  Double_t mran=gRandom->Uniform(0,1);
+	  // cout << reff << "  " << mran << endl;
+	  if (mran<reff)  {
+	    particles.push_back ( pj );
+	  }
+	} else { // no charge or no efficiency class
+	  particles.push_back ( pj );
+	}	      
       }    
 
       // Run analysis
       // ------------
-      int ret;
+      int ret;      
       ret =AjA.AnalyzeAndFill( particles, 0,refmult, 
 			       UnmatchedAJ_hi, AJ_hi, AJ_lo,
 
 			       UnmatchedhPtHi,  hPtHi, hPtLo,
 			       UnmatchedhdPtHi, hdPtHi, hdPtLo,
-			       hdphiHi, hdphiLo
+			       hdphiHi, hdphiLo,
+
+			       OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
+
+			       hdPtLead, hdPtSubLead,
+			       SpecialhdPtLead, SpecialhdPtSubLead
 			       );
-      // std::cerr << ret << endl;
-    
+      
       switch ( ret ){
       case 3 : nMatchedDijets++;
 	// FALLTHROUGH
@@ -248,7 +456,66 @@ int main ( int argc, const char** argv ) {
 	return -1;
 	break;      
       }
-    
+      
+
+      // save event info
+      if ( ret>0 && refmult>268 ) {
+	// Selector slo = AjA.GetLoConsSelector();
+	// vector<PseudoJet> accepted, notaccepted;
+	// slo.sift(particles, accepted, notaccepted);
+	// for (int i =0; i< notaccepted.size(); ++i ){
+	//   cout << notaccepted.at(i).pt() << "  " << notaccepted.at(i).phi() << "  " << notaccepted.at(i).eta() << "  " << endl;
+	// }
+	// return 0;	
+	csize->Fill(AjA.GetLoConstituents().size());
+	for (int i =0; i< AjA.GetLoConstituents().size(); ++i ){
+	  ptphieta->Fill( AjA.GetLoConstituents().at(i).pt(), AjA.GetLoConstituents().at(i).phi(), AjA.GetLoConstituents().at(i).eta() );
+	}
+      }
+      // // DEBUG
+      // if (
+      // 	  eventid==424 ||
+      // 	  eventid==3216 ||
+      // 	  eventid==618 ||
+      // 	  eventid==6802 ||
+      // 	  eventid==7687 ||
+      // 	  eventid==15486 ||
+      // 	  eventid==9437 ||
+      // 	  eventid==47527 ||
+      // 	  eventid==16189 ||
+      // 	  eventid==12733 ||
+      // 	  eventid==24191 ||
+      // 	  eventid==3135 ||
+      // 	  eventid==4474 ||
+      // 	  eventid==5553 ){
+      // 	// cout << runid << "  " << eventid << "  " << pJ2->Pt() << endl;
+      // 	cout << " -------------------------------> " << runid << "  " << eventid << "  " << refmult << endl;
+      // 	cout << " -----------------> ret = " << ret << endl;
+      // 	cout << AjA.GetJAhiResult().size() << endl;
+      // 	if ( AjA.GetJAhiResult().size() >0 )
+      // 	  cout << AjA.GetJAhiResult().at(0).pt() << "  "
+      // 	       << AjA.GetJAhiResult().at(0).eta() << "  "
+      // 	       << AjA.GetJAhiResult().at(0).phi() << "  " << endl;
+
+      // 	cout << " -------------------------------> " << endl;
+      // 	if ( eventid==424 ) {
+      // 	  cout << particles.size() << endl;
+      // 	  // vector<fastjet::PseudoJet> pLo = AjA.GetLoConstituents();
+      // 	  // cout << pLo.size() << endl;
+      // 	  vector<fastjet::PseudoJet> pHi = AjA.GetHiConstituents();
+      // 	  cout << pHi.size() << endl;
+      // 	  cout << container->GetEntries() << endl;
+      // 	  // vector<fastjet::PseudoJet> pHi = AjA.GetHiConstituents();
+      // 	  // for ( int j=0; j<pHi.size(); ++j ){
+      // 	  //   cout << pHi.at(j).pt() << "  "
+      // 	  // 	 << pHi.at(j).eta() << "  "
+      // 	  // 	 << pHi.at(j).phi() << "  "
+      // 	  // 	 << "  " << pHi.at(j).user_info<JetAnalysisUserInfo>().GetQuarkCharge() << endl;	    
+      // 	  // }
+      // 	  return 0;
+      // 	}
+      // }
+      
       // Save the full event for embedding if there's at least one 10 GeV jet
       // ------------------------------------------------------------------
       if (SaveFullEvents){
@@ -257,7 +524,13 @@ int main ( int argc, const char** argv ) {
 	if ( AjA.Has10Gev )  { 
 	  for ( int i = 0; i<particles.size() ; ++i ){
 	    if ( particles.at(i).pt() >50 ) { 
-	      cerr << " =====> " <<particles.at(i).pt() << "  " << particles.at(i).phi() << "  " << particles.at(i).eta() << endl;  
+	      cerr << " =====> " <<particles.at(i).pt()
+		   << "  " << particles.at(i).phi()
+		   << "  " << particles.at(i).eta()
+		   << "  " << particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge() << endl;
+	      if ( ret>0 ) {
+		cerr << " AND ret == " << ret << endl;
+	      }
 	    } 
 	    new (FullEvent[i])   TLorentzVector ( MakeTLorentzVector( particles.at(i) )  );
 	  } // for particles
@@ -274,55 +547,129 @@ int main ( int argc, const char** argv ) {
 
       // Check for matching? yes, for now.
       // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
-      // cout << " going in"  << endl;
-
-      // cout << reader.GetNOfCurrentEvent() << endl;
-      if ( reader.GetNOfCurrentEvent() == 43 && false) {
-	cout << "Jet 1:" << endl;
-	cout << "pt = " << DiJetsHi.at(0).pt() << endl;
-	cout << "eta = " << DiJetsHi.at(0).eta() << endl;
-	cout << "phi = " << DiJetsHi.at(0).phi() << endl;
-	// cout << "area = " << DiJetsHi.at(0).area() << endl;
-	cout << "Jet 2:" << endl;
-	cout << "pt = " << DiJetsHi.at(1).pt() << endl;
-	cout << "eta = " << DiJetsHi.at(1).eta() << endl;
-	cout << "phi = " << DiJetsHi.at(1).phi() << endl;
-	// cout << "area = " << DiJetsHi.at(1).area() << endl;
-	cout << endl;
-	cout << "|dPhi-pi|=" << fabs(DiJetsHi.at(0).phi() - DiJetsHi.at(1).phi()-TMath::Pi()) << endl;
-	cout << "|dPhi+pi|=" << fabs(DiJetsHi.at(0).phi() - DiJetsHi.at(1).phi()+TMath::Pi()) << endl;
-	
-	// for (int i=0; i< container->GetEntries() ; ++i ){
-	//   if ( container->Get(i)->Pt()>2 )
-	//     container->Get(i)->Print();
-	// }
-	// return -1;
-      }
-      
+      // cout << " going in"  << endl;      
       if ( DiJetsLo.size()==2 ){
-	// cout << "Event # = "<< reader.GetNOfCurrentEvent() << endl;
-	// cout << "Jet 1:" << endl;
-	// cout << "pt = " << DiJetsHi.at(0).pt() << endl;
-	// cout << "eta = " << DiJetsHi.at(0).eta() << endl;
-	// cout << "phi = " << DiJetsHi.at(0).phi() << endl;
-	// // cout << "area = " << DiJetsHi.at(0).area() << endl;
-	// cout << "Jet 2:" << endl;
-	// cout << "pt = " << DiJetsHi.at(1).pt() << endl;
-	// cout << "eta = " << DiJetsHi.at(1).eta() << endl;
-	// cout << "phi = " << DiJetsHi.at(1).phi() << endl;
-	// // cout << "area = " << DiJetsHi.at(1).area() << endl;
-	// cout << endl;
-	// if ( fabs( DiJetsHi.at(0).pt() - 21.785988 )< 0.00001 ) { cout << reader.GetNOfCurrentEvent() << endl; return -1;}
-  
-	// cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
 	j1 = MakeTLorentzVector( DiJetsHi.at(0) );
 	j2 = MakeTLorentzVector( DiJetsHi.at(1) );
 	jm1 = MakeTLorentzVector( DiJetsLo.at(0) );
 	jm2 = MakeTLorentzVector( DiJetsLo.at(1) );
+
+	// DEBUG
+	rho=rhoerr=j1area=j2area=0;
+	nRestJ=0;
+	fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
+	if ( refmult >= 269 ){
+	  rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	  rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
+	  
+	  hrho->Fill(AjA.GetJAlo()->GetBackgroundEstimator()->rho()) ;
+	  hrhoerr->Fill(AjA.GetJAlo()->GetBackgroundEstimator()->sigma()) ;
+	  vector<PseudoJet> lojets = fastjet::sorted_by_pt( selector_bkgd ( AjA.GetJAlo()->inclusive_jets() ) );
+	  j1area=DiJetsLo.at(0).area();
+	  j2area=DiJetsLo.at(1).area();
+	  
+	  hj1area->Fill(DiJetsLo.at(0).area());
+	  hj2area->Fill(DiJetsLo.at(1).area());
+	  for ( int i=2; i <lojets.size() ; ++ i ){
+	    hrestarea->Fill(lojets.at(i).area());
+	  } 
+
+	  // cout << DiJetsLo.at(0).pt()<< "  "  << jm1.Pt() << "  " << lojets.at(0).pt() << endl;
+	  nRestJ=0;
+	  for ( int i=0; i<lojets.size()-2 ; ++i ){
+	    if ( lojets.at(i+2).pt() < 1e-4 ) continue;
+	    RestArea[i] = lojets.at(i+2).area();
+	    RestPt[i] = lojets.at(i+2).pt();
+	    nRestJ++;
+	  }
+	  
+	}
+
 	ResultTree->Fill();
+
       }
-      // cout << " Coming out"  << endl;
+
+      // If possible, shift jets along eta and try again
+      // -----------------------------------------------
+      // Could make parameters dependent on R but that's a little tricky
+      float MinDist = 2*0.4;
+      float MaxJetRap = 0.6;
+      
+      if ( DiJetsLo.size()==2 ){	
+	// THESE WILL BE CHANGED!
+	PseudoJet j1 = DiJetsHi.at(0);
+	PseudoJet j2 = DiJetsHi.at(1);
 	
+	float orig1 = j1.eta();
+	float orig2 = j2.eta();
+
+	if ( !ShiftEta ( j1, MinDist, MaxJetRap ) ) goto donewithetacone;
+	if ( !ShiftEta ( j2, MinDist, MaxJetRap ) ) goto donewithetacone;
+
+	if ( fabs( j1.eta()-orig1 ) < 0.8 || fabs( j2.eta()-orig2 ) < 0.8 ){
+	  cout << orig1 << " --> " << j1.eta() << endl;
+	  cout << orig2 << "--> " << j2.eta() << endl << endl;
+	  cerr << "What the everfucking fuck??" << endl;
+	  return -1;
+	}
+
+	GrabCone.set_reference( j1 );
+	vector<PseudoJet> C1 = GrabCone( AjA.GetLoConstituents() );
+	PseudoJet RC1 (0,0,0,0);
+	for (vector<PseudoJet>::iterator it = C1.begin() ; it!= C1.end() ; ++ it ) RC1+= *it;
+
+	GrabCone.set_reference( j2 );
+	vector<PseudoJet> C2 = GrabCone( AjA.GetLoConstituents() );
+	PseudoJet RC2 (0,0,0,0);
+	for (vector<PseudoJet>::iterator it = C2.begin() ; it!= C2.end() ; ++ it ) RC2+= *it;
+
+
+	// // =================== METHOD A ======================
+	// // "Mix" with this event
+
+	// // cout << DiJetsLo.at(0).area() << "  "  << DiJetsLo.at(1).area() << "  " << TMath::Pi()*R*R << endl;
+
+	// pt1 = j1.pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	// pt2 = j2.pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	// EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
+	// =================== END METHOD A ======================
+	  
+		
+	// =================== METHOD B ======================
+	// Instead of the original jet, use a couple of other ones
+	int nMix=6;
+	random_shuffle(OrigEvents.begin(), OrigEvents.end()) ;
+	int mixed=0;
+	for ( int i=0; i<OrigEvents.size(); ++i ){
+	  OrigJets->GetEntry ( OrigEvents.at(i) );
+	  
+	  if ( runid == Origrunid && eventid == Origeventid ) continue; // avoid self-correlation
+	  // Some matching options, pretty much unnecessary
+	  // if ( fabs ( pJ1->Eta() - orig1 ) > 0.1 ) continue;
+	  // if ( fabs ( pJ2->Eta() - orig2 ) > 0.1 ) continue;
+	  // if ( fabs ( pJ1->Eta() - j1.eta() ) > 0.1 ) continue;
+	  // if ( fabs ( pJ2->Eta() - j2.eta() ) > 0.1 ) continue;
+	  // if ( fabs ( refmult - Origrefmult ) > 20 ) continue;
+
+	  // cout << runid << "  " <<  Origrunid << "  " <<  eventid <<  "  " << Origeventid << endl;
+	  // cout << "   ===============> " << j1.eta() << "  " << pJ1->Eta() << "  " << j2.eta() << "  " << pJ2->Eta() << endl;
+	  
+	  mixed++;
+	  if ( mixed>=nMix ) break;
+	  pt1 = pJ1->Pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	  pt2 = pJ2->Pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	  EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
+	}
+		
+	if ( mixed != nMix){
+	  cerr << "WARNING: Only matched " << mixed << " jets" << endl;
+	}	
+	// =================== END METHOD B ======================
+	
+      }
+    donewithetacone:
+      ;
+      
     } // while NextEvent
   } catch ( exception& e) {
     cerr << "Caught " << e.what() << endl;
@@ -353,3 +700,41 @@ int main ( int argc, const char** argv ) {
   return 0;
   
 }
+
+// ==========================================================
+bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap ){
+  // we want to generate a random number that is outside
+  // j.eta +/- MinDist but inside MaxJetRap
+  // Without bias
+
+  // first see if there's empty space
+  float LeftEdge  = j.eta() - MinDist;
+  float RightEdge = j.eta() + MinDist;
+  if ( LeftEdge < -MaxJetRap && RightEdge > MaxJetRap ) return false;
+  // We could have done this below but I want to not worry about rounding errors
+
+  // now let's see how much room we have
+  if ( LeftEdge  < -MaxJetRap )   LeftEdge  = -MaxJetRap;
+  if ( RightEdge >  MaxJetRap )   RightEdge =  MaxJetRap;
+  float available = 2* MaxJetRap - ( RightEdge - LeftEdge );
+  // cout << " --------------------------------------> " << available << endl;
+
+  // get a random number in that interval and shift
+  Double_t shift=gRandom->Uniform(0,available);  
+
+  // NOTE: Ignoring the difference between eta and y here
+  if ( shift< LeftEdge + MaxJetRap ){
+    // stay on the left
+    // j.reset_PtYPhiM ( j.pt(), -MaxJetRap+shift, j.phi(), j.m() );
+    j.reset_PtYPhiM ( j.pt(), -MaxJetRap+shift, j.phi(), 0 );
+    return true;
+  }
+
+  // Else subtract the left and slap the remainder on the right
+  shift-= (LeftEdge + MaxJetRap);
+  j.reset_PtYPhiM ( j.pt(), RightEdge + shift, j.phi(), 0 );
+  
+  return true; 
+  
+}
+

@@ -1,30 +1,42 @@
 #!/usr/bin/env csh
 
 # make sure executable exists
-make bin/PicoAj || exit
+make bin/RandomCone || exit
 
 # split into chunks
-set base = ~putschke/Data/Pico_Eflow/auau_ht
+set base = Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root
+
+set JetsName = AjResults/AuAuAj.root
+
 foreach input ( ${base}* )
     # arguments
     set OutBase=`basename $input | sed 's/.root//g'`
-    set OutName    = AjResults/AuAuAj_${OutBase}.root
-    set TriggerName = HT
+    set OutName    = AjResults/RandomCone_${OutBase}.root
+    set TriggerName = MB
     set Files      = ${input}
 
     # Logfiles. Thanks cshell for this "elegant" syntax to split err and out
-    set LogFile     = logs/AuAuAj_${OutBase}.out
-    set ErrFile     = logs/AuAuAj_${OutBase}.err
+    set LogFile     = logs/RandomCone_${OutBase}.out
+    set ErrFile     = logs/RandomCone_${OutBase}.err
 
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
 
-    set command = "./bin/PicoAj $OutName $TriggerName $Files 0 0"
+    set command = "./bin/RandomCone $OutName $JetsName $TriggerName $Files"
 
     # Run in the background
     echo "Executing " $command
     ( $command > $LogFile ) >& $ErrFile &
 end
+
+
+
+
+
+
+
+
+
 
 
 

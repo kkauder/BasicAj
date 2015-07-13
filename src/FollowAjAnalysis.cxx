@@ -13,41 +13,24 @@ FollowAjAnalysis::FollowAjAnalysis ( double SmallR, double LargeR,
 				     double jet_ptmin, double jet_ptmax,
 				     double LeadPtMin, double SubLeadPtMin, 
 				     double max_track_rap, double PtConsLo, double PtConsHi,
-				     double dPhiCut,
-				     TH1D* LeadDeltaPtHi,  TH1D* SubLeadDeltaPtHi, TH1D* LeadDeltaPtLo,  TH1D* SubLeadDeltaPtLo,
-				     TH2D* SmallUnmatchedhPtHi,  TH2D* SmallhPtHi,  TH2D* SmallhPtLo,
-				     TH1D* SmallhdphiHi, TH1D* SmallhdphiLo,
-				     TH1D* SmallUnmatchedAJ_hi, TH1D* SmallAJ_hi, TH1D* SmallAJ_lo,
-				     TH2D* LargehPtHi,  TH2D* LargehPtLo,
-				     TH1D* LargehdphiHi, TH1D* LargehdphiLo,
-				     TH1D* LargeAJ_hi, TH1D* LargeAJ_lo,
-				     TH3D* UsedEventsHiPhiEtaPt, TH3D* UsedEventsLoPhiEtaPt,
-				     TH1D* SmallDeltaAJ_hilo, TH1D* LargeDeltaAJ_hilo,
-				     TH1D* DeltaAJ_hi, TH1D* DeltaAJ_lo
-
+				     double dPhiCut
 				     )
   : SmallR(SmallR), LargeR(LargeR),
     jet_ptmin(jet_ptmin), jet_ptmax(jet_ptmax),
     LeadPtMin(LeadPtMin), SubLeadPtMin(SubLeadPtMin),
     max_track_rap (max_track_rap), PtConsLo (PtConsLo), PtConsHi (PtConsHi),
     dPhiCut (dPhiCut),
-    LeadDeltaPtHi (LeadDeltaPtHi),  SubLeadDeltaPtHi (SubLeadDeltaPtHi),
-    LeadDeltaPtLo (LeadDeltaPtLo),  SubLeadDeltaPtLo (SubLeadDeltaPtLo),
-    SmallUnmatchedhPtHi (SmallUnmatchedhPtHi),  SmallhPtHi (SmallhPtHi),  SmallhPtLo (SmallhPtLo),
-    SmallhdphiHi (SmallhdphiHi), SmallhdphiLo (SmallhdphiLo),
-    SmallUnmatchedAJ_hi (SmallUnmatchedAJ_hi), SmallAJ_hi(SmallAJ_hi), SmallAJ_lo (SmallAJ_lo),
-    LargehPtHi (LargehPtHi),  LargehPtLo (LargehPtLo),
-    LargehdphiHi (LargehdphiHi), LargehdphiLo (LargehdphiLo),
-    LargeAJ_hi(LargeAJ_hi), LargeAJ_lo (LargeAJ_lo),
-    UsedEventsHiPhiEtaPt (UsedEventsHiPhiEtaPt), UsedEventsLoPhiEtaPt (UsedEventsLoPhiEtaPt),
-    SmallDeltaAJ_hilo (SmallDeltaAJ_hilo),  LargeDeltaAJ_hilo (LargeDeltaAJ_hilo),
-    DeltaAJ_hi(DeltaAJ_hi),  DeltaAJ_lo(DeltaAJ_lo)
+    pSmallJAhi(0), pSmallJAlo (0), pLargeJAhi(0), pLargeJAlo (0)
+
 {
   // derived rapidity cuts
   // ---------------------
   /// Use largest R for uniform rapidity cuts
-  max_rap      = max_track_rap-LargeR; 
-  ghost_maxrap = max_rap + 2.0 * LargeR;
+  // max_rap      = max_track_rap-LargeR; 
+  // ghost_maxrap = max_rap + 2.0 * LargeR;
+  // DEBUG
+  max_rap      = max_track_rap-SmallR; 
+  ghost_maxrap = max_rap + 2.0 * SmallR;
   
   // Constituent selectors
   // ---------------------
@@ -55,7 +38,7 @@ FollowAjAnalysis::FollowAjAnalysis ( double SmallR, double LargeR,
   select_lopt      = fastjet::SelectorPtMin( PtConsLo );
   select_hipt      = fastjet::SelectorPtMin( PtConsHi );
   
-  // Quick & dirty charge selector test
+  // Provide but turn off charge selector
   // fastjet::Selector select_track_charge= SelectorChargeRange( -3, 3);
   fastjet::Selector select_track_charge= fastjet::SelectorIdentity();
   slo     = select_track_rap * select_lopt * select_track_charge;
@@ -78,8 +61,8 @@ FollowAjAnalysis::FollowAjAnalysis ( double SmallR, double LargeR,
   // ghosts should go up to the acceptance of the detector or
   // (with infinite acceptance) at least 2R beyond the region
   // where you plan to investigate jets.
-  fastjet::GhostedAreaSpec area_spec( ghost_maxrap );
-  fastjet::AreaDefinition  area_def(fastjet::active_area, area_spec);
+  area_spec = fastjet::GhostedAreaSpec( ghost_maxrap, AjParameters::ghost_repeat, AjParameters::ghost_area );
+  area_def = fastjet::AreaDefinition(fastjet::active_area_explicit_ghosts, area_spec);
   
   std::cout << " ################################################### " << std::endl;
   std::cout << "Small jet def: " << small_jet_def.description() << std::endl;
@@ -92,30 +75,46 @@ FollowAjAnalysis::FollowAjAnalysis ( double SmallR, double LargeR,
 
 // Main analysis method
 // ====================
-int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch ){
+int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch,
+				       Double_t EventClassifier,
+				       TH1D* LeadDeltaPtHi,  TH1D* SubLeadDeltaPtHi, TH1D* LeadDeltaPtLo,  TH1D* SubLeadDeltaPtLo,
+				       TH2D* SmallUnmatchedhPtHi,  TH2D* SmallhPtHi,  TH2D* SmallhPtLo,
+				       TH1D* SmallhdphiHi, TH1D* SmallhdphiLo,
+				       TH2D* SmallUnmatchedAJ_hi, TH2D* SmallAJ_hi, TH2D* SmallAJ_lo,
+				       TH2D* LargehPtHi,  TH2D* LargehPtLo,
+				       TH1D* LargehdphiHi, TH1D* LargehdphiLo,
+				       TH2D* LargeAJ_hi, TH2D* LargeAJ_lo,
+				       TH2D* SmallDeltaAJ_hilo, TH2D* LargeDeltaAJ_hilo,
+				       TH2D* DeltaAJ_hi, TH2D* DeltaAJ_lo
+				       ){
+  SmallDiJetsHi.clear();
+  SmallDiJetsLo.clear();
+  LargeDiJetsHi.clear();
+  LargeDiJetsLo.clear();
   Has10Gev=false;
+
+  // We want to hold onto the jetanalyzer objects, so they're created dynamically
+  // Need to delete them by hand
+  if (pSmallJAhi){    delete pSmallJAhi;    pSmallJAhi=0;  }
+  if (pSmallJAlo){    delete pSmallJAlo;    pSmallJAlo=0;  }
+  if (pLargeJAhi){    delete pLargeJAhi;    pLargeJAhi=0;  }
+  if (pLargeJAlo){    delete pLargeJAlo;    pLargeJAlo=0;  }
 
   // Select particles to perform analysis on
   // ---------------------------------------
   std::vector<fastjet::PseudoJet> pLo = slo( particles );
   std::vector<fastjet::PseudoJet> pHi = shi( particles );
 
-  // Save for QA
-  // -----------
-  for ( int i = 0; i< pHi.size(); ++i )
-    UsedEventsHiPhiEtaPt->Fill( JetAnalyzer::phimod2pi( pHi.at(i).phi() ), pHi.at(i).eta(),pHi.at(i).pt() );
-  
-  for ( int i = 0; i< pLo.size(); ++i )
-    UsedEventsLoPhiEtaPt->Fill( JetAnalyzer::phimod2pi( pLo.at(i).phi()) , pLo.at(i).eta(),pLo.at(i).pt() );
-
   // First run standard analysis with small radius
   // ---------------------------------------------
   
   // find high constituent pT jets
   // -----------------------------
-  JetAnalyzer SmallJAhi ( pHi, small_jet_def ); // NO background subtraction
-  SmallJAhiResult = fastjet::sorted_by_pt( SmallJAhi.inclusive_jets() );
+  pSmallJAhi = new JetAnalyzer  ( pHi, small_jet_def ); // NO background subtraction
+  JetAnalyzer& SmallJAhi = *pSmallJAhi;
+  SmallJAhiResult = fastjet::sorted_by_pt( sjet ( SmallJAhi.inclusive_jets() ) );
   
+
   if ( SmallJAhiResult.size() < 1 )                 {     return 0; }
   if ( SmallJAhiResult.at(0).pt() > 10 )            { Has10Gev=true; }
 
@@ -125,7 +124,7 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
       
   // back to back? Answer this question with a selector
   // ---------------------------------------------------
-  std::vector<fastjet::PseudoJet> SmallDiJetsHi = SelectorDijets( dPhiCut ) ( sjet ( SmallJAhiResult ) );
+  SmallDiJetsHi = SelectorDijets( dPhiCut ) ( SmallJAhiResult ) ;
   if ( SmallDiJetsHi.size() == 0 ) {
     // std::cout << " NO dijet found" << std::endl;
     return 0;
@@ -137,18 +136,18 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
   if ( ToMatch ){
     if ( !IsMatched( SmallDiJetsHi, *ToMatch, SmallR ) ) return 0;
   }
-
+  
   // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
-  SmallUnmatchedAJ_hi->Fill ( CalcAj( SmallDiJetsHi ) );
+  SmallUnmatchedAJ_hi->Fill ( CalcAj( SmallDiJetsHi ), EventClassifier  );
   SmallUnmatchedhPtHi->Fill ( SmallDiJetsHi.at(0).pt() , SmallDiJetsHi.at(1).pt());
 
   // find corresponding jets with soft constituents
   // ----------------------------------------------
-  JetAnalyzer SmallJAlo( pLo, small_jet_def, area_def ); // WITH background subtraction
+  pSmallJAlo=new JetAnalyzer( pLo, small_jet_def, area_def ); // WITH background subtraction
+  JetAnalyzer& SmallJAlo = *pSmallJAlo;
   fastjet::Subtractor* SmallBackgroundSubtractor =  SmallJAlo.GetBackgroundSubtractor();
   SmallJAloResult = fastjet::sorted_by_pt( (*SmallBackgroundSubtractor)( SmallJAlo.inclusive_jets() ) );
   
-  std::vector<fastjet::PseudoJet> SmallDiJetsLo;  
   fastjet::Selector SmallSelectClose = fastjet::SelectorCircle( SmallR );
   
   // Leading:
@@ -172,21 +171,21 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
   // Stop here if for whatever reason we don't have two matched pairs
   // ----------------------------------------------------------------
   if ( SmallDiJetsHi.size()!=2 || SmallDiJetsLo.size()!=2 ) return 2;
-      
+
   // Diagnostic
   if ( fabs( SmallDiJetsLo.at(0).eta())>max_rap ) std:: cerr << "Uh-oh... Small R Lead jet eta = "    << SmallDiJetsLo.at(0).eta() << std::endl;
   if ( fabs( SmallDiJetsLo.at(1).eta())>max_rap ) std:: cerr << "Uh-oh... Small R SubLead jet eta = " << SmallDiJetsLo.at(1).eta() << std::endl;
     
   // Fill small R histos
-  SmallAJ_hi->Fill( CalcAj( SmallDiJetsHi ) );
-  SmallAJ_lo->Fill( CalcAj( SmallDiJetsLo ) );
+  SmallAJ_hi->Fill( CalcAj( SmallDiJetsHi ), EventClassifier );
+  SmallAJ_lo->Fill( CalcAj( SmallDiJetsLo ), EventClassifier );
   SmallhdphiHi->Fill( JetAnalyzer::phimod2pi( SmallDiJetsHi.at(0).phi() - SmallDiJetsHi.at(1).phi() - TMath::Pi()) );
   SmallhdphiLo->Fill( JetAnalyzer::phimod2pi( SmallDiJetsLo.at(0).phi() - SmallDiJetsLo.at(1).phi() - TMath::Pi()) );  
   SmallhPtHi->Fill( SmallDiJetsHi.at(0).pt(), SmallDiJetsHi.at(1).pt());
   SmallhPtLo->Fill( SmallDiJetsLo.at(0).pt(), SmallDiJetsLo.at(1).pt());
 
-  if ( SmallDeltaAJ_hilo ) SmallDeltaAJ_hilo->Fill( CalcAj( SmallDiJetsHi ) - CalcAj( SmallDiJetsLo ) );
-
+  if ( SmallDeltaAJ_hilo ) SmallDeltaAJ_hilo->Fill( CalcAj( SmallDiJetsHi ) - CalcAj( SmallDiJetsLo ), EventClassifier );
+    
   // Now match to large radius
   // -------------------------
   // KEEP IN MIND: Could choose SmallR, but large seems more logical
@@ -194,9 +193,9 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
 
   // Hi pT constituents
   // ------------------
-  JetAnalyzer LargeJAhi ( pHi, large_jet_def ); // NO background subtraction
-  LargeJAhiResult = fastjet::sorted_by_pt( LargeJAhi.inclusive_jets() );  
-  std::vector<fastjet::PseudoJet> LargeDiJetsHi;  
+  pLargeJAhi = new JetAnalyzer( pHi, large_jet_def ); // NO background subtraction
+  JetAnalyzer& LargeJAhi = *pLargeJAhi;
+  LargeJAhiResult = fastjet::sorted_by_pt( sjet( LargeJAhi.inclusive_jets() ) );
 
   // Leading:
   LargeSelectClose.set_reference( SmallDiJetsHi.at(0) );
@@ -218,10 +217,10 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
 
   // Lo pT constituents
   // ------------------
-  JetAnalyzer LargeJAlo( pLo, large_jet_def, area_def ); // WITH background subtraction
+  pLargeJAlo = new JetAnalyzer ( pLo, large_jet_def, area_def ); // WITH background subtraction
+  JetAnalyzer& LargeJAlo =  *pLargeJAlo;
   fastjet::Subtractor* LargeBackgroundSubtractor =  LargeJAlo.GetBackgroundSubtractor();
   LargeJAloResult = fastjet::sorted_by_pt( (*LargeBackgroundSubtractor)( LargeJAlo.inclusive_jets() ) );
-  std::vector<fastjet::PseudoJet> LargeDiJetsLo;  
 
   // Leading:
   LargeSelectClose.set_reference( SmallDiJetsLo.at(0) );
@@ -251,12 +250,12 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
   if ( fabs( LargeDiJetsHi.at(1).eta())>max_rap ) std:: cerr << "Uh-oh... Large R, Hi, SubLead jet eta = " << LargeDiJetsHi.at(1).eta() << std::endl;
 
   // Fill remaining histos.
-  LargeAJ_hi->Fill( CalcAj( LargeDiJetsHi ) );
-  LargeAJ_lo->Fill( CalcAj( LargeDiJetsLo ) );
+  LargeAJ_hi->Fill( CalcAj( LargeDiJetsHi ), EventClassifier );
+  LargeAJ_lo->Fill( CalcAj( LargeDiJetsLo ), EventClassifier );
 
-  if ( DeltaAJ_hi )         DeltaAJ_hi->Fill( CalcAj( SmallDiJetsHi ) - CalcAj( LargeDiJetsHi ) );
-  if ( DeltaAJ_hi )         DeltaAJ_lo->Fill( CalcAj( SmallDiJetsLo ) - CalcAj( LargeDiJetsLo ) );
-  if ( LargeDeltaAJ_hilo )  LargeDeltaAJ_hilo->Fill( CalcAj( LargeDiJetsHi ) - CalcAj( LargeDiJetsLo ) );
+  if ( DeltaAJ_hi )         DeltaAJ_hi->Fill( CalcAj( SmallDiJetsHi ) - CalcAj( LargeDiJetsHi ), EventClassifier );
+  if ( DeltaAJ_hi )         DeltaAJ_lo->Fill( CalcAj( SmallDiJetsLo ) - CalcAj( LargeDiJetsLo ), EventClassifier );
+  if ( LargeDeltaAJ_hilo )  LargeDeltaAJ_hilo->Fill( CalcAj( LargeDiJetsHi ) - CalcAj( LargeDiJetsLo ), EventClassifier );
   
   LargehdphiHi->Fill( JetAnalyzer::phimod2pi( LargeDiJetsHi.at(0).phi() - LargeDiJetsHi.at(1).phi() - TMath::Pi()) );
   LargehdphiLo->Fill( JetAnalyzer::phimod2pi( LargeDiJetsLo.at(0).phi() - LargeDiJetsLo.at(1).phi() - TMath::Pi()) );  
@@ -281,15 +280,12 @@ int FollowAjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particle
   
 }
 
-
 // Helper to deal with repetitive stuff
-TStarJetPicoReader GetReader ( TString ChainPattern, TString TriggerString, TString ChainName, const double RefMultCut ){
+TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const double RefMultCut ){
   TStarJetPicoDefinitions::SetDebugLevel(0); // 10 for more output
 
   TStarJetPicoReader reader;
-  TChain* tree = new TChain( ChainName );
-  tree->Add( ChainPattern );
-  reader.SetInputChain (tree);
+  reader.SetInputChain (chain);
 
   // Event and track selection
   // -------------------------
@@ -297,9 +293,9 @@ TStarJetPicoReader GetReader ( TString ChainPattern, TString TriggerString, TStr
   evCuts->SetTriggerSelection( TriggerString ); //All, MB, HT, pp, ppHT, ppJP
   // Additional cuts 
   evCuts->SetVertexZCut (AjParameters::VzCut);
-  evCuts->SetRefMultCut ( RefMultCut);
+  evCuts->SetRefMultCut ( RefMultCut );
   evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
-
+  
   // Tracks cuts
   TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
   trackCuts->SetDCACut( AjParameters::DcaCut );
@@ -321,49 +317,6 @@ TStarJetPicoReader GetReader ( TString ChainPattern, TString TriggerString, TStr
   std::cout << "  GetMaxEtCut = " << towerCuts->GetMaxEtCut() << std::endl;
   std::cout << "  Gety8PythiaCut = " << towerCuts->Gety8PythiaCut() << std::endl;
   
-  // V0s: Turn off
-  reader.SetProcessV0s(false);
-
-  return reader;
-}
-
-// Slightly different, preferred version of GetReader
-TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const double RefMultCut ){
-  TStarJetPicoDefinitions::SetDebugLevel(0); // 10 for more output
-
-  TStarJetPicoReader reader;
-  reader.SetInputChain (chain);
-
-  // Event and track selection
-  // -------------------------
-  TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();
-  evCuts->SetTriggerSelection( TriggerString ); //All, MB, HT, pp, ppHT, ppJP
-  // Additional cuts 
-  evCuts->SetVertexZCut (AjParameters::VzCut);
-  evCuts->SetRefMultCut ( RefMultCut );
-  evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
-  
-  // Tracks: Some standard high quality cuts
-  // TODO: Add track, tower quality cuts
-  TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
-  // std::cout << " dca : " << trackCuts->GetDCACut(  ) << std::endl;
-  // std::cout << " nfit : " <<   trackCuts->GetMinNFitPointsCut( ) << std::endl;
-  // std::cout << " nfitratio : " <<   trackCuts->GetFitOverMaxPointsCut( ) << std::endl;
-  // std::cout << " maxpt : " << trackCuts->GetMaxPtCut (  ) << std::endl;
-  // throw (std::string("done"));
-  
-  trackCuts->SetDCACut( AjParameters::DcaCut ); 
-  trackCuts->SetMinNFitPointsCut( AjParameters::NMinFit );
-  trackCuts->SetFitOverMaxPointsCut( AjParameters::FitOverMaxPointsCut );
-  trackCuts->SetMaxPtCut ( AjParameters::MaxTrackPt );
-  
-  // Towers: Don't know. Let's print out the default
-  TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  towerCuts->SetMaxEtCut(40);  // Let's try
-  std::cout << "Using these tower cuts:" << std::endl;
-  std::cout << "  GetMaxEtCut = " << towerCuts->GetMaxEtCut() << std::endl;
-  std::cout << "  Gety8PythiaCut = " << towerCuts->Gety8PythiaCut() << std::endl;
-    
   // V0s: Turn off
   reader.SetProcessV0s(false);
 

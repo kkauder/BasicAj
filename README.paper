@@ -1,0 +1,16 @@
+0. Environment
+-- Work in csh.
+-- Edit and source SetEnvironment.csh
+source SetEnvironment.csh
+
+In case of spurious linking problems, try
+make clean && make
+
+1. pp AJ. Jets in the result files are used for embedding into AA
+source RunPp.csh
+
+
+
+
+
+    

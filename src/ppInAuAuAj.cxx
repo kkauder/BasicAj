@@ -17,7 +17,7 @@
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TChain.h>
-#include <tBranch.h>
+#include <TBranch.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TSystem.h>
@@ -56,24 +56,64 @@ int main ( int argc, const char** argv ) {
     cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
   }
   
-  // const char *defaults[4] = {"ppInAuAuAj","351ppInAuAuAj.root","MB","Data/AuAuMB_0_20/*.root"}; // CUT OFF at refmult<351
-  const char *defaults[4] = {"ppInAuAuAj","ppInAuAuAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"}; // CUT OFF at refmult<351
+  const char *defaults[5] = {"ppInAuAuAj","AjResults/ppInAuAuAj.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
+  // const char *defaults[5] = {"ppInAuAuAj","AjResults/ppInAuAuAj.root","AjResults/ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
   if ( argc==1 ) {
     argv=defaults;
-    argc=4;
+    argc=5;
   }
   // Throw arguments in a vector
   // ---------------------------
   vector<string> arguments(argv + 1, argv + argc);
 
+  // Output
+  // ------
+  TString OutFileName = arguments.at(0);
+
   // Load pp Jets
   // ------------
-  TString ppAjName = "AjResults/ppAj.root";
-  if ( AjParameters::R==0.2 ){
-    ppAjName.ReplaceAll ( gSystem->BaseName(ppAjName), TString ("R0.2_")+ gSystem->BaseName(ppAjName));
+  TString ppAjName = arguments.at(1);
+
+  // jet resolution parameter
+  // ------------------------
+  float R = 0.4;
+  // Follow to different R
+  float OtherR = 0.2;   // will be set to 0.4 if we trigger on 0.2, i.e., we can follow in either direction
+
+  if ( OutFileName.Contains ("R0.2") ){
+    if ( !ppAjName.Contains ("R0.2") ) {
+      cerr << "OutFileName and ppAjName not compatible" << endl;
+      return -1;
+    }
+    R=0.2;
+    OtherR=0.4;    
   }
 
-    
+  float PtConsLo=0.2;
+  if ( OutFileName.Contains ("Pt1") ){
+    if ( !ppAjName.Contains ("Pt1") ) {
+      cerr << "OutFileName and ppAjName not compatible" << endl;
+      return -1;
+    }
+    PtConsLo=1.0;
+  }
+
+  // Jet Pt cuts
+  // -----------
+  float LeadPtMin = AjParameters::LeadPtMin;
+  float SubLeadPtMin = AjParameters::SubLeadPtMin;
+  if ( OutFileName.Contains ("R0.2") ){
+    LeadPtMin=16.0;
+    SubLeadPtMin=8.0;
+  }
+
+  cout << " ################################################### " << endl;
+  cout << "Triggering with R=" << R << endl;
+  cout << "Following to R=" << OtherR << endl;
+  cout << "Low pT cut =" << PtConsLo << endl;
+  cout << " ################################################### " << endl;
+
+  
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
   assert ( ppJets->GetEntries()>0 && "Something went wrong loading the pp jets.");
@@ -105,9 +145,9 @@ int main ( int argc, const char** argv ) {
   // Load and set up AuAu tree
   // --------------------
   TString ChainName  = "JetTree";
-  TString TriggerName = arguments.at(1);
+  TString TriggerName = arguments.at(2);
   TChain* chain = new TChain( ChainName );
-  for (int i=2; i<arguments.size() ; ++i ) {
+  for (int i=3; i<arguments.size() ; ++i ) {
     chain->Add( arguments.at(i).data() );
   }
 
@@ -115,13 +155,7 @@ int main ( int argc, const char** argv ) {
   int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   // TStarJetPicoDefinitions::SetDebugLevel(10);
-
-  // Files and histograms
-  // --------------------
-  TString OutFileName = arguments.at(0);
-  if ( AjParameters::R==0.2 ){
-    OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("R0.2_")+ gSystem->BaseName(OutFileName));
-  }
+  
 
   TFile* fout = new TFile( OutFileName, "RECREATE");
   
@@ -140,8 +174,33 @@ int main ( int argc, const char** argv ) {
   TH1D* hdPtHi = new TH1D( "hdPtHi","#Delta p_{T} for hard constituent jets", 120, -10, 50 );
   TH1D* hdPtLo = new TH1D( "hdPtLo","#Delta p_{T} for soft constituent jets", 120, -10, 50 );
 
+  TH2D* hdPtLead = new TH2D( "hdPtLead","#Delta p_{T} soft-hard, leading jets;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+  TH2D* hdPtSubLead = new TH2D( "hdPtSubLead","#Delta p_{T} soft-hard, subleading jets;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+  TH2D* SpecialhdPtLead = new TH2D( "SpecialhdPtLead","#Delta p_{T} soft-hard, leading jets, |A_{J}|>0.25 ;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+  TH2D* SpecialhdPtSubLead = new TH2D( "SpecialhdPtSubLead","#Delta p_{T} soft-hard, subleading jets, |A_{J}|>0.25;#Delta p_{T};Refmult", 120, -20, 40, 800, -0.5, 799.5 );
+
   TH1D* hdphiHi = new TH1D( "hdphiHi","#Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* hdphiLo = new TH1D( "hdphiLo","#Delta#phi for soft constituent jets", 200, -2, 2 );
+
+  // Follow down to other R
+  TH2D* OtherAJ_lo = new TH2D( "OtherAJ_lo","A_{J} for soft constituent jets with other R ;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* OtherLeadPtLoss_lo    = new TH2D( "OtherLeadPtLoss_lo","Leading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
+  TH2D* OtherSubLeadPtLoss_lo = new TH2D( "OtherSubLeadPtLoss_lo","SubLeading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
+
+  // Save results
+  // ------------
+  TTree* ResultTree=new TTree("ResultTree","Result Jets");
+  TLorentzVector j1, j2, jm1, jm2;
+  ResultTree->Branch("j1",&j1);
+  ResultTree->Branch("j2",&j2);
+  ResultTree->Branch("jm1",&jm1);
+  ResultTree->Branch("jm2",&jm2);
+  int eventid;
+  int runid;
+  double refmult; // Really an int, but may change if using refmultcorr
+  ResultTree->Branch("eventid",&eventid, "eventid/i");
+  ResultTree->Branch("runid",&runid, "runid/i");
+  ResultTree->Branch("refmult",&refmult, "refmult/d");
   
   // Helpers
   // -------
@@ -157,6 +216,8 @@ int main ( int argc, const char** argv ) {
   // For pp jet selection
   // --------------------
   gRandom->SetSeed(1);
+  fastjet::GhostedAreaSpec TmpArea; // for access to static random seed
+  vector<int> SeedStatus;
 
   // Long64_t nEvents=99; // -1 for all
   Long64_t nEvents=-1;
@@ -197,9 +258,13 @@ int main ( int argc, const char** argv ) {
 
   // Initialize analysis class
   // -------------------------
-  AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
-		  AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
-		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
+  AjAnalysis AjA( R,
+		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
+		  LeadPtMin, SubLeadPtMin, 
+		  // AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
+		  AjParameters::max_track_rap,
+		  PtConsLo,
+		  AjParameters::PtConsHi,
 		  AjParameters::dPhiCut
 		  );  
 
@@ -209,7 +274,6 @@ int main ( int argc, const char** argv ) {
   reader.Init(nEvents);
   
   Long64_t nJetsUsed=0;
-  double refmult; // Really an int, but may change if using refmultcorr
   while ( reader.NextEvent() ) {
     reader.PrintStatus(10);      
     
@@ -221,7 +285,23 @@ int main ( int argc, const char** argv ) {
     // ----------
     TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
     refmult=header->GetGReferenceMultiplicity();
+    eventid = header->GetEventId();
+    runid   = header->GetRunId();
 
+    // NEW 05/07/15: For repeatability across different picoDSTs, set random seed
+    // Static member, so we can set it here
+    // Annoyingly, the getter and setter isn't static, so we need to instantiate
+    // Apparently, the seed is always an int[2], so it's natural to seed it with runid and eventid      
+    // Using Au+Au ids
+    TmpArea.get_random_status(SeedStatus);
+    if ( SeedStatus.size() !=2 ) {
+      throw std::string("SeedStatus.size() !=2");
+      return -1;
+    } 
+    SeedStatus.at(0) = runid;
+    SeedStatus.at(1) = eventid;
+    TmpArea.set_random_status(SeedStatus);
+    
     // Make AuAu vector
     // ----------------
     AuAuparticles.clear();
@@ -256,14 +336,19 @@ int main ( int argc, const char** argv ) {
       int ret;
       ret =AjA.AnalyzeAndFill( particles, 0,refmult,
       // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
-			      UnmatchedAJ_hi, AJ_hi, AJ_lo,
-			      
-			      UnmatchedhPtHi,  hPtHi, hPtLo,
-			      UnmatchedhdPtHi, hdPtHi, hdPtLo,
-			      hdphiHi, hdphiLo
-			      );
-      // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)) ); // Force matching to original trigger
+			       UnmatchedAJ_hi, AJ_hi, AJ_lo,
+			       
+			       UnmatchedhPtHi,  hPtHi, hPtLo,
+			       UnmatchedhdPtHi, hdPtHi, hdPtLo,
+			       hdphiHi, hdphiLo,
 
+			       OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
+
+			       hdPtLead, hdPtSubLead,
+			       SpecialhdPtLead, SpecialhdPtSubLead
+			      );
+      // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)) ); // Force matching to original trigger      
+      
       switch ( ret ){
       case 3 : nMatchedDijets++;
 	// FALLTHROUGH
@@ -280,6 +365,22 @@ int main ( int argc, const char** argv ) {
 	break;      
       } //  switch (ret)
       nJetsUsed++;
+
+      // Save results
+      vector<PseudoJet> DiJetsHi = AjA.GetDiJetsHi();
+      vector<PseudoJet> DiJetsLo = AjA.GetDiJetsLo();
+      
+      // Check for matching? yes, for now.
+      // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
+      // cout << " going in"  << endl;      
+      if ( DiJetsLo.size()==2 ){
+	j1 = MakeTLorentzVector( DiJetsHi.at(0) );
+	j2 = MakeTLorentzVector( DiJetsHi.at(1) );
+	jm1 = MakeTLorentzVector( DiJetsLo.at(0) );
+	jm2 = MakeTLorentzVector( DiJetsLo.at(1) );
+	ResultTree->Fill();
+      }      
+      
     } // jit
   } // reader.NextEvent()
   cout << "##################################################################" << endl;

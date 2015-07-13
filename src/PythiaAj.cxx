@@ -38,6 +38,30 @@ int main () {
   // TString triggertype="gg";
   gRandom->SetSeed(1);
 
+  // File name
+  // ---------
+  TString OutFileName = "AjResults/pythiaAj.root";
+  if ( triggertype== "qq" || triggertype== "gg" ) OutFileName.ReplaceAll(".root", TString("_")+triggertype+TString(".root") );
+  TFile* fout = new TFile( OutFileName, "RECREATE");
+
+  // jet resolution parameter
+  // ------------------------
+  float R = 0.4;
+  // Follow to different R
+  // float OtherR = 0.2;   // will be set to 0.4 if we trigger on 0.2, i.e., we can follow in either direction
+  if ( OutFileName.Contains ("R0.2") ){
+    R=0.2;
+    // OtherR=0.4;    
+  }
+
+  // soft constituent cut
+  // --------------------
+  float PtConsLo=0.2;
+  if ( OutFileName.Contains ("Pt1") ){
+    PtConsLo=1.0;
+  }
+
+
   // Load pythia Jets
   // ----------------
   TString PythiaName = "pytest.root";
@@ -76,7 +100,7 @@ int main () {
     for ( int i=0 ; i<pFullEvent->GetEntries() ; ++i ){
       lv = (TLorentzVector*) pFullEvent->At(i);
       // Ensure kinematic similarity
-      if ( lv->Pt()< AjParameters::PtConsLo ) continue;
+      if ( lv->Pt()< PtConsLo ) continue;
       if ( fabs( lv->Eta()>1) ) continue;
       CurrentPythiaEvent.push_back( PseudoJet (*lv ) );
     }
@@ -118,11 +142,8 @@ int main () {
     TriggerPartons.push_back( CurrentTriggerPartons );  
   }
 
-  // Files and histograms
+  // Histograms
   // --------------------
-  TString OutFileName = "AjResults/pythiaAj.root";
-  if ( triggertype== "qq" || triggertype== "gg" ) OutFileName.ReplaceAll(".root", TString("_")+triggertype+TString(".root") );
-  TFile* fout = new TFile( OutFileName, "RECREATE");
 
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
@@ -158,9 +179,12 @@ int main () {
 
   // Initialize analysis class
   // -------------------------
-  AjAnalysis AjA( AjParameters::R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
+  AjAnalysis AjA( R,
+		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
-		  AjParameters::max_track_rap, AjParameters::PtConsLo, AjParameters::PtConsHi,
+		  AjParameters::max_track_rap,
+		  PtConsLo,
+		  AjParameters::PtConsHi,
 		  AjParameters::dPhiCut
 		  );  
 

@@ -4,7 +4,8 @@
 make bin/FollowPicoAj || exit
 
 # split into chunks
-set base = CleanAuAu/Clean8
+# set base = CleanAuAu/Clean8
+set base = SmallAuAu/Small_Clean8
 
 set LeadMin=20
 set SubLeadMin=10
