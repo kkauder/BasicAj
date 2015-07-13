@@ -59,6 +59,7 @@ private :
   double dPhiCut;        ///< opening angle for dijet requirement. Accept only  |&phi;1 - &phi;2 - &pi;| < &Delta;&phi;.
 
   fastjet::JetDefinition jet_def;       ///< jet definition
+  fastjet::JetDefinition other_jet_def; ///< jet definition with a different radius
 
   fastjet::Selector select_track_rap;   ///< constituent rapidity selector
   fastjet::Selector select_lopt;        ///< constituent p<SUB>T</SUB> selector
@@ -66,8 +67,8 @@ private :
 
   fastjet::Selector slo;                ///< compound selector for low  p<SUB>T</SUB> constituents
   fastjet::Selector shi;                ///< compound selector for high p<SUB>T</SUB> constituents
-  
-  // Relevant jet candidates
+
+// Relevant jet candidates
   fastjet::Selector select_jet_rap;        ///< jet rapidity selector
   fastjet::Selector select_jet_pt_min;     ///< jet p<SUB>T</SUB> selector
   fastjet::Selector select_jet_pt_max;     ///< jet p<SUB>T</SUB> selector
@@ -76,11 +77,21 @@ private :
   fastjet::GhostedAreaSpec area_spec;      ///< ghosted area specification
   fastjet::AreaDefinition area_def;        ///< jet area definition
 
+  JetAnalyzer* pJAhi;                      ///< JetAnalyzer object for high pT
+  JetAnalyzer* pJAlo;                      ///< JetAnalyzer object for low pT
+  JetAnalyzer* pOtherJAlo;                 ///< JetAnalyzer object for low pT with different R
+  
+  std::vector<fastjet::PseudoJet> pHi;     ///< High pT constituents
+  std::vector<fastjet::PseudoJet> pLo;     ///< Low pT constituents
+
   std::vector<fastjet::PseudoJet> JAhiResult;  ///< Unaltered clustering result with high pT constituents
   std::vector<fastjet::PseudoJet> JAloResult;  ///< Unaltered clustering result with low pT constituents
+  std::vector<fastjet::PseudoJet> OtherJAloResult;  ///< Unaltered clustering result with low pT constituents, different R
+  
 
   std::vector<fastjet::PseudoJet> DiJetsHi;    ///< Dijet result with high pT constituents
   std::vector<fastjet::PseudoJet> DiJetsLo;    ///< Dijet result with low pT constituents
+  std::vector<fastjet::PseudoJet> OtherDiJetsLo; ///< Dijet result with low pT constituents and different R
 
   
 public:
@@ -102,7 +113,7 @@ public:
 	       double dPhiCut = 0.4
 	       );
 
-
+    
   /** Dijet asymmetry A<SUB>J</SUB> = &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> */
   inline double CalcAj ( std::vector<fastjet::PseudoJet>& jets ){
     if ( jets.size()!=2 ){
@@ -140,7 +151,10 @@ public:
 		       TH2D* UnmatchedAJ_hi=0, TH2D* AJ_hi=0, TH2D* AJ_lo=0,
 		       TH2D* UnmatchedhPtHi=0, TH2D* hPtHi=0, TH2D* hPtLo=0,  
 		       TH1D* UnmatchedhdPtHi=0, TH1D* hdPtHi=0, TH1D* hdPtLo=0,
-		       TH1D* hdphiHi=0, TH1D* hdphiLo=0
+		       TH1D* hdphiHi=0, TH1D* hdphiLo=0,
+		       TH2D* SmallAJ_lo=0, TH2D* SmallLeadPtLoss_lo=0, TH2D* SmallSubLeadPtLoss_lo=0, float SmallR=0,
+		       TH2D* hdPtLead=0, TH2D* hdPtSubLead=0,
+		       TH2D* SpecialhdPtLead=0, TH2D* SpecialhdPtSubLead=0
 		       );
   
   /** This little helper is true if there's at least one 10 GeV jet
@@ -197,12 +211,21 @@ public:
   inline fastjet::AreaDefinition& GetArea_def () { return area_def; }
 
 
+  /// Handle to JetAnalyzer for high pT constituents
+  inline JetAnalyzer* GetJAhi() {return pJAhi; };
+  /// Handle to JetAnalyzer for low pT constituents
+  inline JetAnalyzer* GetJAlo() {return pJAlo; };
+
   /// Handle to unaltered clustering result with high pT constituents
   inline std::vector<fastjet::PseudoJet> GetJAhiResult() {return JAhiResult; };
   /// Handle to unaltered clustering result with low pT constituents
   inline std::vector<fastjet::PseudoJet> GetJAloResult() {return JAloResult; };
 
+  /// Handle to high pT constituents
+  inline std::vector<fastjet::PseudoJet> GetLoConstituents() {return pLo; };
+  inline std::vector<fastjet::PseudoJet> GetHiConstituents() {return pHi; };
 
+  
   /// Handle to Dijet result with high pT constituents
   inline std::vector<fastjet::PseudoJet> GetDiJetsHi() {return DiJetsHi; };
   /// Handle to Dijet result with low pT constituents

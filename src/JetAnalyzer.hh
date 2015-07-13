@@ -30,10 +30,9 @@
    - Doxygen comments should go in the header files.
    - Please name your variables properly. 
    - Comment a lot.
-   - Please try to keep track of changes. Ultimately, this should get version control.
+   - Please try to keep track of changes. Use version control.
    - Please keep indentation clean. I'm using some combination of [K&R and GNU style](http://en.wikipedia.org/wiki/Indent_style#Styles), 
    but anything clean works. If it gets messed up, open it in emacs, mark everything, and hit tab once.
-   
 */
 
 
@@ -148,17 +147,6 @@ public :
   // ----------------
   // Analysis methods
   // ----------------
-  /** \deprecated Kept around for testing only and will go away soon. Inconsistent return value. 
-      Please use SelectorDijets instead.
-
-      Searches for and returns dijet pairs within |&phi;1 - &phi;2 - &pi;| < &Delta;&phi;.
-      returns 0 if no pair is found.
-      In the current implementation, only the top two jets are compared.
-      If possible, background subtraction is applied.
-      \param sjet is a fastjet::Selector to select candidates.
-      \param dPhi is the accepted away-side opening angle 
-   */
-  std::vector<fastjet::PseudoJet>* GetDiJets( fastjet::Selector& sjet, double dPhi );
 
   // -------------
   // Other Methods
@@ -168,7 +156,10 @@ public :
       and the area definition is computed internally. Expand and modify as needed.
    */
   fastjet::Subtractor* GetBackgroundSubtractor();
-  
+  /**
+     Handle to BackgroundEstimator()
+   */
+  fastjet::JetMedianBackgroundEstimator* GetBackgroundEstimator() { return bkgd_estimator; };
   // ---------
   // Operators 
   // ---------

@@ -4,6 +4,7 @@ os = $(shell uname -s)
 INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(PYTHIA8DIR)/include/Pythia8/ -I$(STARPICOPATH)
 INCFLAGS      += -I./src
 
+
 ifeq ($(os),Linux)
 CXXFLAGS      = 
 else
@@ -33,8 +34,12 @@ ROOTLIBS      = $(shell root-config --libs)
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
 LIBS          = -lfastjet -lfastjettools -lpythia8  -llhapdfdummy -lTStarJetPico
 
-LIBPATH       += -L./lib
-LIBS	      += -lMyJetlib
+## Unfolding Test
+INCFLAGS      += -I/Users/kkauder/RooUnfold-1.1.1/src
+LIBPATH       += -L/Users/kkauder/RooUnfold-1.1.1
+LIBS          += -lRooUnfold
+
+
 
 # for cleanup
 SDIR          = src
@@ -65,23 +70,46 @@ $(BDIR)/%  : $(ODIR)/%.o
 ############################# Main Targets ####################################
 ###############################################################################
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
+	 $(BDIR)/RandomCone  \
 	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj  \
-	 $(BDIR)/SimpleTree \
+	 $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj \
+	 $(BDIR)/SimpleTree $(BDIR)/TreeWithMc $(BDIR)/QuickMbVectors \
 	 $(BDIR)/MakeSmallerTrees \
-	 lib/libMyJetlib.a \
+	 $(BDIR)/PythiaInMcAj \
+	 $(BDIR)/TestCountPythia \
+	 $(BDIR)/BareBonesAj \
+	 $(BDIR)/UnfoldingTest \
+	 lib/libMyJetlib.so \
 	 doxy
 
+# lib/libMyJetlib.a \
+
+# $(BDIR)/FollowPythiaAj 
 # 	 $(BDIR)/ppInMcAj $(BDIR)/PythiaInMcAj \
-# 	 $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj $(BDIR)/FollowPythiaAj \
+
+$(SDIR)/dict.cxx 		: $(SDIR)/ktTrackEff.hh
+	cd $(SDIR); rootcint -f dict.cxx -c -I. ./ktTrackEff.hh
+
+$(ODIR)/dict.o 		: $(SDIR)/dict.cxx
+$(ODIR)/ktTrackEff.o 	: $(SDIR)/ktTrackEff.cxx $(SDIR)/ktTrackEff.hh
+
 
 
 # $(BDIR)/AreaTest : 	 $(ODIR)/AreaTest.o
 # $(BDIR)/AreaTest.o : 	 $(SDIR)/AreaTest.cxx
 
-lib/libMyJetlib.a	: $(ODIR)/JetAnalyzer.o
+lib/libMyJetlib.so	: $(ODIR)/JetAnalyzer.o $(ODIR)/dict.o $(ODIR)/ktTrackEff.o
 	@echo 
 	@echo MAKING LIBRARY
-	ar -rcs $@ $^
+	$(CXX) -shared $(LDFLAGS) $(LIBPATH) $(LIBS) $^ -o $@
+
+#	g++ -flat_namespace -undefined suppress dict.o -L/usr/local/root_v5.32_binary_m64/lib -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lpthread -Wl,-rpath,/usr/local/root_v5.32_binary_m64/lib -lm -ldl -o libKtJet.so
+# ar -rcs $@ $^
+
+# lib/libMyJetlib.a	: $(ODIR)/JetAnalyzer.o $(ODIR)/dict.o $(ODIR)/ktTrackEff.o
+# 	@echo 
+# 	@echo MAKING LIBRARY
+# 	ar -rcs $@ $^
 
 $(ODIR)/JetAnalyzer.o 		: $(SDIR)/JetAnalyzer.cxx $(INCS)
 $(ODIR)/AjAnalysis.o 	 	: $(SDIR)/AjAnalysis.cxx $(INCS) $(SDIR)/AjAnalysis.hh
@@ -89,21 +117,29 @@ $(ODIR)/FollowAjAnalysis.o 	: $(SDIR)/FollowAjAnalysis.cxx $(INCS) $(SDIR)/Follo
 
 
 #Aj
-$(BDIR)/FollowPicoAj		: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
-$(BDIR)/FollowPythiaAj		: $(ODIR)/FollowPythiaAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
-$(BDIR)/ppInAuAuFollowAj	: $(ODIR)/ppInAuAuFollowAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.a
+$(BDIR)/FollowPicoAj		: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.so
+$(BDIR)/FollowPythiaAj		: $(ODIR)/FollowPythiaAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.so
+$(BDIR)/ppInAuAuFollowAj	: $(ODIR)/ppInAuAuFollowAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.so
 
-$(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
-$(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
-$(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
-$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
-$(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
-$(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.a
+$(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/PythiaInAuAuAj	: $(ODIR)/PythiaInAuAuAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/TestCountPythia	: $(ODIR)/TestCountPythia.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+
+$(BDIR)/TreeWithMc      : $(ODIR)/TreeWithMc.o		lib/libMyJetlib.so
+$(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+
+$(BDIR)/UnfoldingTest	: $(ODIR)/UnfoldingTest.o 	lib/libMyJetlib.so
+
+$(BDIR)/BareBonesAj	: $(ODIR)/BareBonesAj.o
 
 
 # helper
-$(BDIR)/MakeSmallerTrees	: $(ODIR)/MakeSmallerTrees.o	 	lib/libMyJetlib.a
-
+$(BDIR)/MakeSmallerTrees	: $(ODIR)/MakeSmallerTrees.o	 	lib/libMyJetlib.so
+$(BDIR)/QuickMbVectors		: $(ODIR)/QuickMbVectors.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 ###############################################################################
 ##################################### MISC ####################################

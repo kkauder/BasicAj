@@ -78,6 +78,12 @@ private :
   fastjet::GhostedAreaSpec area_spec;      ///< ghosted area specification
   fastjet::AreaDefinition area_def;        ///< jet area definition
 
+  JetAnalyzer* pSmallJAhi;                      ///< JetAnalyzer object for high pT, small R
+  JetAnalyzer* pSmallJAlo;                      ///< JetAnalyzer object for low pT, small R
+
+  JetAnalyzer* pLargeJAhi;                      ///< JetAnalyzer object for high pT, large R
+  JetAnalyzer* pLargeJAlo;                      ///< JetAnalyzer object for low pT, large R
+
 
   std::vector<fastjet::PseudoJet> SmallJAhiResult;  ///< Clustering result with high pT constituents, small R
   std::vector<fastjet::PseudoJet> SmallJAloResult;  ///< Clustering result with low pT constituents, small R
@@ -85,6 +91,11 @@ private :
   std::vector<fastjet::PseudoJet> LargeJAhiResult;  ///< Clustering result with high pT constituents, large R
   std::vector<fastjet::PseudoJet> LargeJAloResult;  ///< Clustering result with low pT constituents, large R
 
+  std::vector<fastjet::PseudoJet> SmallDiJetsHi;    ///< Dijet result with high pT constituents, small R
+  std::vector<fastjet::PseudoJet> SmallDiJetsLo;    ///< Dijet result with low pT constituents, small R
+
+  std::vector<fastjet::PseudoJet> LargeDiJetsHi;    ///< Dijet result with high pT constituents, large R
+  std::vector<fastjet::PseudoJet> LargeDiJetsLo;    ///< Dijet result with low pT constituents, large R
   
   // Histos to fill
   // --------------
@@ -115,9 +126,6 @@ private :
   TH1D* LargeAJ_hi;           ///< Matched hard constituent A_J, large R
   TH1D* LargeAJ_lo;           ///< Matched soft constituent A_J, large R
 
-  TH3D* UsedEventsHiPhiEtaPt; ///< phi, eta, p<SUB>T</SUB> of hard constituents
-  TH3D* UsedEventsLoPhiEtaPt; ///< phi, eta, p<SUB>T</SUB> of soft constituents
-
   TH1D* SmallDeltaAJ_hilo;    ///< Small R, A_J (hard) - A_J (soft)
   TH1D* LargeDeltaAJ_hilo;    ///< Large R, A_J (hard) - A_J (soft)
   TH1D* DeltaAJ_hi;           ///< Matched, hard constituents, A_J (Small R) - A_J (Large R)
@@ -135,32 +143,12 @@ public:
       \param PtConsLo: constituent minimum p<SUB>T</SUB>
       \param PtConsHi: constituent maximum p<SUB>T</SUB>
       \param dPhiCut: opening angle for dijet requirement. Accept only  |&phi;1 - &phi;2 - &pi;| < dPhiCut.
-      \param UnmatchedhPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for all jets with high p<SUB>T</SUB> constituents.
-      \param hPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with high p<SUB>T</SUB> constituents.
-      \param hPtLo: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with low p<SUB>T</SUB> constituents.
-      \param hdphiHi: Dijet angle for matched jets with high p<SUB>T</SUB> constituents.
-      \param hdphiLo: Dijet angle for matched jets with low p<SUB>T</SUB> constituents.
-      \param UnmatchedAJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for all jets with high p<SUB>T</SUB> constituents.
-      \param AJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with high p<SUB>T</SUB> constituents.
-      \param AJ_lo: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with low p<SUB>T</SUB> constituents.
-      \param UsedEventsHiPhiEtaPt: p<SUB>T</SUB>, &phi;, &eta;  for high p<SUB>T</SUB> constituent candidates in all events
-      \param UsedEventsLoPhiEtaPt: p<SUB>T</SUB>, &phi;, &eta;  for low p<SUB>T</SUB> constituent candidates in all events
    */
   FollowAjAnalysis ( double SmallR = 0.2, double LargeR = 0.4,
 		     double jet_ptmin = 10.0, double jet_ptmax = 100.0,
 		     double LeadPtMin = 20.0, double SubLeadPtMin = 10, 
 		     double max_track_rap = 1.0, double PtConsLo=0.2, double PtConsHi=2.0,
-		     double dPhiCut = 0.4,
-		     TH1D* LeadDeltaPtHi=0,  TH1D* SubLeadDeltaPtHi=0, TH1D* LeadDeltaPtLo=0,  TH1D* SubLeadDeltaPtLo=0,
-		     TH2D* SmallUnmatchedhPtHi=0,  TH2D* SmallhPtHi=0,  TH2D* SmallhPtLo=0,
-		     TH1D* SmallhdphiHi=0, TH1D* SmallhdphiLo=0,
-		     TH1D* SmallUnmatchedAJ_hi=0, TH1D* SmallAJ_hi=0, TH1D* SmallAJ_lo=0,
-		     TH2D* LargehPtHi=0,  TH2D* LargehPtLo=0,
-		     TH1D* LargehdphiHi=0, TH1D* LargehdphiLo=0,
-		     TH1D* LargeAJ_hi=0, TH1D* LargeAJ_lo=0,
-		     TH3D* UsedEventsHiPhiEtaPt=0, TH3D* UsedEventsLoPhiEtaPt=0,
-		     TH1D* SmallDeltaAJ_hilo=0, TH1D* LargeDeltaAJ_hilo=0,
-		     TH1D* DeltaAJ_hi=0, TH1D* DeltaAJ_lo=0
+		     double dPhiCut = 0.4
 		     );
   /** Dijet asymmetry A<SUB>J</SUB> = &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> */
   inline double CalcAj ( std::vector<fastjet::PseudoJet>& jets ){
@@ -173,14 +161,36 @@ public:
 
   
   /** Main analysis routine.
-   * \param particles: Current event
-   * \param ToMatch: Optionally enforce matching of at least one of the dijets to a trigger
+   \param particles: Current event
+   \param ToMatch: Optionally enforce matching of at least one of the dijets to a trigger
+   \param EventClassifier: Used to separate between events, e.g. by RefmultBin
+   \param UnmatchedhPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for all jets with high p<SUB>T</SUB> constituents.
+   \param hPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with high p<SUB>T</SUB> constituents.
+   \param hPtLo: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with low p<SUB>T</SUB> constituents.
+   \param hdphiHi: Dijet angle for matched jets with high p<SUB>T</SUB> constituents.
+   \param hdphiLo: Dijet angle for matched jets with low p<SUB>T</SUB> constituents.
+   \param UnmatchedAJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for all jets with high p<SUB>T</SUB> constituents.
+   \param AJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with high p<SUB>T</SUB> constituents.
+   \param AJ_lo: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with low p<SUB>T</SUB> constituents.
+   \param UsedEventsHiPhiEtaPt: p<SUB>T</SUB>, &phi;, &eta;  for high p<SUB>T</SUB> constituent candidates in all events
+   \param UsedEventsLoPhiEtaPt: p<SUB>T</SUB>, &phi;, &eta;  for low p<SUB>T</SUB> constituent candidates in all events
    * Return value:
    *   - 0: No hard constituent dijet found, or not matched to ToMatch
    *   - 1: No soft constituent dijet found
    *   - 2: Soft constituent dijet found but not matched
    */
-  int AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch=0 );
+  int AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch=0,
+		       Double_t EventClassifier=0,
+		       TH1D* LeadDeltaPtHi=0,  TH1D* SubLeadDeltaPtHi=0, TH1D* LeadDeltaPtLo=0,  TH1D* SubLeadDeltaPtLo=0,
+		       TH2D* SmallUnmatchedhPtHi=0,  TH2D* SmallhPtHi=0,  TH2D* SmallhPtLo=0,
+		       TH1D* SmallhdphiHi=0, TH1D* SmallhdphiLo=0,
+		       TH2D* SmallUnmatchedAJ_hi=0, TH2D* SmallAJ_hi=0, TH2D* SmallAJ_lo=0,
+		       TH2D* LargehPtHi=0,  TH2D* LargehPtLo=0,
+		       TH1D* LargehdphiHi=0, TH1D* LargehdphiLo=0,
+		       TH2D* LargeAJ_hi=0, TH2D* LargeAJ_lo=0,
+		       TH2D* SmallDeltaAJ_hilo=0, TH2D* LargeDeltaAJ_hilo=0,
+		       TH2D* DeltaAJ_hi=0, TH2D* DeltaAJ_lo=0
+		       );
   
   /** This little helper is true if there's at least one 10 GeV jet
    **/
