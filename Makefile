@@ -72,13 +72,9 @@ $(BDIR)/%  : $(ODIR)/%.o
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/RandomCone  \
 	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj  \
-	 $(BDIR)/FollowPicoAj $(BDIR)/ppInAuAuFollowAj \
-	 $(BDIR)/SimpleTree $(BDIR)/TreeWithMc $(BDIR)/QuickMbVectors \
+	 $(BDIR)/TreeWithMc \
 	 $(BDIR)/MakeSmallerTrees \
 	 $(BDIR)/PythiaInMcAj \
-	 $(BDIR)/TestCountPythia \
-	 $(BDIR)/BareBonesAj \
-	 $(BDIR)/UnfoldingTest \
 	 lib/libMyJetlib.so \
 	 doxy
 
@@ -113,14 +109,9 @@ lib/libMyJetlib.so	: $(ODIR)/JetAnalyzer.o $(ODIR)/dict.o $(ODIR)/ktTrackEff.o
 
 $(ODIR)/JetAnalyzer.o 		: $(SDIR)/JetAnalyzer.cxx $(INCS)
 $(ODIR)/AjAnalysis.o 	 	: $(SDIR)/AjAnalysis.cxx $(INCS) $(SDIR)/AjAnalysis.hh
-$(ODIR)/FollowAjAnalysis.o 	: $(SDIR)/FollowAjAnalysis.cxx $(INCS) $(SDIR)/FollowAjAnalysis.hh
 
 
 #Aj
-$(BDIR)/FollowPicoAj		: $(ODIR)/FollowPicoAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.so
-$(BDIR)/FollowPythiaAj		: $(ODIR)/FollowPythiaAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.so
-$(BDIR)/ppInAuAuFollowAj	: $(ODIR)/ppInAuAuFollowAj.o	$(ODIR)/FollowAjAnalysis.o 	lib/libMyJetlib.so
-
 $(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
@@ -132,14 +123,9 @@ $(BDIR)/TestCountPythia	: $(ODIR)/TestCountPythia.o 	$(ODIR)/AjAnalysis.o	 	lib/
 $(BDIR)/TreeWithMc      : $(ODIR)/TreeWithMc.o		lib/libMyJetlib.so
 $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
-$(BDIR)/UnfoldingTest	: $(ODIR)/UnfoldingTest.o 	lib/libMyJetlib.so
-
-$(BDIR)/BareBonesAj	: $(ODIR)/BareBonesAj.o
-
 
 # helper
 $(BDIR)/MakeSmallerTrees	: $(ODIR)/MakeSmallerTrees.o	 	lib/libMyJetlib.so
-$(BDIR)/QuickMbVectors		: $(ODIR)/QuickMbVectors.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 ###############################################################################
 ##################################### MISC ####################################
