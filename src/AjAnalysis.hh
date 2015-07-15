@@ -231,6 +231,7 @@ public:
 
   /// Handle to high pT constituents
   inline std::vector<fastjet::PseudoJet> GetLoConstituents() {return pLo; };
+  /// Handle to low pT constituents
   inline std::vector<fastjet::PseudoJet> GetHiConstituents() {return pHi; };
 
   
