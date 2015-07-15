@@ -1,6 +1,6 @@
 /** @file ppInAuAuAj.cxx
     @author Kolja Kauder
-    @version Revision 0.1
+    @version Revision 0.2
     @brief Aj analysis on pp jets embedded into AuAu.
     @date Mar 04, 2015
 */
@@ -48,8 +48,8 @@ using namespace fastjet;
 int main ( int argc, const char** argv ) {
 
   // How many times to use every pp jet
-  // THIS SHOULD BE ONE IN THE FINAL VERSION!!
-  // -----------------------------------------
+  // THIS SHOULD MAYBE BE ONE IN THE FINAL VERSION
+  // ----------------------------------------------
   Int_t nMix=6;
   if ( nMix !=1 ){
     cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
@@ -102,10 +102,10 @@ int main ( int argc, const char** argv ) {
   // -----------
   float LeadPtMin = AjParameters::LeadPtMin;
   float SubLeadPtMin = AjParameters::SubLeadPtMin;
-  if ( OutFileName.Contains ("R0.2") ){
-    LeadPtMin=16.0;
-    SubLeadPtMin=8.0;
-  }
+  // if ( OutFileName.Contains ("R0.2") ){
+  //   LeadPtMin=16.0;
+  //   SubLeadPtMin=8.0;
+  // }
 
   cout << " ################################################### " << endl;
   cout << "Triggering with R=" << R << endl;
@@ -334,20 +334,19 @@ int main ( int argc, const char** argv ) {
       // Run analysis
       // ------------
       int ret;
-      ret =AjA.AnalyzeAndFill( particles, 0,refmult,
-      // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
-			       UnmatchedAJ_hi, AJ_hi, AJ_lo,
-			       
-			       UnmatchedhPtHi,  hPtHi, hPtLo,
-			       UnmatchedhdPtHi, hdPtHi, hdPtLo,
-			       hdphiHi, hdphiLo,
-
-			       OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
-
-			       hdPtLead, hdPtSubLead,
-			       SpecialhdPtLead, SpecialhdPtSubLead
+      //ret =AjA.AnalyzeAndFill( particles, 0,refmult,
+      ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
+			      UnmatchedAJ_hi, AJ_hi, AJ_lo,
+			      
+			      UnmatchedhPtHi,  hPtHi, hPtLo,
+			      UnmatchedhdPtHi, hdPtHi, hdPtLo,
+			      hdphiHi, hdphiLo,
+			      
+			      OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
+			      
+			      hdPtLead, hdPtSubLead,
+			      SpecialhdPtLead, SpecialhdPtSubLead
 			      );
-      // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)) ); // Force matching to original trigger      
       
       switch ( ret ){
       case 3 : nMatchedDijets++;

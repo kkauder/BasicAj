@@ -71,10 +71,8 @@ $(BDIR)/%  : $(ODIR)/%.o
 ###############################################################################
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/RandomCone  \
-	 $(BDIR)/PythiaAj $(BDIR)/PythiaInAuAuAj  \
 	 $(BDIR)/TreeWithMc \
 	 $(BDIR)/MakeSmallerTrees \
-	 $(BDIR)/PythiaInMcAj \
 	 lib/libMyJetlib.so \
 	 doxy
 

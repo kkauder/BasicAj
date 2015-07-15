@@ -1,6 +1,6 @@
 /** @file RandomCone.cxx
     @author Kolja Kauder
-    @version Revision 0.1
+    @version Revision 0.2
     @brief Embed Au+Au di-jet pairs with a high-pT cut into random circular regions in MB.
     NO jet-finding here! Using fastjet for background subtraction
     @date Apr 28, 2015
@@ -48,8 +48,8 @@ using namespace fastjet;
 int main ( int argc, const char** argv ) {
 
   // How many times to use every hard di-jet
-  // THIS SHOULD BE ONE IN THE FINAL VERSION!!
-  // -----------------------------------------
+  // THIS SHOULD MAYBE BE ONE IN THE FINAL VERSION
+  // ----------------------------------------------
   Int_t nMix=6;
   if ( nMix !=1 ){
     cerr << " CAREFUL: FAKING BETTER STATISTICS " << endl;
@@ -101,7 +101,6 @@ int main ( int argc, const char** argv ) {
     chain->Add( arguments.at(i).data() );
   }
 
-  // int RefMultCut=AjParameters::AuAuRefMultCut;
   int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   // TStarJetPicoDefinitions::SetDebugLevel(10);
@@ -315,51 +314,7 @@ int main ( int argc, const char** argv ) {
 
       RandomAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );            
     }
-
-    
-
-
-    
-  //   // And run analysis individually for each of these pp events
-  //   // ---------------------------------------------------------- 
-  //   for ( vector<int>::iterator jit=JetIndices.begin(); jit!=JetIndices.end(); ++ jit ){
-  //     // Add pp jets
-  //     // -----------
-  //     particles = AuAuparticles;
-  //     for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
-  // 	particles.push_back( FullPpEvent.at(*jit).at(i) );
-  //     }
-      
-  //     // Run analysis
-  //     // ------------
-  //     int ret;
-  //     ret =AjA.AnalyzeAndFill( particles, 0,refmult,
-  //     // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
-  // 			      UnmatchedAJ_hi, AJ_hi, AJ_lo,
-			      
-  // 			      UnmatchedhPtHi,  hPtHi, hPtLo,
-  // 			      UnmatchedhdPtHi, hdPtHi, hdPtLo,
-  // 			      hdphiHi, hdphiLo
-  // 			      );
-  //     // ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)) ); // Force matching to original trigger
-
-  //     switch ( ret ){
-  //     case 3 : nMatchedDijets++;
-  // 	// FALLTHROUGH
-  //     case 2 : nCorrespondingLowDijets++;
-  // 	// FALLTHROUGH
-  //     case 1 : nHardDijets++;
-  // 	// FALLTHROUGH
-  //     case 0 : /* Nothing found */
-  // 	break;
-  //     default :
-  // 	cerr << "Unrecognized return value!" << endl;
-  // 	throw(-1);
-  // 	return -1;
-  // 	break;      
-  //     } //  switch (ret)
-  //     nJetsUsed++;
-  //   } // jit
+            
 
   } // reader.NextEvent()
   cout << "##################################################################" << endl;
@@ -374,13 +329,13 @@ int main ( int argc, const char** argv ) {
   //      << " of which " <<  nMatchedDijets << " could be matched." << endl;
 
 
-  // cout << "Wrote to " << fout->GetName() << endl;
-  // cout << "Bye." << endl;
+  cout << "Wrote to " << fout->GetName() << endl;
+  cout << "Bye." << endl;
   
-  // if ( nMix !=1 ){
-  //   cerr << " CAREFUL: FAKING BETTER STATISTICS " << endl;
-  //   cout << " CAREFUL: FAKING BETTER STATISTICS " << endl;
-  // }
+  if ( nMix !=1 ){
+    cerr << " CAREFUL: FAKING BETTER STATISTICS " << endl;
+    cout << " CAREFUL: FAKING BETTER STATISTICS " << endl;
+  }
 
   return 0;
   

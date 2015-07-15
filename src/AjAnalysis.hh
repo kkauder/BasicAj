@@ -128,6 +128,9 @@ public:
       \param particles: Current event
       \param ToMatch: Optionally enforce matching of at least one of the dijets to a trigger
       \param EventClassifier: Used to separate between events, e.g. by RefmultBin
+      \param UnmatchedAJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for all jets with high p<SUB>T</SUB> constituents.
+      \param AJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with high p<SUB>T</SUB> constituents.
+      \param AJ_lo: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with low p<SUB>T</SUB> constituents.
       \param UnmatchedhPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for all jets with high p<SUB>T</SUB> constituents.
       \param hPtHi: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with high p<SUB>T</SUB> constituents.
       \param hPtLo: p<SUB>T</SUB><SUP>sub</SUP> vs. p<SUB>T</SUB><SUP>lead</SUP> spectrum for matched jets with low p<SUB>T</SUB> constituents.
@@ -136,27 +139,32 @@ public:
       \param hdPtLo: &Delta;p<SUB>T</SUB><SUP>sub</SUP> for matched jets with low p<SUB>T</SUB> constituents.
       \param hdphiHi: Dijet angle for matched jets with high p<SUB>T</SUB> constituents.
       \param hdphiLo: Dijet angle for matched jets with low p<SUB>T</SUB> constituents.
-      \param UnmatchedAJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for all jets with high p<SUB>T</SUB> constituents.
-      \param AJ_hi: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with high p<SUB>T</SUB> constituents.
-      \param AJ_lo: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with low p<SUB>T</SUB> constituents.
-      \param UsedEventsHiPhiEtaPt: p<SUB>T</SUB>, &phi;, &eta;  for high p<SUB>T</SUB> constituent candidates in all events
-      \param UsedEventsLoPhiEtaPt: p<SUB>T</SUB>, &phi;, &eta;  for low p<SUB>T</SUB> constituent candidates in all events
+      \param OtherAJ_lo: Dijet imbalance &Delta;p<SUB>T</SUB> / &Sigma;p<SUB>T</SUB> for matched jets with low p<SUB>T</SUB> constituents and different R
+      \param OtherLeadPtLoss_lo: &Delta;p<SUB>T</SUB> between the two radii in the leading jet
+      \param OtherSubLeadPtLoss_lo: &Delta;p<SUB>T</SUB> between the two radii in the sub-leading jet
+      \param OtherR: Different radius to match to
+
+      \param hdPtLead: Experimental
+      \param hdPtSubLead: Experimental
+      \param SpecialhdPtLead: Experimental
+      \param SpecialhdPtSubLead: Experimental
+
    * Return value:
    *   - 0: No hard constituent dijet found, or not matched to ToMatch
    *   - 1: No soft constituent dijet found
    *   - 2: Soft constituent dijet found but not matched
    */
+
   int AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch=0,
 		       Double_t EventClassifier = 0,
 		       TH2D* UnmatchedAJ_hi=0, TH2D* AJ_hi=0, TH2D* AJ_lo=0,
 		       TH2D* UnmatchedhPtHi=0, TH2D* hPtHi=0, TH2D* hPtLo=0,  
 		       TH1D* UnmatchedhdPtHi=0, TH1D* hdPtHi=0, TH1D* hdPtLo=0,
 		       TH1D* hdphiHi=0, TH1D* hdphiLo=0,
-		       TH2D* SmallAJ_lo=0, TH2D* SmallLeadPtLoss_lo=0, TH2D* SmallSubLeadPtLoss_lo=0, float SmallR=0,
+		       TH2D* OtherAJ_lo=0, TH2D* OtherLeadPtLoss_lo=0, TH2D* OtherSubLeadPtLoss_lo=0, float OtherR=0,
 		       TH2D* hdPtLead=0, TH2D* hdPtSubLead=0,
 		       TH2D* SpecialhdPtLead=0, TH2D* SpecialhdPtSubLead=0
 		       );
-  
   /** This little helper is true if there's at least one 10 GeV jet
    **/
   bool Has10Gev;

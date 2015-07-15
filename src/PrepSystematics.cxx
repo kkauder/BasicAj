@@ -1,6 +1,6 @@
 #include <vector>
-//int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
-int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
+int PrepSystematics( TString R="0.2", int AuAuMultL=269, int AuAuMultR=-1  )
+//int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
 {
 
   TString outname = "AjResults/Systematics_ppInAuAuAj.root";
@@ -66,10 +66,7 @@ int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
   TH1D* UnmatchedAJ_hi_minmax = UnmatchedAJ_hi_T->Clone("UnmatchedAJ_hi_minmax");
 
   for (int i=1; i<=UnmatchedAJ_hi_minmax->GetNbinsX() ; ++ i ){
-    // UnmatchedAJ_hi_minmax->SetBinContent (i, 0.5* (UnmatchedAJ_hi_T->GetBinContent(i) +
-    // 						   UnmatchedAJ_hi_E->GetBinContent(i)) );
     UnmatchedAJ_hi_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
-
     UnmatchedAJ_hi_minmax->SetBinError (i, sqrt( pow( UnmatchedAJ_hi_T->GetBinError(i), 2) +
 						 pow( UnmatchedAJ_hi_E->GetBinError(i), 2) ) );
   }
@@ -82,8 +79,6 @@ int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
   AJ_hi_E->SetName("AJ_hi_E");
   TH1D* AJ_hi_minmax = AJ_hi_T->Clone("AJ_hi_minmax");
   for (int i=1; i<=AJ_hi_minmax->GetNbinsX() ; ++ i ){
-    // AJ_hi_minmax->SetBinContent (i, 0.5* (AJ_hi_T->GetBinContent(i) +
-    // 						   AJ_hi_E->GetBinContent(i)) );
     AJ_hi_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
 
     AJ_hi_minmax->SetBinError (i, sqrt( pow( AJ_hi_T->GetBinError(i), 2) +
@@ -98,8 +93,6 @@ int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
   AJ_lo_E->SetName("AJ_lo_E");
   TH1D* AJ_lo_minmax = AJ_lo_T->Clone("AJ_lo_minmax");
   for (int i=1; i<=AJ_lo_minmax->GetNbinsX() ; ++ i ){
-    // AJ_lo_minmax->SetBinContent (i, 0.5* (AJ_lo_T->GetBinContent(i) +
-    // 						   AJ_lo_E->GetBinContent(i)) );
     AJ_lo_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
 
     AJ_lo_minmax->SetBinError (i, sqrt( pow( AJ_lo_T->GetBinError(i), 2) +
@@ -114,8 +107,6 @@ int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
   OtherAJ_lo_E->SetName("OtherAJ_lo_E");
   TH1D* OtherAJ_lo_minmax = OtherAJ_lo_T->Clone("OtherAJ_lo_minmax");
   for (int i=1; i<=OtherAJ_lo_minmax->GetNbinsX() ; ++ i ){
-    // OtherAJ_lo_minmax->SetBinContent (i, 0.5* (OtherAJ_lo_T->GetBinContent(i) +
-    // 						   OtherAJ_lo_E->GetBinContent(i)) );
     OtherAJ_lo_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
 
     OtherAJ_lo_minmax->SetBinError (i, sqrt( pow( OtherAJ_lo_T->GetBinError(i), 2) +

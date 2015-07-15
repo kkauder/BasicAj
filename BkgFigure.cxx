@@ -26,15 +26,12 @@ void BkgFigure() {
   leg->SetMargin(0.1);
 
   TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
-  // TFile *fAuAu         = TFile::Open("AjResults/RefmultMatched.root");
-  // TFile *fAuAu         = TFile::Open("AjResults/EtaMatchedToOrig.root");
-  // TFile *fAuAu         = TFile::Open("AjResults/JStyleEC.root");
   TFile *fRC           = TFile::Open("AjResults/RandomCone.root");
   TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
   TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
 
   TH2D* h2 = (TH2D*) fAuAu->Get( "AJ_lo");
-  int AuAuMultBinL = h2->GetYaxis()->FindBin( RefmultCut ); // 269 for 0-20%
+  int AuAuMultBinL = h2->GetYaxis()->FindBin( RefmultCut );
   int AuAuMultBinR = h2->GetNbinsY();
 
 
