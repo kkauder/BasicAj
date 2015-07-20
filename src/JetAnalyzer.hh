@@ -171,7 +171,7 @@ public :
   // -------
   /** The nth version of this important constant.
    */
-  static const double pi = 3.141592653589793238462643383279502884;
+  static const double pi;
 
   /** Returns an angle between -pi and pi
    */

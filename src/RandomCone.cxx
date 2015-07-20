@@ -56,7 +56,7 @@ int main ( int argc, const char** argv ) {
     cout << " CAREFUL: FAKING BETTER STATISTICS " << endl;
   }
   
-  const char *defaults[5] = {"RandomCone","AjResults/RandomCone.root","AjResults/Presel_AuAuAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  const char *defaults[5] = {"RandomCone","AjResults/HC30_RandomCone.root","AjResults/Presel_AuAuAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -103,6 +103,9 @@ int main ( int argc, const char** argv ) {
 
   int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
+  reader.SetApplyFractionHadronicCorrection(kTRUE);
+  reader.SetFractionHadronicCorrection(0.9999);    
+  
   // TStarJetPicoDefinitions::SetDebugLevel(10);
 
   // Files and histograms

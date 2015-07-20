@@ -3,23 +3,30 @@ int PrepSystematics( TString R="0.2", int AuAuMultL=269, int AuAuMultR=-1  )
 //int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
 {
 
-  TString outname = "AjResults/Systematics_ppInAuAuAj.root";
+  TString outname = "AjResults/Systematics_HC30_ppInAuAuAj.root";
   
-  TString ft0e0 = "AjResults/Tow0_Eff0_ppInAuAuAj.root";
+  TString ft0e0 = "AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root";
   
-  TString ftPe0 = "AjResults/Tow1_Eff0_ppInAuAuAj.root";
-  TString ftMe0 = "AjResults/Tow-1_Eff0_ppInAuAuAj.root";
+  TString ftPe0 = "AjResults/Tow1_Eff0_HC30_ppInAuAuAj.root";
+  TString ftMe0 = "AjResults/Tow-1_Eff0_HC30_ppInAuAuAj.root";
 
-  TString ft0eP = "AjResults/Tow0_Eff1_ppInAuAuAj.root";
-  TString ft0eM = "AjResults/Tow0_Eff-1_ppInAuAuAj.root";
+  TString ft0eP = "AjResults/Tow0_Eff1_HC30_ppInAuAuAj.root";
+  TString ft0eM = "AjResults/Tow0_Eff-1_HC30_ppInAuAuAj.root";
 
   if ( R=="0.2"  ){
-    ft0e0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
-    ftPe0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
-    ftMe0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
-    ft0eP.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
-    ft0eM.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
-    outname.ReplaceAll("Systematics", "R0.2_Systematics");
+    // ft0e0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
+    // ftPe0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
+    // ftMe0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
+    // ft0eP.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
+    // ft0eM.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
+    // outname.ReplaceAll("Systematics", "R0.2_Systematics");
+    ft0e0.ReplaceAll("HC30", "R0.2_HC30");
+    ftPe0.ReplaceAll("HC30", "R0.2_HC30");
+    ftMe0.ReplaceAll("HC30", "R0.2_HC30");
+    ft0eP.ReplaceAll("HC30", "R0.2_HC30");
+    ft0eM.ReplaceAll("HC30", "R0.2_HC30");
+    outname.ReplaceAll("Systematics", "Systematics_R0.2");
+
   } else if ( R=="0.4"  ){
     // do nothing
   } else if ( R=="Pt1"  ){
@@ -34,6 +41,15 @@ int PrepSystematics( TString R="0.2", int AuAuMultL=269, int AuAuMultR=-1  )
     return -1;
   }
     
+  // // DEBUG
+  // ft0e0.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
+  // ftPe0.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
+  // ftMe0.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
+  // ft0eP.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
+  // ft0eM.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
+  // outname.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
+  
+
   if ( AuAuMultL==351  ){
     ft0e0.ReplaceAll("ppInAuAuAj", "HP_ppInAuAuAj");
     ftPe0.ReplaceAll("ppInAuAuAj", "HP_ppInAuAuAj");

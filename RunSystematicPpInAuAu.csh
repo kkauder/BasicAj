@@ -8,7 +8,7 @@ set base = Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root
 
 # set RMod = ""
 set RMod = R0.2_
-#set RMod = "Pt1_"
+# set RMod = "Pt1_"
 
 foreach Tow ( -1 0 1 )
     foreach Eff ( -1 0 1 )
@@ -21,18 +21,23 @@ foreach Tow ( -1 0 1 )
 
 	set TowMod = Tow${Tow}
 	set EffMod = Eff${Eff}
-	set PpName = AjResults/${TowMod}_${EffMod}_${RMod}ppAj.root
+	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}ppAj.root
+	set PpName = AjResults/${TowMod}_${EffMod}_${RMod}HC30_ppAj.root
 
 	foreach input ( ${base}* )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
-	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.root
+	    # set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.root
+	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}HC30_ppInAuAuAj_${OutBase}.root	    
 	    set TriggerName = MB
 	    set Files      = ${input}
 
 	    # Logfiles. Thanks cshell for this "elegant" syntax to split err and out
-	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.out
-	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.err
+	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.out
+	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.err
+	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}HC30_ppInAuAuAj_${OutBase}.out
+	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}HC30_ppInAuAuAj_${OutBase}.err
+
 	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}HP_ppInAuAuAj_${OutBase}.out
 	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}HP_ppInAuAuAj_${OutBase}.err
 

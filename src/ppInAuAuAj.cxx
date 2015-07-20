@@ -154,6 +154,8 @@ int main ( int argc, const char** argv ) {
   // int RefMultCut=AjParameters::AuAuRefMultCut;
   int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
+  reader.SetApplyFractionHadronicCorrection(kTRUE);
+  reader.SetFractionHadronicCorrection(0.9999);    
   // TStarJetPicoDefinitions::SetDebugLevel(10);
   
 

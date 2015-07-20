@@ -2,17 +2,18 @@
 
 ### Combine with
 # foreach n ( `seq 1 3` )
-# hadd -f AjResults/rndm$n/Presel_AuAuAj.root AjResults/rndm$n/Presel_AuAuAj_Small_Clean8*root
+# hadd -f AjResults/rndm$n/R0.2_HC30_Presel.root AjResults/rndm$n/R0.2_HC30_Small_Clean8*root
 # end
 #hadd -f AjResults/Presel_AuAuAj.root AjResults/Presel_AuAuAj_Small_Clean8*root
+#hadd -f AjResults/R0.2_HC30_Presel.root AjResults/R0.2_HC30_Small_Clean8*root
 
 # make sure executable exists
 make bin/PicoAj || exit
 
 # choose R or Pt options
-# set RMod = R0.2_
-# set RMod = Pt1_
 set RMod = ""
+#set RMod = R0.2_
+# set RMod = Pt1_
 
 # Input files
 set base = SmallAuAu/Small_Clean8
@@ -47,16 +48,17 @@ endif
 foreach input ( ${base}* )
     # arguments
     set OutBase=`basename $input | sed 's/.root//g'`
-    set OutName    = AjResults/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.root
+    #set OutName    = AjResults/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.root
+    set OutName    = AjResults/${rndname}/${RMod}HC30_${OutBase}.root
 	
     set TriggerName = HT
     set Files      = ${input}
     
     # Logfiles.
-    set LogFile     = logs/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.out
-    set ErrFile     = logs/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.err
-    # set LogFile     = logs/${rndname}/${RMod}test_${OutBase}.out
-    # set ErrFile     = logs/${rndname}/${RMod}test_${OutBase}.err
+    # set LogFile     = logs/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.out
+    # set ErrFile     = logs/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.err
+    set LogFile     = logs/${rndname}/${RMod}HC30_${OutBase}.out
+    set ErrFile     = logs/${rndname}/${RMod}HC30_${OutBase}.err
 
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile

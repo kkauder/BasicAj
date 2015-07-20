@@ -21,10 +21,20 @@ void Fig1and3() {
   TCanvas* c = new TCanvas("c");
   gPad->SetGridx(0);  gPad->SetGridy(0);
 
-  // TFile *fAuAu         = TFile::Open("AjResults/rndm1/Presel_AuAuAj.root");
-  TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/rndm1/HC30_Presel.root");
+  TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_HC30_ppInAuAuAj.root");
+
+  // TFile *fAuAu         = TFile::Open("AjResults/rndm1/R0.2_HC30_Presel.root");
+  TFile *fAuAu         = TFile::Open("AjResults/R0.2_HC30_Presel.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_HC30_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_HC30_ppInAuAuAj.root");
+
+  // // TFile *fAuAu         = TFile::Open("AjResults/rndm1/Presel_AuAuAj.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
 
   // // TFile *fAuAu         = TFile::Open("AjResults/rndm1/R0.2_Presel_AuAuAj.root");
   // TFile *fAuAu         = TFile::Open("AjResults/R0.2_Presel_AuAuAj.root");
@@ -69,7 +79,7 @@ void Fig1and3() {
     // h->Scale(1./h->Integral());
     h->Scale(1./h->Integral(0, h->GetNbinsX()+1)); // Include over/underflow
     
-    h->SetAxisRange(  0.0, 0.22, "y");
+    h->SetAxisRange(  0.0, 0.23, "y");
     h->SetAxisRange(  0.0, 0.72, "x");
     
   }
@@ -243,14 +253,16 @@ void Fig1and3() {
   char plabel[400];
 
   float threshhi = 1e-5;
-  // if ( ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") >1e-4  || ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") >1e-4 ){
-  if ( ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") > threshhi ){
-    cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") << endl;
-    cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
-    return;    
-  }
+  // // if ( ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") >1e-4  || ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") >1e-4 ){
+  // if ( ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") > threshhi ){
+  //   cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") << endl;
+  //   cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
+  //   return;    
+  // }
 
-  sprintf ( plabel, "p-value < %g", threshhi);
+  // sprintf ( plabel, "p-value < %g", threshhi);
+  // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, ""));
+  sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, ""));
   latex.SetTextColor( AuAuAJ_hi->GetLineColor() );
   latex.DrawLatex( .6,.5, plabel);
 
@@ -310,12 +322,13 @@ void Fig1and3() {
     gPad->SaveAs("plots/Pt1_Fig.png");
     gPad->SaveAs("plots/Pt1_Fig.pdf");
   } else {
-    if ( ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") < threshlo ){
-      cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") << endl;
-      cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
-      return;    
-    }    
-    sprintf ( plabel, "p-value >> %g", threshlo);
+    // if ( ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") < threshlo ){
+    //   cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") << endl;
+    //   cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+    //   return;    
+    // }    
+    // sprintf ( plabel, "p-value >> %g", threshlo);
+    sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, ""));
     latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
     latex.DrawLatex( .6,.45, plabel);
     gPad->SaveAs("plots/R0.4_Fig1.png");

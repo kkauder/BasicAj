@@ -44,8 +44,8 @@ namespace AjParameters{
   const double MaxTrackPt=1000;     ///< track pT cut
   
   // EVENT rejection cuts
-  const double MaxEventPtCut=20;       ///< track pT cut for event
-  const double MaxEventEtCut=50;       ///< tower ET cut for event
+  const double MaxEventPtCut=30;       ///< track pT cut for event
+  const double MaxEventEtCut=30;       ///< tower ET cut for event
 
   
   // // TO REPRODUCE JOERN:

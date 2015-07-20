@@ -25,10 +25,15 @@ void BkgFigure() {
   leg->SetFillStyle(0);
   leg->SetMargin(0.1);
 
-  TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
-  TFile *fRC           = TFile::Open("AjResults/RandomCone.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
+  TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
+  TFile *fRC           = TFile::Open("AjResults/HC30_RandomCone.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_HC30_ppInAuAuAj.root");
+
+  // TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
+  // TFile *fRC           = TFile::Open("AjResults/RandomCone.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
 
   TH2D* h2 = (TH2D*) fAuAu->Get( "AJ_lo");
   int AuAuMultBinL = h2->GetYaxis()->FindBin( RefmultCut );
@@ -62,7 +67,7 @@ void BkgFigure() {
     // h->Scale(1./h->Integral());
     h->Scale(1./h->Integral(0, h->GetNbinsX()+1)); // Include over/underflow
     
-    h->SetAxisRange(  0.0, 0.22, "y");
+    h->SetAxisRange(  0.0, 0.23, "y");
     h->SetAxisRange(  0.0, 0.72, "x");
   }
 
@@ -144,6 +149,16 @@ void BkgFigure() {
   
   gPad->SaveAs("plots/BkgFigure.png");
   gPad->SaveAs("plots/BkgFigure.pdf");
+
+
+  // leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #otimes AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->AddEntry ( AuAuAJ_lo,     "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->AddEntry ( RCAJ_lo,       "Random Cone Bkg (RC)", "f");
+  // leg->AddEntry ( ECAJ_lo,       "Eta Cone Bkg (EC)", "f");
+
+  cout << "chi^2 between RC and AuAu: " << RCAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  cout << "chi^2 between EC and AuAu: " << ECAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  cout << "chi^2 between RC and EC: " << RCAJ_lo->Chi2Test(ECAJ_lo, "") << endl;
 
   
 }
