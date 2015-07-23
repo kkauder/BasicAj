@@ -60,10 +60,10 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"PicoAj","test.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
   // const char *defaults[] = {"PicoAj","AjResults/Test11_ppAj.root","HT","/data3/AuAu11picoNPE15_150424/AuAu11Pico_1800-899.root", "0", "0" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/Clean809.root", "0", "0" };
-  // const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean809*.root", "0", "0" };
+  const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean809*.root", "0", "0" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -187,8 +187,8 @@ int main ( int argc, const char** argv ) {
   double RefMultCut = 0;
   // WARNING: ~putschke/Data/Pico_Eflow/auau_ht* is cut off at 351!
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
-  reader.SetApplyFractionHadronicCorrection(kTRUE);
-  reader.SetFractionHadronicCorrection(0.9999);  
+  // reader.SetApplyFractionHadronicCorrection(kTRUE);
+  // reader.SetFractionHadronicCorrection(0.9999);  
 
   TStarJetPicoDefinitions::SetDebugLevel(0);
     
@@ -371,6 +371,8 @@ int main ( int argc, const char** argv ) {
   vector<int> SeedStatus;
   
   fastjet::Selector GrabCone = fastjet::SelectorCircle( R );    
+  // DEBUG
+  int No4Gev=0;
   try{
     while ( reader.NextEvent() ) {
       reader.PrintStatus(10);
@@ -410,9 +412,14 @@ int main ( int argc, const char** argv ) {
       // Make particle vector
       // --------------------
       particles.clear();
-    
+
+      // DEBUG: Look for HT trigger
+      bool Has4GevTower=false;
       for (int ip = 0; ip<container->GetEntries() ; ++ip ){
 	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
+	// DEBUG
+	if (sv->GetCharge()==0 && sv->Pt() > 4 ) Has4GevTower=true;
+
 	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
 	pj=MakePseudoJet( sv );
 	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
@@ -427,7 +434,12 @@ int main ( int argc, const char** argv ) {
 	} else { // no charge or no efficiency class
 	  particles.push_back ( pj );
 	}	      
-      }    
+      }
+      // DEBUG
+      if ( !Has4GevTower ) {
+	cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
+	No4Gev++;
+      }
 
       // Run analysis
       // ------------
@@ -652,6 +664,10 @@ int main ( int argc, const char** argv ) {
   // cout << "Unmatched GetEntries() = " << UnmatchedAJ_hi->GetEntries() << endl;
   
   cout << "Aj->GetEntries() = " << UnmatchedAJ_hi->GetEntries() << endl;
+
+  // DEBUG
+  cout << " No 4 GeV tower found in " << No4Gev << " out of " << nEventsUsed << " events." << endl;
+
   return 0;
   
 }

@@ -20,7 +20,7 @@
 class ktTrackEff : public TObject
 {
 
-  private:
+private:
 
   TString fName;
 
@@ -30,13 +30,14 @@ class ktTrackEff : public TObject
   TH1D* effY07eta[3]; // Run 7 HT / Run 4 MB eta map, used for pt > 1.5 GeV/c
   TF2* effY06; // Run 6 parameterization
 
-  TF2* GetEffY06();
-  TF2* GetEffY04(Int_t cb);
 
   Int_t sysUn;
 
   public:
 
+  TF2* GetEffY06();
+  TF2* GetEffY04(Int_t cb);
+   
   ktTrackEff(TString mfName="src/run7eff.root");
   virtual ~ktTrackEff();
 

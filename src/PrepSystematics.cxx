@@ -1,5 +1,5 @@
 #include <vector>
-int PrepSystematics( TString R="0.2", int AuAuMultL=269, int AuAuMultR=-1  )
+int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
 //int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
 {
 
@@ -40,15 +40,14 @@ int PrepSystematics( TString R="0.2", int AuAuMultL=269, int AuAuMultR=-1  )
     cerr << "R = " << R << " not supported." << endl;
     return -1;
   }
-    
+      
   // // DEBUG
-  // ft0e0.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
-  // ftPe0.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
-  // ftMe0.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
-  // ft0eP.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
-  // ft0eM.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
-  // outname.ReplaceAll("ppInAuAuAj", "test_ppInAuAuAj");
-  
+  // ft0e0.ReplaceAll("HC30", "MixTest");
+  // ftPe0.ReplaceAll("HC30", "MixTest");
+  // ftMe0.ReplaceAll("HC30", "MixTest");
+  // ft0eP.ReplaceAll("HC30", "MixTest");
+  // ft0eM.ReplaceAll("HC30", "MixTest");
+  // outname.ReplaceAll("HC30", "MixTest");
 
   if ( AuAuMultL==351  ){
     ft0e0.ReplaceAll("ppInAuAuAj", "HP_ppInAuAuAj");

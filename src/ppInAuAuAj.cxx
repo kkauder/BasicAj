@@ -46,15 +46,6 @@ using namespace fastjet;
     the tree gets read sequentially, and exactly twice.
 */
 int main ( int argc, const char** argv ) {
-
-  // How many times to use every pp jet
-  // THIS SHOULD MAYBE BE ONE IN THE FINAL VERSION
-  // ----------------------------------------------
-  Int_t nMix=6;
-  if ( nMix !=1 ){
-    cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
-    cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
-  }
   
   const char *defaults[5] = {"ppInAuAuAj","AjResults/ppInAuAuAj.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
   // const char *defaults[5] = {"ppInAuAuAj","AjResults/ppInAuAuAj.root","AjResults/ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
@@ -113,6 +104,26 @@ int main ( int argc, const char** argv ) {
   cout << "Low pT cut =" << PtConsLo << endl;
   cout << " ################################################### " << endl;
 
+
+  // Refmult Cut
+  // -----------
+  // int RefMultCut=AjParameters::AuAuRefMultCut;
+  int RefMultCut=0;
+
+  // How many times to use every pp jet
+  // THIS SHOULD MAYBE BE ONE IN THE FINAL VERSION
+  // ----------------------------------------------
+  Int_t nMix=6;
+  if ( OutFileName.Contains ("MixTest") ){
+    nMix=1;
+    RefMultCut=269;
+  }
+
+  if ( nMix !=1 ){
+    cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
+    cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
+  }
+
   
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
@@ -151,8 +162,6 @@ int main ( int argc, const char** argv ) {
     chain->Add( arguments.at(i).data() );
   }
 
-  // int RefMultCut=AjParameters::AuAuRefMultCut;
-  int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   reader.SetApplyFractionHadronicCorrection(kTRUE);
   reader.SetFractionHadronicCorrection(0.9999);    
