@@ -1,5 +1,5 @@
 #include <vector>
-int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
+int PrepSystematics( TString R="0.2", int AuAuMultL=269, int AuAuMultR=-1  )
 //int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
 {
 
@@ -70,7 +70,15 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
 
   vector<TH1D*> Thistos;
   vector<TH1D*> Ehistos;
-  
+
+  bool visualize=true;
+  if (visualize){
+    TCanvas* c = new TCanvas("c");
+    gPad->SetGridx(0);  gPad->SetGridy(0);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptDate(0);    
+  }
+  TString plotname;
 
   // Unmatched
   // ---------
@@ -90,8 +98,18 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   // -------------
   TH1D* AJ_hi_T = minmax (  Tfiles, "AJ_hi", AuAuMultL, AuAuMultR, "T", Thistos );
   AJ_hi_T->SetName("AJ_hi_T");
+  if (gPad){
+    plotname = "plots/" + R + "_" + AJ_hi_T->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }
+
   TH1D* AJ_hi_E = minmax (  Efiles, "AJ_hi", AuAuMultL, AuAuMultR, "E", Ehistos );
   AJ_hi_E->SetName("AJ_hi_E");
+  if (gPad){
+    plotname = "plots/" + R + "_" + AJ_hi_E->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }
+
   TH1D* AJ_hi_minmax = AJ_hi_T->Clone("AJ_hi_minmax");
   for (int i=1; i<=AJ_hi_minmax->GetNbinsX() ; ++ i ){
     AJ_hi_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
@@ -104,8 +122,17 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   // ------------
   TH1D* AJ_lo_T = minmax (  Tfiles, "AJ_lo", AuAuMultL, AuAuMultR, "T", Thistos );
   AJ_lo_T->SetName("AJ_lo_T");
+  if (gPad){
+    plotname = "plots/" + R + "_" + AJ_lo_T->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }
+
   TH1D* AJ_lo_E = minmax (  Efiles, "AJ_lo", AuAuMultL, AuAuMultR, "E", Ehistos );
   AJ_lo_E->SetName("AJ_lo_E");
+  if (gPad){
+    plotname = "plots/" + R + "_" + AJ_lo_E->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }
   TH1D* AJ_lo_minmax = AJ_lo_T->Clone("AJ_lo_minmax");
   for (int i=1; i<=AJ_lo_minmax->GetNbinsX() ; ++ i ){
     AJ_lo_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
@@ -180,7 +207,8 @@ TH1D* minmax ( vector<TFile*> files, TString which, int AuAuMultL, int AuAuMultR
     h1 = h2->ProjectionX( newname, AuAuMultBinL, AuAuMultBinR );
 
     h1->Rebin(2);
-    h1->Scale(1./h1->Integral());
+    // h1->Scale(1./h1->Integral());
+    h1->Scale(1./h1->Integral(0, h1->GetNbinsX()+1)); // Include over/underflow
 
     histos.push_back( h1 );		      
   }
@@ -204,17 +232,52 @@ TH1D* minmax ( vector<TFile*> files, TString which, int AuAuMultL, int AuAuMultR
     
   }
 
-  
-  // new TCanvas;
-  // histos.at(0)->Draw();
-  // for ( int i=1; i<histos.size() ; ++i ){
-  //   histos.at(i)->Draw("same");
-  // }
-  // ret->SetFillStyle(3001 );
-  // ret->SetFillColor( kGray+1 );  
-  
-  // ret->Draw("9E2same");
-  
+  if ( gPad ){      
+    histos.at(0)->SetTitle( "");
+    histos.at(0)->SetAxisRange(  0.0, 0.23, "y");
+    histos.at(0)->SetAxisRange(  0.0, 0.72, "x");
+    histos.at(0)->Draw();
+
+    histos.at(1)->SetLineWidth(2);
+    histos.at(1)->SetLineColor(kBlue);
+    histos.at(1)->Draw("same");
+
+    histos.at(2)->SetLineWidth(2);
+    histos.at(2)->SetLineColor(kMagenta+1);
+    histos.at(2)->Draw("same");
+    
+    ret->SetFillStyle(3001 );
+    ret->SetFillColor( kGray+1 );  
+    
+    ret->Draw("9E2same");
+
+    //   histos.at(0)->Draw();
+    // for ( int i=1; i<histos.size() ; ++i ){
+    //   histos.at(i)->Draw("same");
+    // }
+    // ret->SetFillStyle(3001 );
+    // ret->SetFillColor( kGray+1 );  
+    
+    // ret->Draw("9E2same");
+
+    TLegend* leg = new TLegend ( 0.6, 0.6, 0.88, 0.88 );
+    leg->SetBorderSize(0);
+    leg->SetLineWidth(10);
+    leg->SetFillStyle(0);
+    // leg->SetMargin(0.1);
+
+    leg->AddEntry(histos.at(0)->GetName(), "Nominal", "l");
+    if ( namehelper.Contains("T") ){
+      leg->AddEntry(histos.at(1)->GetName(), "Tow Scale Max", "l");
+      leg->AddEntry(histos.at(2)->GetName(), "Tow Scale Min", "l");
+    } else {
+      leg->AddEntry(histos.at(1)->GetName(), "Track Eff Max", "l");
+      leg->AddEntry(histos.at(2)->GetName(), "Track Eff Min", "l");
+    }
+    leg->AddEntry(ret->GetName(), "Uncertainty", "f");
+    leg->Draw("same");
+    // cout << histos.at(0)->GetName() << endl;
+  }
   return ret;
 
 }

@@ -25,6 +25,7 @@ void Fig1and3() {
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_MixTest_ppInAuAuAj.root");
   // TFile *fSyst         = TFile::Open("AjResults/Systematics_MixTest_ppInAuAuAj.root");
 
+  // // 100% hadronic correction
   // // TFile *fAuAu         = TFile::Open("AjResults/rndm1/HC30_Presel.root");
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
@@ -35,6 +36,7 @@ void Fig1and3() {
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_HC30_ppInAuAuAj.root");
   // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_HC30_ppInAuAuAj.root");
 
+  // MIP correction
   // TFile *fAuAu         = TFile::Open("AjResults/rndm1/Presel_AuAuAj.root");
   TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
   TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
