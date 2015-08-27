@@ -31,8 +31,10 @@ using namespace fastjet;
 
 int main ( int argc, const char** argv ) {
 
-  TString inname="CleanAuAu/Clean809.root";
-  TString outname="SmallAuAu/TEST.root";
+  // TString inname="CleanAuAu/Clean809.root";
+  // TString outname="SmallAuAu/TEST.root";
+  TString inname="HaddedAuAu11picoNPE18/AuAu11PicoNPE18_Cent8_0.root";
+  TString outname="/Users/kkauder/SmallNPE18/TEST.root";
   TString TriggerName="HT";
 
   switch (argc){
@@ -72,6 +74,8 @@ int main ( int argc, const char** argv ) {
   evCuts->SetVertexZCut ( 30 );
   evCuts->SetRefMultCut ( RefMultCut );
   evCuts->SetVertexZDiffCut( 100 ); // SHOULD be smaller, like 3-6
+  
+  
   
   // Tracks cuts
   TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();

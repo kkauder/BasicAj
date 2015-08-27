@@ -47,8 +47,7 @@ using namespace fastjet;
 */
 int main ( int argc, const char** argv ) {
   
-  const char *defaults[5] = {"ppInAuAuAj","AjResults/ppInAuAuAj.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
-  // const char *defaults[5] = {"ppInAuAuAj","AjResults/ppInAuAuAj.root","AjResults/ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
+  const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -123,7 +122,6 @@ int main ( int argc, const char** argv ) {
     cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
     cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
   }
-
   
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
@@ -164,9 +162,11 @@ int main ( int argc, const char** argv ) {
 
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   reader.SetApplyFractionHadronicCorrection(kTRUE);
-  reader.SetFractionHadronicCorrection(0.9999);    
-  // TStarJetPicoDefinitions::SetDebugLevel(10);
+  reader.SetFractionHadronicCorrection(0.9999);
+  reader.SetRejectTowerElectrons( kFALSE );
+  //   reader.SetApplyFractionHadronicCorrection(kFALSE);
   
+  TStarJetPicoDefinitions::SetDebugLevel(0);
 
   TFile* fout = new TFile( OutFileName, "RECREATE");
   
@@ -198,6 +198,10 @@ int main ( int argc, const char** argv ) {
   TH2D* OtherLeadPtLoss_lo    = new TH2D( "OtherLeadPtLoss_lo","Leading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
   TH2D* OtherSubLeadPtLoss_lo = new TH2D( "OtherSubLeadPtLoss_lo","SubLeading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
 
+  // DEBUG
+  TH1D* MBTracks = new TH1D("MBTracks","MB tracks, 0-20%; p_{T}", 200, 0, 50);
+  TH1D* MBTowers = new TH1D("MBTowers","MB towers, 0-20%; E_{T}", 200, 0, 50);
+
   // Save results
   // ------------
   TTree* ResultTree=new TTree("ResultTree","Result Jets");
@@ -218,7 +222,8 @@ int main ( int argc, const char** argv ) {
   vector<PseudoJet> particles;
   vector<PseudoJet> AuAuparticles;
   TStarJetVectorContainer<TStarJetVector>* container;
-  TLorentzVector* lv;
+  TStarJetVector* sv;
+  // TLorentzVector* lv;
   
   int nHardDijets = 0;
   int nCorrespondingLowDijets = 0;
@@ -317,8 +322,14 @@ int main ( int argc, const char** argv ) {
     // ----------------
     AuAuparticles.clear();
     for (int ip = 0; ip<container->GetEntries() ; ++ip ){
-      lv = container->Get(ip);
-      AuAuparticles.push_back ( MakePseudoJet( lv ) );
+      sv = container->Get(ip);
+      AuAuparticles.push_back ( MakePseudoJet( sv ) );
+      // DEBUG
+      if ( fabs(sv->GetCharge())>1e-4 ) {
+	MBTracks->Fill(sv->Pt());
+      } else {
+	MBTowers->Fill(sv->Et());
+      }
     }
 
     // Find jets that want this event
@@ -330,7 +341,6 @@ int main ( int argc, const char** argv ) {
 	JetIndices.push_back( i );
       }
     }
-
     
     // And run analysis individually for each of these pp events
     // ---------------------------------------------------------- 
@@ -399,6 +409,11 @@ int main ( int argc, const char** argv ) {
   // -------------
   fout->Write();
 
+  TFile * f = new TFile("spectra.root","RECREATE");
+  MBTracks->Write();
+  MBTowers->Write();
+  
+  
   cout << "Embedded " << nJetsUsed << " jets above 10 GeV in " << reader.GetNOfEvents() << " events and found " << endl
        << nHardDijets << " dijets with constituents above 2 GeV," << endl
        << nCorrespondingLowDijets << " corresponding dijets with constituents above 0.2 GeV," << endl

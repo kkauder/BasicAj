@@ -28,6 +28,7 @@ else
 CXX          = clang
 endif
 
+CXXFLAGS		+= -Wno-return-type-c-linkage
 
 ROOTLIBS      = $(shell root-config --libs)
 

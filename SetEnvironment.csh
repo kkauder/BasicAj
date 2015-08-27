@@ -25,7 +25,7 @@ if ( `echo $HOST|grep -c rhic21` ) then
     setenv PYTHIA8DIR ${BASEDIR}/pythia8100.new
     setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
     setenv STARPICOPATH /Users/kkauder/eventStructuredAu
-    #setenv STARPICOPATH /Users/kkauder/tmp/eventStructure
+    # setenv STARPICOPATH /Users/kkauder/old/eventStructuredAu
 endif
 
 

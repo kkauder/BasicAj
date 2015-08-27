@@ -25,8 +25,17 @@ void Fig1and3() {
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_MixTest_ppInAuAuAj.root");
   // TFile *fSyst         = TFile::Open("AjResults/Systematics_MixTest_ppInAuAuAj.root");
 
-  // // 100% hadronic correction
-  // // TFile *fAuAu         = TFile::Open("AjResults/rndm1/HC30_Presel.root");
+  // 100% hadronic correction
+  // TFile *fAuAu         = TFile::Open("AjResults/rndm2/HC30_Presel.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/FixedTowers_AuAu.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/OldTowers_AuAu.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/OldCodeTowers_AuAu.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
+
+  TFile *fAuAu         = TFile::Open("AjResults/NewCode_MIP_AuAu.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_NewCode_MIP_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_NewCode_MIP_ppInAuAuAj.root");
+
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
   // TFile *fSyst         = TFile::Open("AjResults/Systematics_HC30_ppInAuAuAj.root");
@@ -36,11 +45,11 @@ void Fig1and3() {
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_HC30_ppInAuAuAj.root");
   // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_HC30_ppInAuAuAj.root");
 
-  // MIP correction
-  // TFile *fAuAu         = TFile::Open("AjResults/rndm1/Presel_AuAuAj.root");
-  TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
+  // // MIP correction
+  // // TFile *fAuAu         = TFile::Open("AjResults/rndm1/Presel_AuAuAj.root");
+  // TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_ppInAuAuAj.root");
 
   // // TFile *fAuAu         = TFile::Open("AjResults/rndm1/R0.2_Presel_AuAuAj.root");
   // TFile *fAuAu         = TFile::Open("AjResults/R0.2_Presel_AuAuAj.root");
@@ -56,9 +65,9 @@ void Fig1and3() {
     RootOut.ReplaceAll( "Fig", "MixTest_Fig");
   }
 
-  if (!( TString(fAuAu->GetName()).Contains("HC30") ) ){
-    RootOut.ReplaceAll( "Fig", "MIP_Fig");
-  }
+  // if (!( TString(fAuAu->GetName()).Contains("HC30") ) ){
+  //   RootOut.ReplaceAll( "Fig", "MIP_Fig");
+  // }
 
   TFile* out = new TFile( RootOut, "RECREATE");
 
@@ -77,13 +86,15 @@ void Fig1and3() {
   TH1D* ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "AJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
   // TH1D* AuAuAJ_lo     = (TH1D*) ( (TH2D*) fAuAu->Get( "SmallAJ_lo") )->ProjectionX("AuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
   // TH1D* ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "SmallAJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
-  cout << AuAuAJ_lo ->Integral(1,100) << endl;
-
+  cout << AuAuAJ_lo ->Integral(1,100) << " dijets in AuAu" << endl;
+  cout << ppInAuAuAJ_lo ->Integral(1,100) << " dijets in pp@AuAu" << endl;
+  
   // TH1D* AuAuAJ_hi     = (TH1D*) ( (TH2D*) fAuAu->Get( "UnmatchedAJ_hi") )->ProjectionX("AuAuAJ_hi", AuAuMultBinL, AuAuMultBinR);
   // TH1D* ppInAuAuAJ_hi = (TH1D*) ( (TH2D*) fppInAuAu->Get( "UnmatchedAJ_hi") )->ProjectionX("ppInAuAuAJ_hi", AuAuMultBinL, AuAuMultBinR);
   TH1D* AuAuAJ_hi     = (TH1D*) ( (TH2D*) fAuAu->Get( "AJ_hi") )->ProjectionX("AuAuAJ_hi", AuAuMultBinL, AuAuMultBinR);
   TH1D* ppInAuAuAJ_hi = (TH1D*) ( (TH2D*) fppInAuAu->Get( "AJ_hi") )->ProjectionX("ppInAuAuAJ_hi", AuAuMultBinL, AuAuMultBinR);
-   
+
+     
   TObjArray toa;
   toa.Add(AuAuAJ_lo);
   toa.Add(ppInAuAuAJ_lo);
@@ -354,6 +365,10 @@ void Fig1and3() {
     latex.DrawLatex( .6,.45, plabel);
     gPad->SaveAs("plots/R0.4_Fig1.png");
     gPad->SaveAs("plots/R0.4_Fig1.pdf");
+    TString alttitle = gSystem->BaseName( fAuAu->GetName() );
+    alttitle.ReplaceAll(".root",".png");
+    gPad->SaveAs( "plots/" + alttitle );
+        
   }
 
   cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << AJ_hi_sysstat->KolmogorovTest(AuAuAJ_hi, "") << endl;

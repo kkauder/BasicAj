@@ -7,6 +7,8 @@
 */
 
 #include "AjAnalysis.hh"
+#include <stdlib.h>     // for getenv
+
 
 // Standard ctor
 AjAnalysis::AjAnalysis ( double R,
@@ -297,10 +299,11 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   evCuts->SetVertexZCut (AjParameters::VzCut);
   evCuts->SetRefMultCut ( RefMultCut );
   evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
-
   evCuts->SetMaxEventPtCut ( AjParameters::MaxEventPtCut );
   evCuts->SetMaxEventEtCut ( AjParameters::MaxEventEtCut );
-  
+  evCuts->SetMinEventEtCut ( -1.0 );
+
+
   // Tracks cuts
   TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
   trackCuts->SetDCACut( AjParameters::DcaCut );
@@ -316,6 +319,8 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   
   // Towers
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
+  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+  //towerCuts->AddBadTowers( "emptyBadTowerList.txt");
   towerCuts->SetMaxEtCut(AjParameters::MaxEtCut);
 
   std::cout << "Using these tower cuts:" << std::endl;

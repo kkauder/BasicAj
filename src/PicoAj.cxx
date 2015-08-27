@@ -60,10 +60,10 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  // const char *defaults[] = {"PicoAj","test.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
+  const char *defaults[] = {"PicoAj","test.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
   // const char *defaults[] = {"PicoAj","AjResults/Test11_ppAj.root","HT","/data3/AuAu11picoNPE15_150424/AuAu11Pico_1800-899.root", "0", "0" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/Clean809.root", "0", "0" };
-  const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean809*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean809*.root", "0", "0" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -187,8 +187,10 @@ int main ( int argc, const char** argv ) {
   double RefMultCut = 0;
   // WARNING: ~putschke/Data/Pico_Eflow/auau_ht* is cut off at 351!
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
-  // reader.SetApplyFractionHadronicCorrection(kTRUE);
-  // reader.SetFractionHadronicCorrection(0.9999);  
+  reader.SetApplyFractionHadronicCorrection(kTRUE);
+  reader.SetFractionHadronicCorrection(0.9999);
+  reader.SetRejectTowerElectrons( kFALSE );
+  //  reader.SetApplyFractionHadronicCorrection(kFALSE);
 
   TStarJetPicoDefinitions::SetDebugLevel(0);
     
