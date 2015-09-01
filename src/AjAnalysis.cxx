@@ -319,7 +319,9 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   
   // Towers
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
+  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
   //towerCuts->AddBadTowers( "emptyBadTowerList.txt");
   towerCuts->SetMaxEtCut(AjParameters::MaxEtCut);
 

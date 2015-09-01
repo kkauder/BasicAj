@@ -51,7 +51,7 @@ foreach input ( ${base}* )
     #set OutName    = AjResults/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.root
     #set OutName    = AjResults/${rndname}/${RMod}NewCode_HC100_${OutBase}.root
     #set OutName    = AjResults/${rndname}/${RMod}FixedTowers_${OutBase}.root
-    set OutName    = AjResults/${rndname}/${RMod}SoftHT0_HC100_${OutBase}.root
+    set OutName    = AjResults/${rndname}/${RMod}NicksList_HC100_${OutBase}.root
 	
     set TriggerName = HT
     set Files      = ${input}
@@ -63,8 +63,8 @@ foreach input ( ${base}* )
     # set ErrFile     = logs/${rndname}/${RMod}NewCode_HC100_${OutBase}.err
     # set LogFile     = logs/${rndname}/${RMod}FixedTowers_${OutBase}.out
     # set ErrFile     = logs/${rndname}/${RMod}FixedTowers_${OutBase}.err
-    set LogFile     = logs/${rndname}/${RMod}SoftHT0_HC100_${OutBase}.out
-    set ErrFile     = logs/${rndname}/${RMod}SoftHT0_HC100_${OutBase}.err
+    set LogFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.out
+    set ErrFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.err
 
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile

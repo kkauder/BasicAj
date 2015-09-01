@@ -25,6 +25,8 @@
 #include <iostream>
 #include <exception>
 
+#include <stdlib.h>     // for getenv
+
 using namespace std;
 using namespace fastjet;
 
@@ -33,7 +35,7 @@ int main ( int argc, const char** argv ) {
 
   // TString inname="CleanAuAu/Clean809.root";
   // TString outname="SmallAuAu/TEST.root";
-  TString inname="HaddedAuAu11picoNPE18/AuAu11PicoNPE18_Cent8_0.root";
+  TString inname="/data3/HaddedAuAu11picoNPE18/AuAu11PicoNPE18_Cent8_0.root";
   TString outname="/Users/kkauder/SmallNPE18/TEST.root";
   TString TriggerName="HT";
 
@@ -44,8 +46,7 @@ int main ( int argc, const char** argv ) {
   case 2 :
     inname = argv[1];
     outname=gSystem->BaseName(inname);
-    // outname.Prepend("SmallAuAu/Small_");
-    outname.Prepend("/data4/SmallAuAu11NPE25/Small_");
+    outname.Prepend("/Users/kkauder/SmallNPE18/Small_");
     break;
   default :
     cerr << "Incompatible arguments." << endl;
@@ -65,6 +66,7 @@ int main ( int argc, const char** argv ) {
   double MinJetPt=16;
   TStarJetPicoReader reader;
   reader.SetInputChain (chain);
+  
 
   // Event and track selection
   // -------------------------
@@ -74,8 +76,13 @@ int main ( int argc, const char** argv ) {
   evCuts->SetVertexZCut ( 30 );
   evCuts->SetRefMultCut ( RefMultCut );
   evCuts->SetVertexZDiffCut( 100 ); // SHOULD be smaller, like 3-6
-  
-  
+  evCuts->SetMinEventEtCut ( -1.0 ); // Could go to 5.5, 6?
+
+  // Keep things inclusive! Keep electrons and use MIP correction for jet finding
+  reader.SetRejectTowerElectrons( kFALSE );
+  reader.SetApplyFractionHadronicCorrection(kFALSE);
+
+  // SHOULD ADD BAD RUN LIST
   
   // Tracks cuts
   TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
@@ -93,6 +100,8 @@ int main ( int argc, const char** argv ) {
   // Towers
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
   towerCuts->SetMaxEtCut( 1000 ); // SHOULD be smaller, say 45
+  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
 
   cout << "Using these tower cuts:" << endl;
   cout << "  GetMaxEtCut = " << towerCuts->GetMaxEtCut() << endl;
@@ -130,7 +139,6 @@ int main ( int argc, const char** argv ) {
   double R2 = 0.2;
   JetDefinition jet_def1 = fastjet::JetDefinition(fastjet::antikt_algorithm, R1);
   JetDefinition jet_def2 = fastjet::JetDefinition(fastjet::antikt_algorithm, R2);
-
   
   Selector select_track_rap = fastjet::SelectorAbsRapMax(max_track_rap);
   Selector select_hipt      = fastjet::SelectorPtMin( PtConsHi );

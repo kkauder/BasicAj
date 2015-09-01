@@ -3,15 +3,15 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
 //int PrepSystematics( TString R="Pt1", int AuAuMultL=351, int AuAuMultR=-1  )
 {
 
-  TString outname = "AjResults/Systematics_NewCode_HC100_ppInAuAuAj.root";
+  TString outname = "AjResults/Systematics_NicksList_HC100_ppInAuAuAj.root";
   
-  TString ft0e0 = "AjResults/Tow0_Eff0_NewCode_HC100_ppInAuAuAj.root";
+  TString ft0e0 = "AjResults/Tow0_Eff0_NicksList_HC100_ppInAuAuAj.root";
   
-  TString ftPe0 = "AjResults/Tow1_Eff0_NewCode_HC100_ppInAuAuAj.root";
-  TString ftMe0 = "AjResults/Tow-1_Eff0_NewCode_HC100_ppInAuAuAj.root";
+  TString ftPe0 = "AjResults/Tow1_Eff0_NicksList_HC100_ppInAuAuAj.root";
+  TString ftMe0 = "AjResults/Tow-1_Eff0_NicksList_HC100_ppInAuAuAj.root";
 
-  TString ft0eP = "AjResults/Tow0_Eff1_NewCode_HC100_ppInAuAuAj.root";
-  TString ft0eM = "AjResults/Tow0_Eff-1_NewCode_HC100_ppInAuAuAj.root";
+  TString ft0eP = "AjResults/Tow0_Eff1_NicksList_HC100_ppInAuAuAj.root";
+  TString ft0eM = "AjResults/Tow0_Eff-1_NicksList_HC100_ppInAuAuAj.root";
 
   if ( R=="0.2"  ){
     // ft0e0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");

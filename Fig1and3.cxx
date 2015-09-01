@@ -32,9 +32,9 @@ void Fig1and3() {
   // TFile *fAuAu         = TFile::Open("AjResults/OldCodeTowers_AuAu.root");
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
 
-  TFile *fAuAu         = TFile::Open("AjResults/NewCode_MIP_AuAu.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_NewCode_MIP_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_NewCode_MIP_ppInAuAuAj.root");
+  TFile *fAuAu         = TFile::Open("AjResults/NicksList_HC100_AuAu.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_NicksList_HC100_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_NicksList_HC100_ppInAuAuAj.root");
 
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
