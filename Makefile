@@ -28,13 +28,21 @@ else
 CXX          = clang
 endif
 
+
+
 CXXFLAGS		+= -Wno-return-type-c-linkage
 
 ROOTLIBS      = $(shell root-config --libs)
 
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
 LIBS          = -lfastjet -lfastjettools -lpythia8  -lTStarJetPico
-Libs         += -llhapdfdummy 
+## fun with pythia :-/
+## make is a horrible horrible tool. Do not touch these lines, any whitespace will make it break
+dummy := "$(shell find $(PYTHIA8DIR)/lib/ -name liblhapdfdummy\*)"
+ifneq ("",$(dummy))
+LIBS         += -llhapdfdummy
+endif
+
 
 # ## Unfolding Test
 # INCFLAGS      += -I/Users/kkauder/RooUnfold-1.1.1/src
