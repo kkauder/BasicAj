@@ -33,12 +33,13 @@ CXXFLAGS		+= -Wno-return-type-c-linkage
 ROOTLIBS      = $(shell root-config --libs)
 
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
-LIBS          = -lfastjet -lfastjettools -lpythia8  -llhapdfdummy -lTStarJetPico
+LIBS          = -lfastjet -lfastjettools -lpythia8  -lTStarJetPico
+Libs         += -llhapdfdummy 
 
-## Unfolding Test
-INCFLAGS      += -I/Users/kkauder/RooUnfold-1.1.1/src
-LIBPATH       += -L/Users/kkauder/RooUnfold-1.1.1
-LIBS          += -lRooUnfold
+# ## Unfolding Test
+# INCFLAGS      += -I/Users/kkauder/RooUnfold-1.1.1/src
+# LIBPATH       += -L/Users/kkauder/RooUnfold-1.1.1
+# LIBS          += -lRooUnfold
 
 
 
