@@ -83,8 +83,11 @@ Int_t main(int argc, char **argv) {
   // pythia.init(2212, 2212,2760.);
 
   // RHIC initialization.
-  pythia.init(2212, 2212,200.);
-
+  // pythia.init(2212, 2212,200.);
+  pythia.readString("Beams:idA = 2212");
+  pythia.readString("Beams:idB = 2212");
+  pythia.readString("Beams:eCM = 200.0");
+  pythia.init();
 
   gRandom->SetSeed(1);
     
