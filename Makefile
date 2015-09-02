@@ -154,6 +154,6 @@ clean :
 	rm -vf $(ODIR)/*.o
 	rm -vf $(BDIR)/*
 	rm -vf lib/*
-
+	rm -vf $(SDIR)/dict.cxx $(SDIR)/dict.h
 
 .PHONY : clean doxy
