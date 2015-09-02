@@ -16,7 +16,8 @@ set RMod = ""
 # set RMod = Pt1_
 
 # Input files
-set base = SmallAuAu/Small_Clean8
+# set base = SmallAuAu/Small_Clean8
+set base = Data/SmallAuAu/Small_Clean8
 
 # DON'T try this! It will kill the server :)
 #foreach randomoff ( `seq 0 9 ` )

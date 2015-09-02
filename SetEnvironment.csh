@@ -36,6 +36,9 @@ endif
 
 ############## Done with indivivual settings.
 
+###### Initialize root
+source $ROOTSYS/bin/thisroot.csh
+
 ###### Update paths
 if(! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH
 if(! $?DYLD_LIBRARY_PATH) setenv DYLD_LIBRARY_PATH

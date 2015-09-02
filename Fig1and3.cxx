@@ -231,7 +231,7 @@ void Fig1and3() {
   AuAuAJ_hi->Draw("9same");
 
   // For p-value, add systematics in quadrature
-  TH1D* AJ_hi_sysstat = ppInAuAuAJ_hi->Clone("AJ_hi_sysstat");
+  TH1D* AJ_hi_sysstat = (TH1D*) ppInAuAuAJ_hi->Clone("AJ_hi_sysstat");
   if ( AJ_hi_minmax ){
     for (int i=1; i<AJ_hi_sysstat->GetNbinsX(); ++i ){
       if ( fabs (AJ_hi_sysstat->GetBinContent(i)-AJ_hi_minmax->GetBinContent(i))> 1e-4 ){
@@ -244,7 +244,7 @@ void Fig1and3() {
     }
   }
 
-  TH1D* AJ_lo_sysstat = ppInAuAuAJ_lo->Clone("AJ_lo_sysstat");
+  TH1D* AJ_lo_sysstat = (TH1D*) ppInAuAuAJ_lo->Clone("AJ_lo_sysstat");
   if ( AJ_lo_minmax ){
     for (int i=1; i<AJ_lo_sysstat->GetNbinsX(); ++i ){
       if ( fabs (AJ_lo_sysstat->GetBinContent(i)-AJ_lo_minmax->GetBinContent(i))> 1e-3 ){

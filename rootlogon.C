@@ -38,14 +38,14 @@
   
   // To read and deal with TStarJetPicoDst's
   Int_t ierr = 0;
-  char *clibs[] = {
-    "$ROOTSYS/lib/libPhysics.so",
-    //    "$ROOTSYS/lib/libRIO.so",
-    "$ROOTSYS/lib/libHist.so",
-    "$ROOTSYS/lib/libEG.so",
-    "$ROOTSYS/lib/libTree.so",    
+  const char *clibs[] = {
+    "libPhysics.so",
+    // "libRIO.so", // Unnecessary? Throws weird errors
+    "libHist.so",
+    "libEG.so",
+    "libTree.so",    
     "$STARPICOPATH/libTStarJetPico.so",
-    "~putschke/STAR/QM_Aj/AjLib/libMuAj.so",
+    // "~putschke/STAR/QM_Aj/AjLib/libMuAj.so",
 #ifdef ROOUNFOLD
     "$ROOUNFOLD/libRooUnfold.so",
 #endif
