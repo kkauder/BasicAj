@@ -37,7 +37,7 @@ endif
 ############## Done with indivivual settings.
 
 ###### Initialize root
-source $ROOTSYS/bin/thisroot.csh
+source $ROOTSYS/bin/thisroot.csh $ROOTSYS
 
 ###### Update paths
 if(! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH
