@@ -36,8 +36,10 @@ endif
 
 ############## Done with indivivual settings.
 
-###### Initialize root
-source $ROOTSYS/bin/thisroot.csh $ROOTSYS
+# ###### Initialize root
+# echo 0
+# source ${ROOTSYS}/bin/thisroot.csh ${ROOTSYS}
+# echo 1
 
 ###### Update paths
 if(! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH
