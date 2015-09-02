@@ -46,7 +46,9 @@
     "$ROOTSYS/lib/libTree.so",    
     "$STARPICOPATH/libTStarJetPico.so",
     "~putschke/STAR/QM_Aj/AjLib/libMuAj.so",
-    "~kkauder/RooUnfold-1.1.1/libRooUnfold.so",
+#ifdef ROOUNFOLD
+    "$ROOUNFOLD/libRooUnfold.so",
+#endif
     0
   };
 

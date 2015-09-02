@@ -16,6 +16,9 @@ setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
 ### TStarJetPicoDst structure
 setenv STARPICOPATH ${BASEDIR}/eventStructuredAu
 
+### RooUnfold
+### Optional. You can comment this line out, RooUnfold is not needed
+setenv ROOUNFOLD ${BASEDIR}/RooUnfold
 
 #### On rhic21, you can use
 if ( `echo $HOST|grep -c rhic21` ) then
@@ -26,6 +29,7 @@ if ( `echo $HOST|grep -c rhic21` ) then
     setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
     setenv STARPICOPATH /Users/kkauder/eventStructuredAu
     # setenv STARPICOPATH /Users/kkauder/old/eventStructuredAu
+    setenv ROOUNFOLD /Users/kkauder/RooUnfold-1.1.1
 endif
 
 
@@ -52,5 +56,9 @@ echo "ROOT: " $ROOTSYS
 echo "PYTHIA8: " $PYTHIA8DIR
 echo "FastJet: " $FASTJETDIR
 echo "STARPICOPATH: " $STARPICOPATH
+if ( $?ROOUNFOLD ) then
+    echo "ROOUNFOLD: " $ROOUNFOLD
+endif
+
 echo "<I>---------------Info--------------------<I>"
 echo ""
