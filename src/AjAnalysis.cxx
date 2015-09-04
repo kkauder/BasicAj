@@ -301,7 +301,8 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
   evCuts->SetMaxEventPtCut ( AjParameters::MaxEventPtCut );
   evCuts->SetMaxEventEtCut ( AjParameters::MaxEventEtCut );
-  evCuts->SetMinEventEtCut ( -1.0 );
+  // evCuts->SetMinEventEtCut ( -1.0 );
+  // evCuts->SetMinEventEtCut ( 6.0 );
 
 
   // Tracks cuts
@@ -322,7 +323,8 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
   towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
   towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-  //towerCuts->AddBadTowers( "emptyBadTowerList.txt");
+  // towerCuts->AddBadTowers( "emptyBadTowerList.txt");
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
   towerCuts->SetMaxEtCut(AjParameters::MaxEtCut);
 
   std::cout << "Using these tower cuts:" << std::endl;

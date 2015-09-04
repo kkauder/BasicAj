@@ -22,7 +22,7 @@ Icon?
 
 # ROOT stuff
 AutoDict_*
-
+src/dict.*
 
 # pictures
 *png
@@ -69,7 +69,5 @@ bin
 *.app
 
 
-
-    
-
-    
+## condor stuff
+CondorFile

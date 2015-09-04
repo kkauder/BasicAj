@@ -192,6 +192,12 @@ int main ( int argc, const char** argv ) {
   reader.SetRejectTowerElectrons( kFALSE );
   //  reader.SetApplyFractionHadronicCorrection(kFALSE);
 
+  // DEBUG: KK: Reject bad phi strip  
+  TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
+  trackCuts->SetPhiCut(0, -1.2);
+  TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
+  towerCuts->SetPhiCut(0, -1.2);
+
   TStarJetPicoDefinitions::SetDebugLevel(0);
     
   // Files and histograms
@@ -352,6 +358,12 @@ int main ( int argc, const char** argv ) {
 		  AjParameters::dPhiCut
 		  );  
   
+  // // DEBUG: KK: Reject jets near bad phi strip  
+  // Selector& sjet = AjA.GetJetSelector();
+  // // Note: It's not 100% clear to me whether jet phi is in -pi--pi or 0--2pi. So we'll provide for both
+  // Selector sphi = fastjet::SelectorPhiRange ( -TMath::Pi(), -1.2 - R ) || fastjet::SelectorPhiRange ( 0 + R, TMath::TwoPi() -1.2 - R );
+  // sjet = sjet * sphi;
+
   // Cycle through events
   // --------------------
   vector<PseudoJet> particles;
@@ -385,6 +397,8 @@ int main ( int argc, const char** argv ) {
       
       eventid = header->GetEventId();
       runid   = header->GetRunId();
+      // // DEBUG: KK: Reject suspicious refMult runs
+      // if (runid >= 12138081 && runid<= 12145020 ) continue;
 
       // Let's use the eventid as random seed.
       // that way things stay reproducible between different trees
