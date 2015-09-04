@@ -49,15 +49,13 @@ if ( $randomoff > 0 ) then
 endif
 
 ####### Initialize condor file
-
-
 echo ""  > CondorFile
 echo "Universe     = vanilla" >> CondorFile
 echo "Executable   = ${Exec}" >> CondorFile
 echo "getenv = true" >>CondorFile
-echo "Notification = Complete" >> CondorFile
-echo "Notify_user  = kkauder@gmail.com"  >> CondorFile
-
+# Notification doesn't seem to work, and is spammy anyway
+# echo "Notification = Complete" >> CondorFile
+# echo "Notify_user  = kkauder@gmail.com"  >> CondorFile
 
 foreach input ( ${base}* )
     # arguments
@@ -82,7 +80,6 @@ foreach input ( ${base}* )
 
     ### hand to condor
     set Args = ( $OutName $TriggerName $Files 0 0 )
-    echo "Notification = Complete" >> CondorFile
     echo "" >> CondorFile
     echo "Output       = ${LogFile}" >> CondorFile
     echo "Error        = ${ErrFile}" >> CondorFile
