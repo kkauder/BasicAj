@@ -104,4 +104,5 @@ foreach input ( ${base}* )
 
 end # foreach input
 
+condor_submit CondorFile
 
