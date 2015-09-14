@@ -47,7 +47,8 @@ using namespace fastjet;
 */
 int main ( int argc, const char** argv ) {
   
-  const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
+  // const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
+  const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -156,15 +157,31 @@ int main ( int argc, const char** argv ) {
   TString ChainName  = "JetTree";
   TString TriggerName = arguments.at(2);
   TChain* chain = new TChain( ChainName );
-  for (int i=3; i<arguments.size() ; ++i ) {
-    chain->Add( arguments.at(i).data() );
-  }
+  TString InPattern=arguments.at(3);
+  chain->Add( InPattern );
+  // for (int i=3; i<arguments.size() ; ++i ) {
+  //   chain->Add( arguments.at(i).data() );
+  // }
 
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   reader.SetApplyFractionHadronicCorrection(kTRUE);
   reader.SetFractionHadronicCorrection(0.9999);
   reader.SetRejectTowerElectrons( kFALSE );
   //   reader.SetApplyFractionHadronicCorrection(kFALSE);
+
+  // Explicitly choose bad tower list here
+  TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
+  if ( InPattern.Contains("NPE") ){
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
+  } else {
+    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+  }
+  // Add the following to y11 as well, once we're embedding!
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+
   
   TStarJetPicoDefinitions::SetDebugLevel(0);
 
@@ -201,6 +218,9 @@ int main ( int argc, const char** argv ) {
   // DEBUG
   TH1D* MBTracks = new TH1D("MBTracks","MB tracks, 0-20%; p_{T}", 200, 0, 50);
   TH1D* MBTowers = new TH1D("MBTowers","MB towers, 0-20%; E_{T}", 200, 0, 50);
+
+  //Scale by AJ_hi->Integral() for number of BG constituents per di-jet
+  TH1D* CapturedHiAuAu = new TH1D("CapturedHiAuAu","AuAu constituents above 2 GeV in the dijets; p_{T}", 300, 0, 30);
 
   // Save results
   // ------------
@@ -290,6 +310,7 @@ int main ( int argc, const char** argv ) {
   reader.Init(nEvents);
   
   Long64_t nJetsUsed=0;
+  PseudoJet pj;
   while ( reader.NextEvent() ) {
     reader.PrintStatus(10);      
     
@@ -300,7 +321,9 @@ int main ( int argc, const char** argv ) {
     // event info
     // ----------
     TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
-    refmult=header->GetGReferenceMultiplicity();
+    //refmult=header->GetGReferenceMultiplicity();
+    refmult=header->GetProperReferenceMultiplicity();
+
     eventid = header->GetEventId();
     runid   = header->GetRunId();
 
@@ -323,7 +346,10 @@ int main ( int argc, const char** argv ) {
     AuAuparticles.clear();
     for (int ip = 0; ip<container->GetEntries() ; ++ip ){
       sv = container->Get(ip);
-      AuAuparticles.push_back ( MakePseudoJet( sv ) );
+      pj = MakePseudoJet( sv );
+      pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge(), "auau" ) );
+      AuAuparticles.push_back ( pj );
+
       // DEBUG
       if ( fabs(sv->GetCharge())>1e-4 ) {
 	MBTracks->Fill(sv->Pt());
@@ -399,6 +425,15 @@ int main ( int argc, const char** argv ) {
 	jm1 = MakeTLorentzVector( DiJetsLo.at(0) );
 	jm2 = MakeTLorentzVector( DiJetsLo.at(1) );
 	ResultTree->Fill();
+
+	// Recover AuAu parts
+	vector<PseudoJet> HiCons = DiJetsHi.at(0).constituents();
+	for (int i=0; i<HiCons.size(); ++i ){
+	  if ( HiCons.at(i).has_user_info() ){
+	    if (HiCons.at(i).user_info<JetAnalysisUserInfo>().GetTag() == "auau" ) CapturedHiAuAu->Fill(HiCons.at(i).pt());
+	  }
+	}
+
       }      
       
     } // jit

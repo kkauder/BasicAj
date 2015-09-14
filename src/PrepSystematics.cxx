@@ -20,11 +20,17 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     // ft0eP.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
     // ft0eM.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
     // outname.ReplaceAll("Systematics", "R0.2_Systematics");
-    ft0e0.ReplaceAll("HC30", "R0.2_HC30");
-    ftPe0.ReplaceAll("HC30", "R0.2_HC30");
-    ftMe0.ReplaceAll("HC30", "R0.2_HC30");
-    ft0eP.ReplaceAll("HC30", "R0.2_HC30");
-    ft0eM.ReplaceAll("HC30", "R0.2_HC30");
+    // ft0e0.ReplaceAll("HC30", "R0.2_HC30");
+    // ftPe0.ReplaceAll("HC30", "R0.2_HC30");
+    // ftMe0.ReplaceAll("HC30", "R0.2_HC30");
+    // ft0eP.ReplaceAll("HC30", "R0.2_HC30");
+    // ft0eM.ReplaceAll("HC30", "R0.2_HC30");
+
+    ft0e0.ReplaceAll("Eff0", "Eff0_R0.2");
+    ftPe0.ReplaceAll("Eff0", "Eff0_R0.2");
+    ftMe0.ReplaceAll("Eff0", "Eff0_R0.2");
+    ft0eP.ReplaceAll("Eff1", "Eff1_R0.2");
+    ft0eM.ReplaceAll("Eff-1", "Eff-1_R0.2");
     outname.ReplaceAll("Systematics", "Systematics_R0.2");
 
   } else if ( R=="0.4"  ){

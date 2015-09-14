@@ -83,6 +83,7 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/RandomCone  \
 	 $(BDIR)/TreeWithMc \
 	 $(BDIR)/MakeSmallerTrees \
+	 $(BDIR)/ScanTree \
 	 lib/libMyJetlib.so \
 	 doxy
 
@@ -134,6 +135,7 @@ $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetli
 
 # helper
 $(BDIR)/MakeSmallerTrees	: $(ODIR)/MakeSmallerTrees.o	 	lib/libMyJetlib.so
+$(BDIR)/ScanTree		: $(ODIR)/ScanTree.o	 		lib/libMyJetlib.so	
 
 ###############################################################################
 ##################################### MISC ####################################

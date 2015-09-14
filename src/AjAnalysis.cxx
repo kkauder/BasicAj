@@ -126,12 +126,16 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
 
   // find high constituent pT jets
   // -----------------------------
+  // DEBUG -- Use if you want to pull out rho for these events (which is 0)
+  // WARNING -- A lot more expensive (factor ~15)
+  // pJAhi = new JetAnalyzer( pHi, jet_def, area_def, selector_bkgd ); // WITH background estimator
+  // JetAnalyzer& JAhi = *pJAhi;
+  // JAhi.GetBackgroundSubtractor();
+
   pJAhi = new JetAnalyzer( pHi, jet_def ); // NO background subtraction
   JetAnalyzer& JAhi = *pJAhi;
-  // std::cout << 0 << std::endl;
-  JAhiResult = fastjet::sorted_by_pt( sjet ( JAhi.inclusive_jets() ) );
-  // std::cout << 1 << std::endl;
   
+  JAhiResult = fastjet::sorted_by_pt( sjet ( JAhi.inclusive_jets() ) );  
   if ( JAhiResult.size() < 1 )                 {     return 0; }
   if ( JAhiResult.at(0).pt() > 10 )            { Has10Gev=true; }
 
@@ -163,10 +167,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   // ----------------------------------------------
   pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
   JetAnalyzer& JAlo = *pJAlo;
-  // std::cout << 2 << std::endl;
   fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
   JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
-  // std::cout << 3 << std::endl;
 
   // Old logic: Run the same logic on JAloResult, then reject the event if DiJetsLo is not matched to DiJetsHi
   // std::vector<fastjet::PseudoJet> DiJetsLo = SelectorDijets ( dPhiCut ) ( sjet ( JAloResult)  );
@@ -277,6 +279,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
     OtherLeadPtLoss_lo->Fill( DiJetsLo.at(0).pt() - OtherDiJetsLo.at(0).pt() , EventClassifier );
     OtherSubLeadPtLoss_lo->Fill( DiJetsLo.at(1).pt() - OtherDiJetsLo.at(1).pt() , EventClassifier );
 
+    
   }
 
   return 3;
@@ -301,6 +304,7 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
   evCuts->SetMaxEventPtCut ( AjParameters::MaxEventPtCut );
   evCuts->SetMaxEventEtCut ( AjParameters::MaxEventEtCut );
+  // evCuts->SetReferenceCentralityCut (  6, 8 ); // 6,8 for 0-20%
   // evCuts->SetMinEventEtCut ( -1.0 );
   // evCuts->SetMinEventEtCut ( 6.0 );
 
@@ -320,11 +324,6 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   
   // Towers
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
-  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
-  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-  // towerCuts->AddBadTowers( "emptyBadTowerList.txt");
-  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
   towerCuts->SetMaxEtCut(AjParameters::MaxEtCut);
 
   std::cout << "Using these tower cuts:" << std::endl;

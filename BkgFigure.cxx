@@ -125,7 +125,7 @@ void BkgFigure() {
   ppInAuAuAJ_lo->Draw("9same");
   AuAuAJ_lo->Draw("9same");
   
-  leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #otimes AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   leg->AddEntry ( AuAuAJ_lo,     "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   leg->AddEntry ( RCAJ_lo,       "Random Cone Bkg (RC)", "f");
   leg->AddEntry ( ECAJ_lo,       "Eta Cone Bkg (EC)", "f");
@@ -151,7 +151,7 @@ void BkgFigure() {
   gPad->SaveAs("plots/BkgFigure.pdf");
 
 
-  // leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #otimes AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   // leg->AddEntry ( AuAuAJ_lo,     "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   // leg->AddEntry ( RCAJ_lo,       "Random Cone Bkg (RC)", "f");
   // leg->AddEntry ( ECAJ_lo,       "Eta Cone Bkg (EC)", "f");

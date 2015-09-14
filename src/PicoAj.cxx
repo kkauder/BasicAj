@@ -60,10 +60,9 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  // const char *defaults[] = {"PicoAj","test.root","ppHT","~putschke/Data/ppHT/*.root", "0", "0" };
-  // const char *defaults[] = {"PicoAj","AjResults/Test11_ppAj.root","HT","/data3/AuAu11picoNPE15_150424/AuAu11Pico_1800-899.root", "0", "0" };
-  // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","CleanAuAu/Clean809.root", "0", "0" };
-  const char *defaults[] = {"PicoAj","test.root","HT","SmallAuAu/Small_Clean809*.root", "0", "0" };
+  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -129,7 +128,8 @@ int main ( int argc, const char** argv ) {
   TString TriggerName = arguments.at(1);
 
   TChain* chain = new TChain( ChainName );
-  chain->Add( arguments.at(2).data() );
+  TString InPattern=arguments.at(2);
+  chain->Add( InPattern );
 
   // Au+Au?
   // ------
@@ -191,12 +191,33 @@ int main ( int argc, const char** argv ) {
   reader.SetFractionHadronicCorrection(0.9999);
   reader.SetRejectTowerElectrons( kFALSE );
   //  reader.SetApplyFractionHadronicCorrection(kFALSE);
+  
+  // Run 11: Use centrality cut
+  if ( InPattern.Contains("NPE") ){
+    TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();    
+    evCuts->SetReferenceCentralityCut (  6, 8 ); // 6,8 for 0-20%
+  }
 
-  // DEBUG: KK: Reject bad phi strip  
-  TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
-  trackCuts->SetPhiCut(0, -1.2);
+
+  // Explicitly choose bad tower list here
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  towerCuts->SetPhiCut(0, -1.2);
+  if ( InPattern.Contains("NPE") ){
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
+  } else {
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
+    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+  }
+  // Add the following to y11 as well, once we're embedding!
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+
+  // DEBUG ONLY
+  // towerCuts->AddBadTowers( "emptyBadTowerList.txt");
+
+  // // DEBUG: KK: Reject bad phi strip  
+  // towerCuts->SetPhiCut(0, -1.2);
+  // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
+  // trackCuts->SetPhiCut(0, -1.2);
 
   TStarJetPicoDefinitions::SetDebugLevel(0);
     
@@ -247,6 +268,7 @@ int main ( int argc, const char** argv ) {
   // Find some info on the background
   TH1D* hrho = new TH1D( "hrho","#rho", 240, 0, 120 );
   TH1D* hrhoerr = new TH1D( "hrhoerr","#sigma_{#rho}", 100, 0, 50 );
+  TH1D* hrhoHi = new TH1D( "hrhoHi","#rho above 2 GeV", 240, 0, 120 );
 
   // can't compute area_error(), take rms of this instead
   TH1D* hj1area    = new TH1D( "hj1area","j1 area", 320, 0.0, 0.8 );
@@ -281,7 +303,8 @@ int main ( int argc, const char** argv ) {
   } else {
     cout << "Can't create Eta Cone histo using jets from " << OrigResultName << endl; 
   }
-  
+  fout->cd();
+
   // Save results
   // ------------
   TTree* ResultTree=new TTree("ResultTree","Result Jets");
@@ -295,6 +318,7 @@ int main ( int argc, const char** argv ) {
   double refmult; // Really an int, but may change when using refmultcorr
   float rho;
   float rhoerr;
+  float rhoHi;
   float j1area;
   float j2area;
 
@@ -303,6 +327,7 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("refmult",&refmult, "refmult/d");
   ResultTree->Branch("rho",&rho, "rho/f");
   ResultTree->Branch("rhoerr",&rhoerr, "rhoerr/f");
+  ResultTree->Branch("rhoHi",&rhoHi, "rhoHi/f");
   ResultTree->Branch("j1area",&j1area, "j1area/f");
   ResultTree->Branch("j2area",&j2area, "j2area/f");
 
@@ -320,16 +345,27 @@ int main ( int argc, const char** argv ) {
   // -------------------------------------------------------------------
   // This is somewhat wasteful, we could instead read the original trees.
   bool SaveFullEvents = TriggerName.Contains("ppHT");
+  // // DEBUG
+  // bool SaveFullEvents = true;
+
   TTree* TriggeredTree=0;
+
+
 
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
   static const Int_t kmaxT=5000; // max # of particles
   TClonesArray FullEvent("TLorentzVector",kmaxT);
+
+  // // Split up
+  // TClonesArray Tracks("TLorentzVector",kmaxT);
+  // TClonesArray Towers("TLorentzVector",kmaxT);
+
   if (SaveFullEvents) {
     TriggeredTree = new TTree("TriggeredTree","Triggered Events");
     // NOTE: Ignore "Warning in <TTree::Bronch>: Using split mode on a class: TLorentzVector with a custom Streamer"
-    // See: https://root.cern.ch/phpBB3/viewtopic.php?p=18269
     TriggeredTree->Branch("FullEvent", &FullEvent );
+    // TriggeredTree->Branch("Tracks", &Tracks );
+    // TriggeredTree->Branch("Towers", &Towers );
     TriggeredTree->Branch("TriggerJet", &TriggerJet);
     TriggeredTree->Branch("eventid",&eventid, "eventid/i");
     TriggeredTree->Branch("runid",&runid, "runid/i");
@@ -385,8 +421,8 @@ int main ( int argc, const char** argv ) {
   vector<int> SeedStatus;
   
   fastjet::Selector GrabCone = fastjet::SelectorCircle( R );    
-  // DEBUG
-  int No4Gev=0;
+  // // DEBUG
+  // int No4Gev=0;
   try{
     while ( reader.NextEvent() ) {
       reader.PrintStatus(10);
@@ -419,7 +455,8 @@ int main ( int argc, const char** argv ) {
       TmpArea.set_random_status(SeedStatus);
       
       refmult=0;
-      if ( isAuAu ) refmult=header->GetGReferenceMultiplicity();
+      //if ( isAuAu ) refmult=header->GetGReferenceMultiplicity();
+      if ( isAuAu ) refmult=header->GetProperReferenceMultiplicity();
       
       // Load event
       // ----------
@@ -429,33 +466,36 @@ int main ( int argc, const char** argv ) {
       // --------------------
       particles.clear();
 
-      // DEBUG: Look for HT trigger
-      bool Has4GevTower=false;
+      // // DEBUG: Look for HT trigger
+      // bool Has4GevTower=false;
+
       for (int ip = 0; ip<container->GetEntries() ; ++ip ){
-	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
-	// DEBUG
-	if (sv->GetCharge()==0 && sv->Pt() > 4 ) Has4GevTower=true;
+      	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
 
-	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
-	pj=MakePseudoJet( sv );
-	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
+      	// // DEBUG
+      	// if (sv->GetCharge()==0 && sv->Pt() > 4 ) Has4GevTower=true;
 
-	if ( sv->GetCharge()!=0 && tEff ) {
-	  Double_t reff=tEff->EffRatio_20(sv->Eta(),sv->Pt());
-	  Double_t mran=gRandom->Uniform(0,1);
-	  // cout << reff << "  " << mran << endl;
-	  if (mran<reff)  {
-	    particles.push_back ( pj );
-	  }
-	} else { // no charge or no efficiency class
-	  particles.push_back ( pj );
-	}	      
+      	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
+      	pj=MakePseudoJet( sv );
+      	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
+
+      	if ( sv->GetCharge()!=0 && tEff ) {
+      	  Double_t reff=tEff->EffRatio_20(sv->Eta(),sv->Pt());
+      	  Double_t mran=gRandom->Uniform(0,1);
+      	  // cout << reff << "  " << mran << endl;
+      	  if (mran<reff)  {
+      	    particles.push_back ( pj );
+      	  }
+      	} else { // no charge or no efficiency class
+      	  particles.push_back ( pj );
+      	}	      
       }
-      // DEBUG
-      if ( !Has4GevTower ) {
-	cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
-	No4Gev++;
-      }
+
+      // // DEBUG
+      // if ( !Has4GevTower ) {
+      // 	cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
+      // 	No4Gev++;
+      // }
 
       // Run analysis
       // ------------
@@ -511,6 +551,8 @@ int main ( int argc, const char** argv ) {
 	FullEvent.Clear();
 	TriggerJet.Clear();
 	if ( AjA.Has10Gev )  { 
+	  int j=0;
+	  int k=0;
 	  for ( int i = 0; i<particles.size() ; ++i ){
 	    if ( particles.at(i).pt() >50 ) { 
 	      cerr << " =====> " <<particles.at(i).pt()
@@ -521,7 +563,14 @@ int main ( int argc, const char** argv ) {
 		cerr << " AND ret == " << ret << endl;
 	      }
 	    } 
-	    new (FullEvent[i])   TLorentzVector ( MakeTLorentzVector( particles.at(i) )  );
+	    TLorentzVector lv = MakeTLorentzVector( particles.at(i) );
+	    new (FullEvent[i])   TLorentzVector ( lv  );
+	    // //DEBUG -- quick and dirty differentiation betwen towers and tracks
+	    // if ( abs( particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge())>0 ){
+	    //   new (Towers[j++])   TLorentzVector ( lv  );
+	    // } else{
+	    //   new (Tracks[k++])   TLorentzVector ( lv  );
+	    // }	    
 	  } // for particles
 	  // Save trigger jet as well
 	  vector<PseudoJet> JAhiResult = AjA.GetJAhiResult();
@@ -547,12 +596,20 @@ int main ( int argc, const char** argv ) {
 	rho=rhoerr=j1area=j2area=0;
 	nRestJ=0;
 	fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
+	rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
+	// // More Debug
+	// rhoHi=0;
+	// // rhoHi=AjA.GetJAhi()->GetBackgroundEstimator()->rho() ;	
+	// // cout << "rhoHi = "  << rhoHi << endl;
+	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_jets_used() << " used for HI BG" << endl;
+	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_empty_jets() << " of them empty" << endl;
+
+	
 	if ( refmult >= 269 ){
-	  rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	  rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
-	  
-	  hrho->Fill(AjA.GetJAlo()->GetBackgroundEstimator()->rho()) ;
-	  hrhoerr->Fill(AjA.GetJAlo()->GetBackgroundEstimator()->sigma()) ;
+	  hrho->Fill(rho) ;
+	  hrhoerr->Fill(rhoerr) ;
+	  hrhoHi->Fill(rhoHi) ;
 	  vector<PseudoJet> lojets = fastjet::sorted_by_pt( selector_bkgd ( AjA.GetJAlo()->inclusive_jets() ) );
 	  j1area=DiJetsLo.at(0).area();
 	  j2area=DiJetsLo.at(1).area();
@@ -573,7 +630,6 @@ int main ( int argc, const char** argv ) {
 	  }
 	  
 	}
-
 	ResultTree->Fill();
       }
       
@@ -665,6 +721,8 @@ int main ( int argc, const char** argv ) {
 
   // Close up shop
   // -------------
+  fout->cd();
+  reader.GetHadronicResult()->Write();
   fout->Write();
 
   cout << "In " << nEventsUsed << " events, found " << endl
@@ -681,8 +739,8 @@ int main ( int argc, const char** argv ) {
   
   cout << "Aj->GetEntries() = " << UnmatchedAJ_hi->GetEntries() << endl;
 
-  // DEBUG
-  cout << " No 4 GeV tower found in " << No4Gev << " out of " << nEventsUsed << " events." << endl;
+  // // DEBUG
+  // cout << " No 4 GeV tower found in " << No4Gev << " out of " << nEventsUsed << " events." << endl;
 
   return 0;
   

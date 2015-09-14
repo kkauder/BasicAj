@@ -13,7 +13,7 @@ make $Exec || exit
 
 # choose R or Pt options
 set RMod = ""
-#set RMod = R0.2_
+# set RMod = R0.2_
 # set RMod = Pt1_
 
 # Input files
@@ -21,11 +21,8 @@ set RMod = ""
 set base = Data/SmallNPE18/Small_AuAu11*
 #set base = Data/SmallNPE18/Small_AuAu11PicoNPE18_Cent8_[0-9].root
 
-# DON'T try this! It will kill the server :)
 #foreach randomoff ( `seq 0 9 ` )
 #end # foreach randomoff
-
-# you can reasonably run two sets at once
 
 # choose random seed offset
 set randomoff = 0
@@ -92,17 +89,6 @@ foreach input ( ${base}* )
     echo "Logging errors to " $ErrFile
     echo
     
-# set command = "./bin/PicoAj $OutName $TriggerName $Files 0 0"
-#    echo "Executing " $command
-
-    # # Run in the background
-    # ( $command > $LogFile ) >& $ErrFile &
-
-# # Submit to batch
-# batch <<EOF
-# (./CshExec.csh $command > $LogFile ) >& $ErrFile
-# EOF
-
 end # foreach input
 
 condor_submit CondorFile

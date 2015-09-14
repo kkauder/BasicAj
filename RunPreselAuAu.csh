@@ -64,7 +64,8 @@ foreach input ( ${base}* )
     #set OutName    = AjResults/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.root
     #set OutName    = AjResults/${rndname}/${RMod}NewCode_HC100_${OutBase}.root
     #set OutName    = AjResults/${rndname}/${RMod}FixedTowers_${OutBase}.root
-    set OutName    = AjResults/${rndname}/${RMod}NicksList_HC100_${OutBase}.root
+    #set OutName    = AjResults/${rndname}/${RMod}NicksList_HC100_${OutBase}.root
+    set OutName    = AjResults/${rndname}/${RMod}OldList_HC100_${OutBase}.root
 	
     set TriggerName = HT
     set Files      = ${input}
@@ -76,8 +77,10 @@ foreach input ( ${base}* )
     # set ErrFile     = logs/${rndname}/${RMod}NewCode_HC100_${OutBase}.err
     # set LogFile     = logs/${rndname}/${RMod}FixedTowers_${OutBase}.out
     # set ErrFile     = logs/${rndname}/${RMod}FixedTowers_${OutBase}.err
-    set LogFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.out
-    set ErrFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.err
+    # set LogFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.out
+    # set ErrFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.err
+    set LogFile     = logs/${rndname}/${RMod}OldList_HC100_${OutBase}.out
+    set ErrFile     = logs/${rndname}/${RMod}OldList_HC100_${OutBase}.err
 
     ### hand to condor
     set Args = ( $OutName $TriggerName $Files 0 0 )

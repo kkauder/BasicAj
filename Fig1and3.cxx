@@ -8,7 +8,7 @@
 #include <iostream>
 using namespace std;
 
-void Fig1and3() {
+int Fig1and3() {
 
   int RefmultCut = 269;  // 269 for 0-20%, 399 for 0-10%
   // int RefmultCut = 351;  // 269 for 0-20%, 399 for 0-10%
@@ -35,6 +35,10 @@ void Fig1and3() {
   TFile *fAuAu         = TFile::Open("AjResults/NicksList_HC100_AuAu.root");
   TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_NicksList_HC100_ppInAuAuAj.root");
   TFile *fSyst         = TFile::Open("AjResults/Systematics_NicksList_HC100_ppInAuAuAj.root");
+
+  // TFile *fAuAu         = TFile::Open("AjResults/R0.2_NicksList_HC100_AuAu.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_NicksList_HC100_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_NicksList_HC100_ppInAuAuAj.root");
 
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
@@ -268,10 +272,10 @@ void Fig1and3() {
   leg->SetLineWidth(10);
   leg->SetFillStyle(0);
   leg->SetMargin(0.1);
-  leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #otimes AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
+  leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
   leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
   // 
-  // TLegendEntry* l1 = leg->AddEntry ( (TH1D*) NULL,          "pp HT #otimes AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "");
+  // TLegendEntry* l1 = leg->AddEntry ( (TH1D*) NULL,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "");
   // l1->SetTextColor(kWhite); // Doesn't Work :(
   leg->AddEntry ( (TH1D*) NULL,     "", "");
   leg->AddEntry ( (TH1D*) NULL,     "", "");
@@ -336,9 +340,9 @@ void Fig1and3() {
   AuAuAJ_lo->Draw("9same");
 
   leg->Clear();
-  leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #otimes AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
+  leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
   leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
-  leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #otimes AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   leg->Draw();
 
@@ -385,7 +389,7 @@ void Fig1and3() {
   out->Write();
   cout << "Wrote to " << out->GetName() << endl;
 
-  return;
+  return 0;
   
   // cout << ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "D") << endl;
   // cout << ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo,"D") << endl;

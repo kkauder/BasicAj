@@ -232,7 +232,8 @@ int main ( int argc, const char** argv ) {
     // event info
     // ----------
     TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
-    refmult=header->GetGReferenceMultiplicity();
+    //refmult=header->GetGReferenceMultiplicity();
+    refmult=header->GetProperReferenceMultiplicity();
     eventid = header->GetEventId();
     runid   = header->GetRunId();
 
