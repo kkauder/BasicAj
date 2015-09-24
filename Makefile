@@ -28,7 +28,8 @@ else
 CXX          = clang
 endif
 
-
+# # uncomment for debug info in the library
+# CXXFLAGS     += -g
 
 CXXFLAGS		+= -Wno-return-type-c-linkage
 
@@ -154,6 +155,8 @@ clean :
 	@echo 
 	@echo CLEANING
 	rm -vf $(ODIR)/*.o
+	rm -rvf $(BDIR)/*dSYM
+	rm -rvf lib/*dSYM	
 	rm -vf $(BDIR)/*
 	rm -vf lib/*
 	rm -vf $(SDIR)/dict.cxx $(SDIR)/dict.h
