@@ -16,6 +16,15 @@ Double_t TF2_EffRatio_20(Double_t *x, Double_t *pars){
   return tEff->EffRatio_20( x[1], x[0] );
 }
 
+Double_t TF1_EffRatio_20(Double_t *x, Double_t *pars){
+  // at eta=0
+  // par[0] is uncertainty modifier
+  tEff->SetSysUncertainty( pars[0] * 1.1 );
+  double ret = tEff->EffRatio_20( 0, x[0] );
+  tEff->SetSysUncertainty( 0 );
+  return ret;
+}
+
 
 void EfficiencyPlotter()
 {
@@ -73,10 +82,27 @@ void EfficiencyPlotter()
   gPad->SaveAs("EffRatio.png");
 
 
+  // 1D Ratio
+  new TCanvas;
+  TF1* fratio1D = new TF1 ( "fratio1D", TF1_EffRatio_20, 0.2, 5, 1 );
+  TF1* fratio1Dp = new TF1 ( "fratio1D", TF1_EffRatio_20, 0.2, 5, 1 );
+  fratio1Dp->SetParameter(0,1);
+  TF1* fratio1Dm = new TF1 ( "fratio1D", TF1_EffRatio_20, 0.2, 5, 1 );
+  fratio1Dm->SetParameter(0,-1);
 
-  // dummy2->SetAxisRange( 1.0, 5, "x");
+  // fratio1D->SetTitle( "pp / Au+Au at #eta=0");
+  fratio1D->SetTitle( "");
+  TH2D* dummy2 = new TH2D( "dummy2", ";p_{T} [GeV/c]; efficiency ratio", 100, 0.2, 5, 100, 0.0, 1.05);
+  dummy2->Draw();
+  fratio1D->Draw("same");
+  fratio1Dp->SetLineStyle(7);
+  fratio1Dp->Draw("same");
+  fratio1Dm->SetLineStyle(7);
+  fratio1Dm->Draw("same");
 
-  // new TCanvas;  
-  // dummy2->DrawCopy("colz");
+
+  l.DrawLatex(.13, .92, "pp / Au+Au at #eta=0");
+  gPad->SaveAs("EffRatio1D.png");
+
   
 }

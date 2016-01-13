@@ -34,25 +34,18 @@ foreach Tow ( -1 0 1 )
 	set TowMod = Tow${Tow}
 	set EffMod = Eff${Eff}
 	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}ppAj.root
-	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}NicksList_HC100_ppAj.root
-	set PpName = AjResults/${TowMod}_${EffMod}_${RMod}OldList_HC100_ppAj.root
+	set PpName = AjResults/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppAj.root
+	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}OldList_HC100_ppAj.root
 
 	foreach input ( ${base}* )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
-	    # set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.root
-	    # set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}NicksList_HC100_ppInAuAuAj_${OutBase}.root
-	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}OldList_HC100_ppInAuAuAj_${OutBase}.root
+	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
 	    set TriggerName = MB
 	    set Files      = ${input}
 
-	    # Logfiles. Thanks cshell for this "elegant" syntax to split err and out
-	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.out
-	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}ppInAuAuAj_${OutBase}.err
-	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}NicksList_HC100_ppInAuAuAj_${OutBase}.out
-	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}NicksList_HC100_ppInAuAuAj_${OutBase}.err
-	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}OldList_HC100_ppInAuAuAj_${OutBase}.out
-	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}OldList_HC100_ppInAuAuAj_${OutBase}.err
+	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
+	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
 
 	    echo "Logging output to " $LogFile
 	    echo "Logging errors to " $ErrFile

@@ -56,7 +56,7 @@ int main ( int argc, const char** argv ) {
     cout << " CAREFUL: FAKING BETTER STATISTICS " << endl;
   }
   
-  const char *defaults[5] = {"RandomCone","AjResults/HC30_RandomCone.root","AjResults/Presel_AuAuAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  const char *defaults[5] = {"RandomCone","AjResults/Fresh_NicksList_HC100_RandomCone.root","AjResults/Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -104,8 +104,28 @@ int main ( int argc, const char** argv ) {
   int RefMultCut=0;
   TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
   reader.SetApplyFractionHadronicCorrection(kTRUE);
-  reader.SetFractionHadronicCorrection(0.9999);    
-  
+  reader.SetFractionHadronicCorrection(0.9999);
+  reader.SetRejectTowerElectrons( kFALSE );  
+
+  // Explicitly choose bad tower list here
+  TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
+  if ( OrigAuAuName.Contains("NPE") || OrigAuAuName.Contains("AuAu11") ){
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
+  // Add the following to y11 as well, once we're embedding!
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+  } else {
+    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+  }
+  // DEBUG ONLY
+  // towerCuts->AddBadTowers( "emptyBadTowerList.txt");
+
+  // // DEBUG: KK: Reject bad phi strip  
+  // towerCuts->SetPhiCut(0, -1.2);
+  // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
+  // trackCuts->SetPhiCut(0, -1.2);
+
   // TStarJetPicoDefinitions::SetDebugLevel(10);
 
   // Files and histograms

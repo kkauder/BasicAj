@@ -23,6 +23,7 @@
 #include "TF1.h"
 #include "TLorentzVector.h"
 #include "TClonesArray.h"
+#include "TParameter.h"
 
 using namespace std;
 using namespace Pythia8;
@@ -31,11 +32,16 @@ using namespace fastjet;
 Int_t main(int argc, char **argv) {
     
   // Pull seed and adjust outfilename
-  TString OutFileName = "Data/PythiaAndMc.root";
+  // TString OutFileName = "Data/PythiaAndMc.root";
+  TString OutFileName = "Data/RhicPythia/RhicPythiaOnly.root";
+  // TString OutFileName = "Data/LhcPythiaOnly.root";
+  bool AddMc=true;
+  if ( OutFileName.Contains("PythiaOnly") ) AddMc=false;
+
   TString seed = "";
   Long64_t pseed = 0;  
-  if ( argc>1 ) {
-    seed = argv[1];
+  if ( argc>2 ) {
+    seed = argv[2];
     pseed = atoi( seed );
     OutFileName.ReplaceAll ( ".root", "_" + seed + ".root" );
   }
@@ -43,20 +49,33 @@ Int_t main(int argc, char **argv) {
 
   // Multiplicity -- pull before opening outfile
   // -------------------------------------------
-  TFile* fMult = new TFile("TrueMult_0_20.root","READ");
-  TH1D* AuAuN = (TH1D*) fMult->Get("AuAuN"); // Maybe reject N<800 or so
+  TFile* fMult = 0;
+  TH1D* AuAuN = 0;
 
-  // Set up output file
-  // ------------------
-  TFile * fout = new TFile(OutFileName,"recreate");
+  if ( AddMc ){
+    fMult = new TFile("TrueMult_0_20.root","READ");
+    AuAuN = (TH1D*) fMult->Get("AuAuN"); // Maybe reject N<800 or so
+  }
 
   // Generator. Shorthand for event (use FastJet3 and Pythia8 interface!!!)
   //------------------------------------------------------------------------
-  // Float_t ptHatMin=40.0;
-  // Float_t ptHatMax=100.0;
-  Float_t ptHatMin=20.0;
-  Float_t ptHatMax=100.0;
-
+  Float_t ptHatMin=10.0;
+  Float_t ptHatMax=20.0;
+  // LHC
+  // Float_t ptHatMin=90.0;
+  // Float_t ptHatMax=1000.0;
+  
+  TString s1 = "";
+  TString s2 = "";
+  if ( argc>3 ) {
+    if ( argc<5 ) { cerr << "X-(" << endl; return -1; }
+    s1 = argv[3];
+    s2 = argv[4];
+    ptHatMin = atof( s1 );
+    ptHatMax = atof( s2 );
+    OutFileName.ReplaceAll ( ".root", "_ptHat=" + s1 + "_" + s2 + ".root" );
+  }
+  
   // Pythia pythia("/Users/putschke/pythia8100/xmldoc");
   Pythia pythia("/Users/putschke/pythia8100/xmldoc");
   Event& event = pythia.event;
@@ -97,22 +116,39 @@ Int_t main(int argc, char **argv) {
   seedline+=pseed;
   pythia.readString( seedline.Data() );
 
-  // LHC initialization.
-  //pythia.init(2212, 2212,5020.);
-  // pythia.init(2212, 2212,2760.);
-
-  // RHIC initialization.
-  // pythia.init(2212, 2212,200.);
   pythia.readString("Beams:idA = 2212");
   pythia.readString("Beams:idB = 2212");
-  pythia.readString("Beams:eCM = 200.0");
+
+  // Root does ToUpper inline :-/
+  TString UpOutFileName = OutFileName;
+  UpOutFileName.ToUpper();
+  if ( UpOutFileName.Contains("LHC") ){ 
+    // LHC initialization.
+    pythia.readString("Beams:eCM = 13000.0");
+  } else {
+    // RHIC initialization.
+    pythia.readString("Beams:eCM = 200.0");
+  }
+
   pythia.init();
 
-  gRandom->SetSeed(1);
-    
+  // gRandom->SetSeed(1);
+  gRandom->SetSeed(pseed);
+
+  // Eta cut
+  Float_t maxeta = 1.0;  // STAR
+  if ( UpOutFileName.Contains("LHC") ){ 
+    maxeta = 3.0;
+  }
+
+
+  // Set up output file
+  // ------------------
+  TFile * fout = new TFile(OutFileName,"recreate");
+
   // Set up tree
   // -----------
-  static const Int_t kmaxT=5000; // # of particles per event
+  static const Int_t kmaxT=25000; // # of particles per event
 
   TTree* tree  = new TTree("tree","Some pythia jets");
 
@@ -151,10 +187,12 @@ Int_t main(int argc, char **argv) {
   // Generate events
   // ---------------
   int nEv = 0;
-  // Int_t nEvent = 1000000;
   Int_t nEvent = 100000;
-  // Int_t nEvent = 30000;
   // Int_t nEvent = 500;
+  if ( argc>1 ) {
+    nEvent = atoi( argv[1] );
+  }
+
   fastjet::PseudoJet v; // helper
   // const double M = 0.13957;  // set pi+ mass
   const double M = 0;  // for background, use massless particles, as in real data
@@ -169,7 +207,7 @@ Int_t main(int argc, char **argv) {
     PythiaParticles.Clear();
     HardPartons.Clear();
     HardPartonNames.Clear();
-    McParticles.Clear("C");
+    McParticles.Clear();
     
     // Grab particles
     int fkTrack=0;
@@ -186,7 +224,7 @@ Int_t main(int argc, char **argv) {
 	new ( HardPartons[fkHard]) TLorentzVector ( pv.px(), pv.py(), pv.pz(), pv.e() ) ;
 	new ( HardPartonNames[fkHard]) TObjString ( particle.name().data() ) ;
 	fkHard++;
-      }
+      }      
 	      
       if ( !particle.isFinal() ) continue;
       
@@ -224,7 +262,7 @@ Int_t main(int argc, char **argv) {
 
       // some preselections to cut down size and simulate STAR
       if ( pv.pT() < 0.2 ) continue;
-      if ( fabs(pv.eta()) > 1.0 ) continue;
+      if ( fabs(pv.eta()) > maxeta ) continue;
       
       // new ( PythiaParticles[fkTrack] ) TLorentzVector ( pv.px(), pv.py(), pv.pz(), pv.e() ) ;
 
@@ -244,64 +282,74 @@ Int_t main(int argc, char **argv) {
       
       ++fkTrack;
     }
+    
+    // reject event if not at least one hard particle is close to the acceptance
+    bool keep=false;
+    for ( int i=0; i<HardPartons.GetEntries() ; ++i ){
+      if ( fabs ( ((TStarJetVector*)HardPartons.At(i))->Eta()) < maxeta+0.5 ){
+	keep=true;
+	break;
+      }
+    }
+    if (!keep) continue;
 
     // Now add some mock Au+Au background.
     // -----------------------------------
+    if ( AddMc ) {
 
-    // Multiplicity
-    int N;
-    while ( (N=AuAuN->GetRandom())<800);
-
-    // Need to shift down
-    N-=PythiaParticles.GetEntries();    
-    
-    int nAuAu=0;
-    while ( nAuAu<N ){
-      pt = AuAuSoftPt->GetRandom();
-      rap = gRandom->Uniform(-1,1);
-      phi = gRandom->Uniform(-TMath::Pi(),TMath::Pi());      
+      // Multiplicity
+      int N;
+      while ( (N=AuAuN->GetRandom())<800);
+      // Scale up by rapidity coverage
+      N*=maxeta;
       
-      double p = pt * TMath::CosH( rap );
-      double E = sqrt( p*p + M*M);
-      double px = pt * TMath::Cos( phi );
-      double py = pt * TMath::Sin( phi );
-      double pz = pt * TMath::SinH( rap );
-
-      int charge =  int( gRandom->Integer(3) ) -1;
-
-      pv = Vec4( px, py, pz, E );
-      if ( pv.pT() < 0.2 ) continue;
-      if ( fabs(pv.eta()) > 1.0 ) continue;
+      // Need to shift down
+      N-=PythiaParticles.GetEntries();    
       
-      // new ( McParticles[nAuAu] ) TLorentzVector ( pv.px(), pv.py(), pv.pz(), pv.e() ) ;
-      // Use TStarJetVector, which has more information (like charge)
-      // ------------------------------------------------------------
-      // Use ConstructedAt!! new defeats the purpose of tclonesarray (and swamps the memory)
-      // new ( McParticles[nAuAu] ) TStarJetVector () ; 
-      TStarJetVector* ppart = (TStarJetVector*) McParticles.ConstructedAt(nAuAu);
-      if ( charge !=0 ){
-      	ppart->SetPtEtaPhiM( pv.pT(), pv.eta(), pv.phi(), 0);
-      	ppart->SetType(TStarJetVector::_TRACK);
-      	ppart->SetCharge( charge );
-      } else {
-      	ppart->SetPtEtaPhiM( pv.eT(), pv.eta(), pv.phi(), 0);
-      	ppart->SetType(TStarJetVector::_TOWER);
-      	ppart->SetCharge(TStarJetVector::_NEUTRAL);	      
+      int nAuAu=0;
+      while ( nAuAu<N ){
+	pt = AuAuSoftPt->GetRandom();
+	rap = gRandom->Uniform(-maxeta,maxeta);
+	phi = gRandom->Uniform(-TMath::Pi(),TMath::Pi());      
+	
+	double p = pt * TMath::CosH( rap );
+	double E = sqrt( p*p + M*M);
+	double px = pt * TMath::Cos( phi );
+	double py = pt * TMath::Sin( phi );
+	double pz = pt * TMath::SinH( rap );
+	
+	int charge =  int( gRandom->Integer(3) ) -1;
+	
+	pv = Vec4( px, py, pz, E );
+	if ( pv.pT() < 0.2 ) continue;
+	if ( fabs(pv.eta()) > maxeta ) continue;
+	
+	// new ( McParticles[nAuAu] ) TLorentzVector ( pv.px(), pv.py(), pv.pz(), pv.e() ) ;
+	// Use TStarJetVector, which has more information (like charge)
+	// ------------------------------------------------------------
+	// Use ConstructedAt!! new defeats the purpose of tclonesarray (and swamps the memory)
+	// new ( McParticles[nAuAu] ) TStarJetVector () ; 
+	TStarJetVector* ppart = (TStarJetVector*) McParticles.ConstructedAt(nAuAu);
+	if ( charge !=0 ){
+	  ppart->SetPtEtaPhiM( pv.pT(), pv.eta(), pv.phi(), 0);
+	  ppart->SetType(TStarJetVector::_TRACK);
+	  ppart->SetCharge( charge );
+	} else {
+	  ppart->SetPtEtaPhiM( pv.eT(), pv.eta(), pv.phi(), 0);
+	  ppart->SetType(TStarJetVector::_TOWER);
+	  ppart->SetCharge(TStarJetVector::_NEUTRAL);
+	}
+	
+	nAuAu++;
+	
       }
-
-
-      nAuAu++;
-      
     }
-    
+
     // generate fake runid and eventid
     // -------------------------------
     runid   = gRandom->Integer(1000000);
     eventid = gRandom->Integer(1000000);
-
-
-    for (int i=0; i<McParticles.GetEntries() ; ++i ) McParticles[i]->Clear();
-
+    
     // Done. Fill tree
     // ---------------
     tree->Fill();
@@ -309,8 +357,24 @@ Int_t main(int argc, char **argv) {
     ++nEv;
   } while (nEv<nEvent);
   
+  Pythia8::Info& info = pythia.info;
+  TParameter<double> param;
+  param.SetVal( info.nTried() );
+  param.Write( "nTried" );
+  param.SetVal( info.nSelected() );
+  param.Write( "nSelected" );
+  param.SetVal( info.nAccepted() );
+  param.Write( "nAccepted" );
+  param.SetVal( info.sigmaGen() );
+  param.Write( "sigmaGen" );
+  param.SetVal( info.sigmaErr() );
+  param.Write( "sigmaErr" );
+
   fout->Write();
   fout->Close();
+
+
+  pythia.stat();
   
   cout << "Written to: " << fout->GetName() << endl;
   return 0;

@@ -60,7 +60,7 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0" };
+  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0" };
   // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0" };
 
@@ -130,6 +130,7 @@ int main ( int argc, const char** argv ) {
   TChain* chain = new TChain( ChainName );
   TString InPattern=arguments.at(2);
   chain->Add( InPattern );
+  cout << "Running over " << chain->GetEntries() << " events." << endl;
 
   // Au+Au?
   // ------
@@ -204,9 +205,9 @@ int main ( int argc, const char** argv ) {
   if ( InPattern.Contains("NPE") ){
     towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
   } else {
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
-    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
-    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
+    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
+    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
   }
   // Add the following to y11 as well, once we're embedding!
   // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
@@ -286,13 +287,14 @@ int main ( int argc, const char** argv ) {
   vector<int> OrigEvents;
 
   FileStat_t filestat;
-  TString OrigResultName="AjResults/Presel_AuAuAj.root";
+  // TString OrigResultName="AjResults/Presel_AuAuAj.root";
+  TString OrigResultName=arguments.at(5);
   bool RunEtaCone= isAuAu && gSystem->GetPathInfo(OrigResultName, filestat)==0 && fabs(R-0.4)<1e-4 && true;
 
   if ( RunEtaCone ){
     cout << "Creating Eta Cone histo using jets from " << OrigResultName << endl; 
     OrigJets = new TChain("ResultTree");
-    OrigJets->Add("AjResults/Presel_AuAuAj.root");
+    OrigJets->Add(OrigResultName);
     OrigJets->SetBranchAddress("j1", &pJ1);
     OrigJets->SetBranchAddress("j2", &pJ2);
     OrigJets->SetBranchAddress("eventid", &Origeventid);
@@ -353,6 +355,7 @@ int main ( int argc, const char** argv ) {
 
 
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
+  TClonesArray AwayJet( "TLorentzVector",1 ); 
   static const Int_t kmaxT=5000; // max # of particles
   TClonesArray FullEvent("TLorentzVector",kmaxT);
 
@@ -367,6 +370,7 @@ int main ( int argc, const char** argv ) {
     // TriggeredTree->Branch("Tracks", &Tracks );
     // TriggeredTree->Branch("Towers", &Towers );
     TriggeredTree->Branch("TriggerJet", &TriggerJet);
+    TriggeredTree->Branch("AwayJet", &AwayJet);
     TriggeredTree->Branch("eventid",&eventid, "eventid/i");
     TriggeredTree->Branch("runid",&runid, "runid/i");
 
@@ -550,6 +554,7 @@ int main ( int argc, const char** argv ) {
       if (SaveFullEvents){
 	FullEvent.Clear();
 	TriggerJet.Clear();
+	AwayJet.Clear();
 	if ( AjA.Has10Gev )  { 
 	  int j=0;
 	  int k=0;
@@ -574,7 +579,17 @@ int main ( int argc, const char** argv ) {
 	  } // for particles
 	  // Save trigger jet as well
 	  vector<PseudoJet> JAhiResult = AjA.GetJAhiResult();
-	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );
+	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );	  
+	  vector<PseudoJet> DiJetsHi = SelectorDijets( AjParameters::dPhiCut ) ( JAhiResult );
+	  if ( DiJetsHi.size()>1 ){
+	    if ( DiJetsHi.at(0).pt() < DiJetsHi.at(1).pt() ) {
+	      cerr << "Huh??" << endl;
+	      return -1;
+	    }	    
+	    new (AwayJet[0]) TLorentzVector ( MakeTLorentzVector( DiJetsHi.at(1) )  );
+	  } else {
+	    new (AwayJet[0]) TLorentzVector ();
+	  }
 	  TriggeredTree->Fill();
 	} // has Trigger
       } // SaveFullEvents

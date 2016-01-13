@@ -83,6 +83,7 @@ $(BDIR)/%  : $(ODIR)/%.o
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/RandomCone  \
 	 $(BDIR)/TreeWithMc \
+	 $(BDIR)/JustMc \
 	 $(BDIR)/MakeSmallerTrees \
 	 $(BDIR)/ScanTree \
 	 lib/libMyJetlib.so \
@@ -131,6 +132,7 @@ $(BDIR)/PythiaInMcAj	: $(ODIR)/PythiaInMcAj.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJ
 $(BDIR)/TestCountPythia	: $(ODIR)/TestCountPythia.o 	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 $(BDIR)/TreeWithMc      : $(ODIR)/TreeWithMc.o		lib/libMyJetlib.so
+$(BDIR)/JustMc		: $(ODIR)/JustMc.o
 $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 

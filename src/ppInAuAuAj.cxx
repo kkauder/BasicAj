@@ -48,11 +48,14 @@ using namespace fastjet;
 int main ( int argc, const char** argv ) {
   
   // const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
-  const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
   }
+
+  float RemoveSoftFromAway = 1.5;
+
   // Throw arguments in a vector
   // ---------------------------
   vector<string> arguments(argv + 1, argv + argc);
@@ -88,6 +91,7 @@ int main ( int argc, const char** argv ) {
     }
     PtConsLo=1.0;
   }
+  
 
   // Jet Pt cuts
   // -----------
@@ -136,10 +140,15 @@ int main ( int argc, const char** argv ) {
   ppJets->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
   ppJets->SetBranchAddress("TriggerJet", &pTriggerJet);
 
+  TClonesArray* pAwayJet = new TClonesArray("TLorentzVector");
+  ppJets->GetBranch("AwayJet")->SetAutoDelete(kFALSE);
+  ppJets->SetBranchAddress("AwayJet", &pAwayJet);
+
   // Throw them into convenient vectors
   // ----------------------------------
   vector< vector<PseudoJet> > FullPpEvent;
   vector<PseudoJet> vTriggerJet;
+  vector<PseudoJet> vAwayJet;
   vector<PseudoJet> CurrentPpEvent;
   for ( Long64_t ppEv = 0; ppEv< ppJets->GetEntries() ; ++ ppEv ){
     ppJets->GetEntry(ppEv);
@@ -150,6 +159,11 @@ int main ( int argc, const char** argv ) {
     FullPpEvent.push_back ( CurrentPpEvent );
     if (pTriggerJet->GetEntries()!=1 ) cout << ppEv<< "  " << pTriggerJet->GetEntries() << endl;
     vTriggerJet.push_back( MakePseudoJet( (TLorentzVector*) pTriggerJet->At(0) ) );
+
+    // if ( ((TLorentzVector*) pTriggerJet->At(0))->Pt() > 20 ){
+    //   cout << ((TLorentzVector*) pAwayJet->At(0))->Pt() << endl;
+    // }
+    vAwayJet.push_back( MakePseudoJet( (TLorentzVector*) pAwayJet->At(0) ) );
   }
 
   // Load and set up AuAu tree
@@ -218,6 +232,7 @@ int main ( int argc, const char** argv ) {
   // DEBUG
   TH1D* MBTracks = new TH1D("MBTracks","MB tracks, 0-20%; p_{T}", 200, 0, 50);
   TH1D* MBTowers = new TH1D("MBTowers","MB towers, 0-20%; E_{T}", 200, 0, 50);
+  TH1D* RemovedSoft = new TH1D( "RemovedSoft", "", 100, 0, 10 );
 
   //Scale by AJ_hi->Integral() for number of BG constituents per di-jet
   TH1D* CapturedHiAuAu = new TH1D("CapturedHiAuAu","AuAu constituents above 2 GeV in the dijets; p_{T}", 300, 0, 30);
@@ -236,6 +251,14 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("eventid",&eventid, "eventid/i");
   ResultTree->Branch("runid",&runid, "runid/i");
   ResultTree->Branch("refmult",&refmult, "refmult/d");
+
+  float rho;
+  float rhoerr;
+
+  ResultTree->Branch("rho",&rho, "rho/f");
+  ResultTree->Branch("rhoerr",&rhoerr, "rhoerr/f");
+
+
   
   // Helpers
   // -------
@@ -373,10 +396,37 @@ int main ( int argc, const char** argv ) {
     for ( vector<int>::iterator jit=JetIndices.begin(); jit!=JetIndices.end(); ++ jit ){
       // Add pp jets
       // -----------
-      particles = AuAuparticles;
+      // particles = AuAuparticles;
+      // for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
+      // 	particles.push_back( FullPpEvent.at(*jit).at(i) );
+      // }
+
+      // Two steps for cross check - sort by pT first and remove some soft stuff
+      vector<PseudoJet> tmp;
       for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
-	particles.push_back( FullPpEvent.at(*jit).at(i) );
+       	tmp.push_back( FullPpEvent.at(*jit).at(i) );
       }
+      tmp = sorted_by_pt( tmp );
+	    
+      particles = AuAuparticles;
+      float removed=0.0;
+      for ( int i = tmp.size()-1; i>=0; --i ){
+      	// Remove some soft particles from the near side as a cross check
+      	if ( RemoveSoftFromAway > 0 && removed < RemoveSoftFromAway ){
+      	  // Only if we have something reasonable there
+	  TLorentzVector away =  MakeTLorentzVector( vAwayJet.at(*jit) );
+      	  if ( away.Pt() > 10 ){
+	    if ( away.DeltaR ( MakeTLorentzVector( tmp.at(i)) )<0.4 ){
+	      if ( tmp.at(i).pt() < 2.0 ){
+		// cout << "removing particle with pt = " << tmp.at(i).pt() << endl;
+		removed += tmp.at(i).pt();
+		continue;
+	      }  // is soft 
+	    } // is in Away Cone
+	  } // Away Jet is high enough
+      	} // removal goal not reached
+	particles.push_back( tmp.at(i) );
+      } 	
       
       // Run analysis
       // ------------
@@ -402,6 +452,7 @@ int main ( int argc, const char** argv ) {
 	// FALLTHROUGH
       case 1 : nHardDijets++;
 	// FALLTHROUGH
+	if ( RemoveSoftFromAway > 0 )      RemovedSoft->Fill( removed );
       case 0 : /* Nothing found */
 	break;
       default :
@@ -424,6 +475,23 @@ int main ( int argc, const char** argv ) {
 	j2 = MakeTLorentzVector( DiJetsHi.at(1) );
 	jm1 = MakeTLorentzVector( DiJetsLo.at(0) );
 	jm2 = MakeTLorentzVector( DiJetsLo.at(1) );
+
+	// DEBUG
+	TLorentzVector away =  MakeTLorentzVector( vAwayJet.at(*jit) );
+	if ( away.Pt()==0 )   cerr << "Away Jet not previously seen..." << endl;
+	else if ( away.DeltaR(j2) > 0.4 )  {
+	  cerr << "Away Jet different from previous, DeltaR = " << away.DeltaR(j2)
+	       << "  phi found = " << away.Phi() << "  phi now = " << j2.Phi()
+	       << "  eta found = " << away.Eta() << "  eta now = " << j2.Eta()
+	       << endl;
+	}
+
+	// DEBUG
+	rho=rhoerr=0;
+	fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
+	rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
+	
 	ResultTree->Fill();
 
 	// Recover AuAu parts

@@ -32,9 +32,16 @@ int Fig1and3() {
   // TFile *fAuAu         = TFile::Open("AjResults/OldCodeTowers_AuAu.root");
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
 
-  TFile *fAuAu         = TFile::Open("AjResults/NicksList_HC100_AuAu.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_NicksList_HC100_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_NicksList_HC100_ppInAuAuAj.root");
+  TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
+
+  // TFile *fAuAu         = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
+
 
   // TFile *fAuAu         = TFile::Open("AjResults/R0.2_NicksList_HC100_AuAu.root");
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_NicksList_HC100_ppInAuAuAj.root");
@@ -160,6 +167,47 @@ int Fig1and3() {
   
   TH1D* AJ_hi_minmax=0;
   TH1D* AJ_lo_minmax=0;
+  bool ShowPvalue=false;
+  TParameter<double>* Tpar=0;
+  
+  // The full range of available values. Only loading some of them
+  double Chi2_NominalE_Hi;
+  double Chi2_NominalE_Lo;
+  double Chi2_NominalT_Hi;
+  double Chi2_NominalT_Lo;
+  double BinKS_NominalE_Hi;
+  double BinKS_NominalE_Lo;
+  double BinKS_NominalT_Hi;
+  double BinKS_NominalT_Lo;
+  double KS_NominalE_Hi;
+  double KS_NominalE_Lo;
+  double KS_NominalT_Hi;
+  double KS_NominalT_Lo;
+  double Chi2_PlusE_Hi;
+  double Chi2_PlusE_Lo;
+  double Chi2_PlusT_Hi;
+  double Chi2_PlusT_Lo;
+  double BinKS_PlusE_Hi;
+  double BinKS_PlusE_Lo;
+  double BinKS_PlusT_Hi;
+  double BinKS_PlusT_Lo;
+  double KS_PlusE_Hi;
+  double KS_PlusE_Lo;
+  double KS_PlusT_Hi;
+  double KS_PlusT_Lo;
+  double Chi2_MinusE_Hi;
+  double Chi2_MinusE_Lo;
+  double Chi2_MinusT_Hi;
+  double Chi2_MinusT_Lo;
+  double BinKS_MinusE_Hi;
+  double BinKS_MinusE_Lo;
+  double BinKS_MinusT_Hi;
+  double BinKS_MinusT_Lo;
+  double KS_MinusE_Hi;
+  double KS_MinusE_Lo;
+  double KS_MinusT_Hi;
+  double KS_MinusT_Lo;
+
   if ( fSyst ){
     if (RefmultCut!= 269 ) {
       cerr << "CAUTION: Systematics were computed for RefmultCult == 269" << endl;
@@ -174,6 +222,13 @@ int Fig1and3() {
     AJ_lo_minmax->SetFillColor( kGray );
     AJ_lo_minmax->SetMarkerColor( kGray );
     AJ_lo_minmax->SetMarkerSize(0);
+
+    // Also pull p-values from that file
+    ShowPvalue=true;
+    Tpar=(TParameter<double>*) fSyst->Get("KS_NominalE_Hi");
+    KS_NominalE_Hi = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_NominalE_Lo");
+    KS_NominalE_Lo = Tpar->GetVal();
   }
   
   // // USING JOERN'S RESULT
@@ -239,12 +294,12 @@ int Fig1and3() {
   if ( AJ_hi_minmax ){
     for (int i=1; i<AJ_hi_sysstat->GetNbinsX(); ++i ){
       if ( fabs (AJ_hi_sysstat->GetBinContent(i)-AJ_hi_minmax->GetBinContent(i))> 1e-4 ){
-	cerr << "syst. and stat. histo are incompatible" << endl;
-	return -1;
+  	cerr << "syst. and stat. histo are incompatible" << endl;
+  	return -1;
       }
       AJ_hi_sysstat->SetBinError( i, TMath::Sqrt(
-						 pow( AJ_hi_sysstat->GetBinError(i), 2) +
-						 pow( AJ_hi_minmax->GetBinError(i), 2) ));
+  						 pow( AJ_hi_sysstat->GetBinError(i), 2) +
+  						 pow( AJ_hi_minmax->GetBinError(i), 2) ));
     }
   }
 
@@ -252,15 +307,15 @@ int Fig1and3() {
   if ( AJ_lo_minmax ){
     for (int i=1; i<AJ_lo_sysstat->GetNbinsX(); ++i ){
       if ( fabs (AJ_lo_sysstat->GetBinContent(i)-AJ_lo_minmax->GetBinContent(i))> 1e-3 ){
-	cerr << "syst. and stat. histo are incompatible" << endl;
-	new TCanvas;
-	ppInAuAuAJ_lo->Draw();
-	AJ_lo_minmax->Draw("same");
-	return -1;
+  	cerr << "syst. and stat. histo are incompatible" << endl;
+  	new TCanvas;
+  	ppInAuAuAJ_lo->Draw();
+  	AJ_lo_minmax->Draw("same");
+  	return -1;
       }
       AJ_lo_sysstat->SetBinError( i, TMath::Sqrt(
-						 pow( AJ_lo_sysstat->GetBinError(i), 2) +
-						 pow( AJ_lo_minmax->GetBinError(i), 2) ));
+  						 pow( AJ_lo_sysstat->GetBinError(i), 2) +
+  						 pow( AJ_lo_minmax->GetBinError(i), 2) ));
     }
   }
 
@@ -298,10 +353,23 @@ int Fig1and3() {
 
   // sprintf ( plabel, "p-value < %g", threshhi);
   // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, ""));
-  sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, ""));
-  latex.SetTextColor( AuAuAJ_hi->GetLineColor() );
-  latex.DrawLatex( .6,.5, plabel);
+  // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, ""));
+  if ( ShowPvalue ){
+    sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Hi);
+    latex.SetTextColor( AuAuAJ_hi->GetLineColor() );
+    latex.DrawLatex( .6,.5, plabel);
+  }
 
+  // cout << "HI: Nominal chi^2: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
+  // ppInAuAuAJ_hi->Scale(50000);AuAuAJ_hi->Scale(1000);
+  // cout << "HI: Scaled chi^2: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
+  // // cout << "HI: NormOpt chi^2: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "NORM") << endl;
+  // cout << "LO: Nominal chi^2: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  // ppInAuAuAJ_lo->Scale(50000);AuAuAJ_lo->Scale(1000);
+  // cout << "LO: NormOpt chi^2: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  // // cout << "LO: NormOpt chi^2: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "NORM") << endl;
+
+  // return 0;
 
   latex.SetTextColor(kBlack);
   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
@@ -348,10 +416,16 @@ int Fig1and3() {
 
   float threshlo = 0.05;
 
+    if ( ShowPvalue ){
+      sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Lo);
+      latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
+      latex.DrawLatex( .6,.45, plabel);
+    }
+
   if (TString(fAuAu->GetName()).Contains("R0.2") ){
-    sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") );
-    latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
-    latex.DrawLatex( .6,.45, plabel);
+    // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") );
+    // latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
+    // latex.DrawLatex( .6,.45, plabel);
     gPad->SaveAs("plots/R0.2_Fig.png");
     gPad->SaveAs("plots/R0.2_Fig.pdf");
   } else if (TString(fAuAu->GetName()).Contains("Pt1") ){
@@ -364,9 +438,9 @@ int Fig1and3() {
     //   return;    
     // }    
     // sprintf ( plabel, "p-value >> %g", threshlo);
-    sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, ""));
-    latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
-    latex.DrawLatex( .6,.45, plabel);
+    // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, ""));
+    // latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
+    // latex.DrawLatex( .6,.45, plabel);
     gPad->SaveAs("plots/R0.4_Fig1.png");
     gPad->SaveAs("plots/R0.4_Fig1.pdf");
     TString alttitle = gSystem->BaseName( fAuAu->GetName() );
@@ -375,15 +449,27 @@ int Fig1and3() {
         
   }
 
-  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << AJ_hi_sysstat->KolmogorovTest(AuAuAJ_hi, "") << endl;
-  cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << AJ_hi_sysstat->Chi2Test(AuAuAJ_hi, "") << endl;
-  cerr << "OLD: Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") << endl;
-  cerr << "OLD: chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
+  float KSqHi = AJ_hi_sysstat->KolmogorovTest(AuAuAJ_hi, "");
+  float C2qHi = AJ_hi_sysstat->Chi2Test(AuAuAJ_hi, "");
+  float KSHi = ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "");
+  float C2Hi = ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "");
+  cerr << "WITH quadrature errors:" << endl;
+  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << KSqHi<< endl;
+  cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << C2qHi<< endl;
+  cerr << "WITHOUT quadrature errors:" << endl;
+  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << KSHi << endl;
+  cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << C2Hi << endl;
 
-  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut: " << AJ_lo_sysstat->KolmogorovTest(AuAuAJ_lo, "") << endl;
-  cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut: " << AJ_lo_sysstat->Chi2Test(AuAuAJ_lo, "") << endl;
-  cerr << "OLD: Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") << endl;
-  cerr << "OLD: chi^2 test for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  float KSqLo = AJ_lo_sysstat->KolmogorovTest(AuAuAJ_lo, "");
+  float C2qLo = AJ_lo_sysstat->Chi2Test(AuAuAJ_lo, "");
+  float KSLo = ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "");
+  float C2Lo = ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "");
+  cerr << "WITH quadrature errors:" << endl;
+  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut:        " << KSqLo << endl;
+  cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut:                " << C2qLo << endl;
+  cerr << "WITHOUT quadrature errors:" << endl;
+  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut:        " << KSLo << endl;
+  cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut:                " << C2Lo << endl;
 
 
   out->Write();

@@ -25,10 +25,15 @@ void BkgFigure() {
   leg->SetFillStyle(0);
   leg->SetMargin(0.1);
 
-  TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
-  TFile *fRC           = TFile::Open("AjResults/HC30_RandomCone.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_HC30_ppInAuAuAj.root");
+  TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
+  TFile *fRC           = TFile::Open("AjResults/RandomCone_Fresh_NicksList_HC100_AuAu.root");
+  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
+
+  // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
+  // TFile *fRC           = TFile::Open("AjResults/HC30_RandomCone.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_HC30_ppInAuAuAj.root");
 
   // TFile *fAuAu         = TFile::Open("AjResults/Presel_AuAuAj.root");
   // TFile *fRC           = TFile::Open("AjResults/RandomCone.root");

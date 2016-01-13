@@ -57,33 +57,26 @@ echo "getenv = true" >>CondorFile
 # echo "Notification = Complete" >> CondorFile
 # echo "Notify_user  = kkauder@gmail.com"  >> CondorFile
 
+set NameBase=Fresh_NicksList_HC100
 
 foreach input ( ${base}* )
     # arguments
     set OutBase=`basename $input | sed 's/.root//g'`
-    #set OutName    = AjResults/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.root
-    #set OutName    = AjResults/${rndname}/${RMod}NewCode_HC100_${OutBase}.root
-    #set OutName    = AjResults/${rndname}/${RMod}FixedTowers_${OutBase}.root
-    #set OutName    = AjResults/${rndname}/${RMod}NicksList_HC100_${OutBase}.root
-    set OutName    = AjResults/${rndname}/${RMod}OldList_HC100_${OutBase}.root
+    set OutName    = AjResults/${rndname}/${RMod}${NameBase}_${OutBase}.root
+
+    # Use this for EtaCone
+    # set OrigResultName = NONE 
+    set OrigResultName = AjResults/${rndname}/${RMod}${NameBase}_AuAu.root
 	
     set TriggerName = HT
     set Files      = ${input}
     
     # Logfiles.
-    # set LogFile     = logs/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.out
-    # set ErrFile     = logs/${rndname}/${RMod}Presel_AuAuAj_${OutBase}.err
-    # set LogFile     = logs/${rndname}/${RMod}NewCode_HC100_${OutBase}.out
-    # set ErrFile     = logs/${rndname}/${RMod}NewCode_HC100_${OutBase}.err
-    # set LogFile     = logs/${rndname}/${RMod}FixedTowers_${OutBase}.out
-    # set ErrFile     = logs/${rndname}/${RMod}FixedTowers_${OutBase}.err
-    # set LogFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.out
-    # set ErrFile     = logs/${rndname}/${RMod}NicksList_HC100_${OutBase}.err
-    set LogFile     = logs/${rndname}/${RMod}OldList_HC100_${OutBase}.out
-    set ErrFile     = logs/${rndname}/${RMod}OldList_HC100_${OutBase}.err
+    set LogFile    = logs/${rndname}/${RMod}${NameBase}_${OutBase}.out
+    set ErrFile    = logs/${rndname}/${RMod}${NameBase}_${OutBase}.err
 
     ### hand to condor
-    set Args = ( $OutName $TriggerName $Files 0 0 )
+    set Args = ( $OutName $TriggerName $Files 0 0 $OrigResultName )
     echo "" >> CondorFile
     echo "Output       = ${LogFile}" >> CondorFile
     echo "Error        = ${ErrFile}" >> CondorFile
@@ -95,16 +88,7 @@ foreach input ( ${base}* )
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
     echo
-
-    # echo "Logging output to " $LogFile
-    # echo "Logging errors to " $ErrFile
     
-    # set command = "./bin/PicoAj $OutName $TriggerName $Files 0 0"
-    
-    # # Run in the background
-    # echo "Executing " $command
-    # ( $command > $LogFile ) >& $ErrFile &
-
 end # foreach input
 
 condor_submit CondorFile
