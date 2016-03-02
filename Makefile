@@ -81,6 +81,7 @@ $(BDIR)/%  : $(ODIR)/%.o
 ############################# Main Targets ####################################
 ###############################################################################
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
+	 $(BDIR)/PythiaAj  \
 	 $(BDIR)/RandomCone  \
 	 $(BDIR)/TreeWithMc \
 	 $(BDIR)/JustMc \

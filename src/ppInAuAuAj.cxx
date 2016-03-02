@@ -54,7 +54,7 @@ int main ( int argc, const char** argv ) {
     argc=5;
   }
 
-  float RemoveSoftFromAway = 1.5;
+  float RemoveSoftFromAway = 0.75;
 
   // Throw arguments in a vector
   // ---------------------------
@@ -223,6 +223,11 @@ int main ( int argc, const char** argv ) {
 
   TH1D* hdphiHi = new TH1D( "hdphiHi","#Delta#phi for hard constituent jets", 200, -2, 2 );
   TH1D* hdphiLo = new TH1D( "hdphiLo","#Delta#phi for soft constituent jets", 200, -2, 2 );
+
+  TH1D* hJetHadronHiLead = new TH1D( "hJetHadronHiLead","Jet-h for leading hard constituent jets; #Delta#phi", 200, -2, 2 );
+  TH1D* hJetHadronHiSubLead = new TH1D( "hJetHadronHiSublead","Jet-h for sub-leading hard constituent jets; #Delta#phi", 200, -2, 2 );
+  TH1D* hJetHadronLoLead = new TH1D( "hJetHadronLoLead","Jet-h for leading soft constituent jets; #Delta#phi", 200, -2, 2 );
+  TH1D* hJetHadronLoSubLead = new TH1D( "hJetHadronLoSublead","Jet-h for sub-leading soft constituent jets; #Delta#phi", 200, -2, 2 );
 
   // Follow down to other R
   TH2D* OtherAJ_lo = new TH2D( "OtherAJ_lo","A_{J} for soft constituent jets with other R ;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
@@ -431,7 +436,7 @@ int main ( int argc, const char** argv ) {
       // Run analysis
       // ------------
       int ret;
-      //ret =AjA.AnalyzeAndFill( particles, 0,refmult,
+      // ret =AjA.AnalyzeAndFill( particles, 0,refmult,
       ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
 			      UnmatchedAJ_hi, AJ_hi, AJ_lo,
 			      

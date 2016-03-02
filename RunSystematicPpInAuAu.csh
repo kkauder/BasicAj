@@ -40,12 +40,12 @@ foreach Tow ( -1 0 1 )
 	foreach input ( ${base}* )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
-	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
+	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
 	    set TriggerName = MB
 	    set Files      = ${input}
 
-	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
-	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
+	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
+	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
 
 	    echo "Logging output to " $LogFile
 	    echo "Logging errors to " $ErrFile

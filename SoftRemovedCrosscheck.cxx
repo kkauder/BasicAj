@@ -23,8 +23,8 @@ int SoftRemovedCrosscheck() {
 
   TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
   TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
-  // TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
-  TFile *fDroppedppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  TFile *fSoftRemoved     = TFile::Open("AjResults/Tow0_Eff0_SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  TFile *fVerySoftRemoved = TFile::Open("AjResults/Tow0_Eff0_VerySoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
   
   TObjArray vAJ_lo;
   TObjArray vAJ_hi;
@@ -39,16 +39,19 @@ int SoftRemovedCrosscheck() {
   
   TH1D* AuAuAJ_lo     = (TH1D*) ( (TH2D*) fAuAu->Get( "AJ_lo") )->ProjectionX("AuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
   TH1D* ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "AJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
-  TH1D* DroppedppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fDroppedppInAuAu->Get( "AJ_lo") )->ProjectionX("DroppedppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
+  TH1D* SoftRemoved_lo     = (TH1D*) ( (TH2D*) fSoftRemoved->Get( "AJ_lo") )->ProjectionX("SoftRemoved_lo", AuAuMultBinL, AuAuMultBinR);
+  TH1D* VerySoftRemoved_lo = (TH1D*) ( (TH2D*) fVerySoftRemoved->Get( "AJ_lo") )->ProjectionX("VerySoftRemoved_lo", AuAuMultBinL, AuAuMultBinR);
   cout << AuAuAJ_lo ->Integral(1,100) << " dijets in AuAu" << endl;
   cout << ppInAuAuAJ_lo ->Integral(1,100) << " dijets in pp@AuAu" << endl;
-  cout << DroppedppInAuAuAJ_lo ->Integral(1,100) << " dijets in pp@AuAu" << endl;
+  cout << SoftRemoved_lo ->Integral(1,100) << " dijets in quenched pp@AuAu" << endl;
+  cout << VerySoftRemoved_lo ->Integral(1,100) << " dijets in slightly quenched pp@AuAu" << endl;
   
      
   TObjArray toa;
   toa.Add(AuAuAJ_lo);
   toa.Add(ppInAuAuAJ_lo);
-  toa.Add(DroppedppInAuAuAJ_lo);
+  toa.Add(SoftRemoved_lo);
+  toa.Add(VerySoftRemoved_lo);
   
   TH1D* h;
   for (int i=0 ; i<toa.GetEntries() ; ++i ){
@@ -73,10 +76,13 @@ int SoftRemovedCrosscheck() {
   ppInAuAuAJ_lo->SetMarkerColor( kBlack );
   ppInAuAuAJ_lo->SetMarkerStyle( 25 );
 
-  DroppedppInAuAuAJ_lo->SetLineColor( kMagenta );
-  DroppedppInAuAuAJ_lo->SetMarkerColor( kMagenta );
-  DroppedppInAuAuAJ_lo->SetMarkerStyle( 25 );
+  SoftRemoved_lo->SetLineColor( kMagenta );
+  SoftRemoved_lo->SetMarkerColor( kMagenta );
+  SoftRemoved_lo->SetMarkerStyle( 25 );
 
+  VerySoftRemoved_lo->SetLineColor( kGreen+1 );
+  VerySoftRemoved_lo->SetMarkerColor( kGreen+1 );
+  VerySoftRemoved_lo->SetMarkerStyle( 25 );
   
   ppInAuAuAJ_lo->GetYaxis()->SetTitleSize(0.04);
   ppInAuAuAJ_lo->GetYaxis()->SetLabelSize(0.04);
@@ -91,20 +97,15 @@ int SoftRemovedCrosscheck() {
   
   ppInAuAuAJ_lo->GetYaxis()->SetTitleOffset(1.14);
   ppInAuAuAJ_lo->Draw("9");
-  DroppedppInAuAuAJ_lo->Draw("9same");
-  AuAuAJ_lo->Draw("9same");
+  SoftRemoved_lo->Draw("9same");
+  VerySoftRemoved_lo->Draw("9same");
+//  AuAuAJ_lo->Draw("9same");
     
   TLatex latex;
   latex.SetNDC();
   latex.SetTextSize(0.04);
   char plabel[400];
 
-
-  // if ( ShowPvalue ){
-  //   sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Hi);
-  //   latex.SetTextColor( AuAuAJ_hi->GetLineColor() );
-  //   latex.DrawLatex( .6,.5, plabel);
-  // }
 
   latex.SetTextColor(kBlack);
   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
@@ -117,35 +118,42 @@ int SoftRemovedCrosscheck() {
     latex.DrawLatex( 0.65, 0.58, "Anti-k_{T}, R=0.4");
   }  
 
-  TLegend* leg = new TLegend( 0.28, 0.7, 0.89, 0.9, "" );
+  TLegend* leg = new TLegend( 0.24, 0.7, 0.89, 0.9, "" );
   leg->SetBorderSize(0);
   leg->SetLineWidth(10);
   leg->SetFillStyle(0);
   leg->SetMargin(0.1);
-  leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  leg->AddEntry ( DroppedppInAuAuAJ_lo,   "Soft-quenched (~1.7 GeV) pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  leg->AddEntry ( ppInAuAuAJ_lo,       "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  leg->AddEntry ( VerySoftRemoved_lo,  "(pp - 0.9 GeV) #oplus AuAu MB, Matched", "p");
+  leg->AddEntry ( SoftRemoved_lo,      "(pp - 1.7 GeV) #oplus AuAu MB, Matched", "p");
+//  leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
   leg->Draw();
 
   float KS_Nom_AuAu = ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "");
-  float KS_Drop_AuAu = DroppedppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "");
-  float KS_Drop_Nom = DroppedppInAuAuAJ_lo->KolmogorovTest(ppInAuAuAJ_lo, "");
+  float KS_Soft_AuAu = SoftRemoved_lo->KolmogorovTest(AuAuAJ_lo, "");
+  float KS_Soft_Nom = SoftRemoved_lo->KolmogorovTest(ppInAuAuAJ_lo, "");
+  float KS_VerySoft_AuAu = VerySoftRemoved_lo->KolmogorovTest(AuAuAJ_lo, "");
+  float KS_VerySoft_Nom = VerySoftRemoved_lo->KolmogorovTest(ppInAuAuAJ_lo, "");
   
   cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut                   :        " << KS_Nom_AuAu << endl;
-  cerr << "Kolmogorov-Smirnov for soft-quenched pp @ AuAu vs. AuAu, LOW cut     :        " << KS_Drop_AuAu << endl;
-  cerr << "Kolmogorov-Smirnov for soft-quenched pp @ AuAu vs. pp @ AuAu, LOW cut:        " << KS_Drop_Nom << endl;
+  cerr << "Kolmogorov-Smirnov for soft-quenched pp @ AuAu vs. AuAu, LOW cut     :        " << KS_Soft_AuAu << endl;
+  cerr << "Kolmogorov-Smirnov for soft-quenched pp @ AuAu vs. pp @ AuAu, LOW cut:        " << KS_Soft_Nom << endl;
+  cerr << "Kolmogorov-Smirnov for very-soft-quenched pp @ AuAu vs. AuAu, LOW cut     :        " << KS_VerySoft_AuAu << endl;
+  cerr << "Kolmogorov-Smirnov for very-soft-quenched pp @ AuAu vs. pp @ AuAu, LOW cut:        " << KS_VerySoft_Nom << endl;
 
-  sprintf ( plabel, "Binned KS:");
-  latex.DrawLatex( .5,.55, plabel);
-
-  sprintf ( plabel, "AuAu vs pp = %0.1g", KS_Nom_AuAu);
+  sprintf ( plabel, "Binned KS p-value:");
   latex.DrawLatex( .5,.5, plabel);
-  sprintf ( plabel, "AuAu vs quenched pp = %0.1g", KS_Drop_AuAu);
-  latex.DrawLatex( .5,.45, plabel);
-  sprintf ( plabel, "pp vs quenched pp = %0.1g", KS_Drop_Nom);
-  latex.DrawLatex( .5,.4, plabel);
 
-  gPad->SaveAs("SoftRemovedCrosscheck.png");
+  sprintf ( plabel, "pp vs (pp - 0.9) = %0.1g", KS_VerySoft_Nom);
+  latex.DrawLatex( .5,.4, plabel);
+  sprintf ( plabel, "pp vs (pp - 1.7) = %0.1g", KS_Soft_Nom);
+  latex.DrawLatex( .5,.45, plabel);
+  // sprintf ( plabel, "AuAu vs pp = %0.1g", KS_Nom_AuAu);
+  // latex.DrawLatex( .5,.45, plabel);
+  // sprintf ( plabel, "AuAu vs quenched pp = %0.1g", KS_Drop_AuAu);
+  // latex.DrawLatex( .5,.4, plabel);
+
+  gPad->SaveAs("VerySoftRemovedCrosscheck.png");
 
   return 0;
   

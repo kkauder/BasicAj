@@ -16,6 +16,7 @@
 #include <TFile.h>
 
 #include <TLorentzVector.h>
+#include <TParameter.h>
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TChain.h>
@@ -60,9 +61,7 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
-  // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0" };
-  // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0" };
+  const char *defaults[] = {"PythiaAj","pythiatest.root","Data/RhicPythia/RhicPythiaOnly_10_ptHat=20_23.root" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -75,7 +74,7 @@ int main ( int argc, const char** argv ) {
 
   // Load and set up tree
   // --------------------
-  TString ChainName  = "JetTree";
+  TString ChainName  = "tree";
   TString OutFileName = arguments.at(0);
   
   // jet resolution parameter
@@ -125,103 +124,28 @@ int main ( int argc, const char** argv ) {
   cout << "Low pT cut =" << PtConsLo << endl;
   cout << " ################################################### " << endl;
 
-  TString TriggerName = arguments.at(1);
-
-  TChain* chain = new TChain( ChainName );
-  TString InPattern=arguments.at(2);
-  chain->Add( InPattern );
-  cout << "Running over " << chain->GetEntries() << " events." << endl;
-
-  // Au+Au?
-  // ------
-  bool isAuAu=false;
-  if (arguments.at(2).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  if (arguments.at(2).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  
-  // OLD: With some tweaks, this can be used to explicitly hand over multiple files
-  // for (int i=2; i<arguments.size() ; ++i ) {
-  //   chain->Add( arguments.at(i).data() );
-  //   if (arguments.at(i).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  //   if (arguments.at(i).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  // }  
-
-  // for systematics
-  // ---------------
-  Int_t IntTowScale=atoi( arguments.at(3).data() ); // +/- 2%
-  Float_t fTowScale = 1.0 + IntTowScale*0.02;
-  Int_t mEffUn=atoi( arguments.at(4).data() ) ;
-  
-  switch ( mEffUn ){
-  case 0 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff0_")+ gSystem->BaseName(OutFileName));
-    break;
-  case 1 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff1_")+ gSystem->BaseName(OutFileName));
-    break;
-  case -1 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff-1_")+ gSystem->BaseName(OutFileName));
-    break;
-  default :
-    cerr << "mEffUn = " << mEffUn << " not supported." <<endl;
-    return -1;
-  }
-
-  switch ( IntTowScale ){
-  case 0 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow0_")+ gSystem->BaseName(OutFileName));
-    break;
-  case 1 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow1_")+ gSystem->BaseName(OutFileName));
-    break;
-  case -1 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow-1_")+ gSystem->BaseName(OutFileName));
-    break;
-  default :
-    cerr << "IntTowScale = " << IntTowScale << " not supported." <<endl;
-    return -1;
-  }
-  if ( isAuAu && IntTowScale ){
-    cerr << "IntTowScale = " << IntTowScale << " not supported in AuAu." <<endl;
-    return -1;    
-  }
+  TChain* Events = new TChain( ChainName );
+  TString InPattern=arguments.at(1);
+  Events->Add( InPattern );
+  Long64_t NEvents=-1; // -1 for all
+  // Long64_t NEvents=100000; // -1 for all
+  if ( NEvents<0 ) NEvents = INT_MAX;
+  assert ( Events->GetEntries()>0 && "Something went wrong loading events.");
+  NEvents=min(NEvents,Events->GetEntries() );
+  cout << "Running over " << Events->GetEntries() << " events." << endl;
   
   double RefMultCut = 0;
-  // WARNING: ~putschke/Data/Pico_Eflow/auau_ht* is cut off at 351!
-  TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
-  reader.SetApplyFractionHadronicCorrection(kTRUE);
-  reader.SetFractionHadronicCorrection(0.9999);
-  reader.SetRejectTowerElectrons( kFALSE );
-  //  reader.SetApplyFractionHadronicCorrection(kFALSE);
-  
-  // Run 11: Use centrality cut
-  if ( InPattern.Contains("NPE") ){
-    TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();    
-    evCuts->SetReferenceCentralityCut (  6, 8 ); // 6,8 for 0-20%
-  }
+  int eventid;
+  int runid;
+  double weight=1;
 
-
-  // Explicitly choose bad tower list here
-  TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  if ( InPattern.Contains("NPE") ){
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
-  } else {
-    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-  }
-  // Add the following to y11 as well, once we're embedding!
-  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-
-  // DEBUG ONLY
-  // towerCuts->AddBadTowers( "emptyBadTowerList.txt");
-
-  // // DEBUG: KK: Reject bad phi strip  
-  // towerCuts->SetPhiCut(0, -1.2);
-  // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
-  // trackCuts->SetPhiCut(0, -1.2);
-
-  TStarJetPicoDefinitions::SetDebugLevel(0);
+  TClonesArray* pFullEvent = new TClonesArray("TStarJetVector");
+  Events->GetBranch("PythiaParticles")->SetAutoDelete(kFALSE);
+  Events->SetBranchAddress("PythiaParticles", &pFullEvent);
     
+  Events->SetBranchAddress("eventid",&eventid);
+  Events->SetBranchAddress("runid",&runid);
+
   // Files and histograms
   // --------------------
   TFile* fout = new TFile( OutFileName, "RECREATE");
@@ -237,6 +161,13 @@ int main ( int argc, const char** argv ) {
   TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
   TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
   TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+
+  // Filling these differently, so we need a dummy
+  TH2D* dummy = (TH2D*) AJ_hi->Clone("dummy");
+
+  // save in the tree as well 
+  double fAJ_hi=-1;
+  double fAJ_lo=-1;
 
   TH2D* UnmatchedhPtHi = new TH2D( "UnmatchedhPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtHi = new TH2D( "hPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
@@ -280,50 +211,6 @@ int main ( int argc, const char** argv ) {
   TH1D* hj1area    = new TH1D( "hj1area","j1 area", 320, 0.0, 0.8 );
   TH1D* hj2area    = new TH1D( "hj2area","j2 area", 320, 0.0, 0.8 );
   TH1D* hrestarea    = new TH1D( "hrestarea","restarea", 160, 0.0, 0.8 );
-
-
-  // For Elke...
-  // -----------
-  TH2D* hNConstChHiLead = new TH2D( "hNConstChHiLead","p_{T}^{C} > 2 GeV/c, Leading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-  TH2D* hNConstChLoLead = new TH2D( "hNConstChLoLead","p_{T}^{C} > 0.2 GeV/c, Leading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-  TH2D* hNConstNeHiLead = new TH2D( "hNConstNeHiLead","p_{T}^{C} > 2 GeV/c, Leading;Neutral Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-  TH2D* hNConstNeLoLead = new TH2D( "hNConstNeLoLead","p_{T}^{C} > 0.2 GeV/c, Leading;Neutral Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-
-  TH2D* hNConstChHiSubLead = new TH2D( "hNConstChHiSubLead","p_{T}^{C} > 2 GeV/c, SubLeading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-  TH2D* hNConstChLoSubLead = new TH2D( "hNConstChLoSubLead","p_{T}^{C} > 0.2 GeV/c, SubLeading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-  TH2D* hNConstNeHiSubLead = new TH2D( "hNConstNeHiSubLead","p_{T}^{C} > 2 GeV/c, SubLeading;Neutral Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-  TH2D* hNConstNeLoSubLead = new TH2D( "hNConstNeLoSubLead","p_{T}^{C} > 0.2 GeV/c, SubLeading;Neutral Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
-
-
-  // For eta cone embedding: need a previous result
-  // ----------------------------------------------
-  TChain* OrigJets=0;
-  TLorentzVector *pJ1 = new TLorentzVector();
-  TLorentzVector *pJ2 = new TLorentzVector();
-  int Origeventid;
-  int Origrunid;
-  double Origrefmult;
-  vector<int> OrigEvents;
-
-  FileStat_t filestat;
-  // TString OrigResultName="AjResults/Presel_AuAuAj.root";
-  TString OrigResultName=arguments.at(5);
-  bool RunEtaCone= isAuAu && gSystem->GetPathInfo(OrigResultName, filestat)==0 && fabs(R-0.4)<1e-4 && true;
-
-  if ( RunEtaCone ){
-    cout << "Creating Eta Cone histo using jets from " << OrigResultName << endl; 
-    OrigJets = new TChain("ResultTree");
-    OrigJets->Add(OrigResultName);
-    OrigJets->SetBranchAddress("j1", &pJ1);
-    OrigJets->SetBranchAddress("j2", &pJ2);
-    OrigJets->SetBranchAddress("eventid", &Origeventid);
-    OrigJets->SetBranchAddress("runid", &Origrunid);
-    OrigJets->SetBranchAddress("refmult", &Origrefmult);
-    // Random selection: shuffle event indices then take from the top
-    for ( int i=0 ; i< OrigJets->GetEntries() ; ++ i )	  OrigEvents.push_back(i);
-  } else {
-    cout << "Can't create Eta Cone histo using jets from " << OrigResultName << endl; 
-  }
   fout->cd();
 
   // Save results
@@ -334,14 +221,17 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("j2",&j2);
   ResultTree->Branch("jm1",&jm1);
   ResultTree->Branch("jm2",&jm2);
-  int eventid;
-  int runid;
   double refmult; // Really an int, but may change when using refmultcorr
   float rho;
   float rhoerr;
   float rhoHi;
   float j1area;
   float j2area;
+
+  ResultTree->Branch("fAJ_hi",      &fAJ_hi, "fAJ_hi/D" );
+  ResultTree->Branch("fAJ_lo",      &fAJ_lo, "fAJ_lo/D" );
+
+  ResultTree->Branch("weight",      &weight, "weight/D" );
 
   ResultTree->Branch("eventid",&eventid, "eventid/i");
   ResultTree->Branch("runid",&runid, "runid/i");
@@ -365,13 +255,8 @@ int main ( int argc, const char** argv ) {
   // if this is pp and there's at least a 10 GeV jet.
   // -------------------------------------------------------------------
   // This is somewhat wasteful, we could instead read the original trees.
-  bool SaveFullEvents = TriggerName.Contains("ppHT");
-  // // DEBUG
-  // bool SaveFullEvents = true;
-
+  bool SaveFullEvents = false;
   TTree* TriggeredTree=0;
-
-
 
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
   TClonesArray AwayJet( "TLorentzVector",1 ); 
@@ -394,18 +279,7 @@ int main ( int argc, const char** argv ) {
     TriggeredTree->Branch("runid",&runid, "runid/i");
 
   } 
-    
-  // Initialize tracking efficiency
-  // ------------------------------
-  ktTrackEff* tEff=0;
-  if ( !isAuAu ) {
-    tEff = new ktTrackEff();
-    tEff->SetSysUncertainty(mEffUn);
-    cout<<endl;
-    tEff->PrintInfo();
-    cout<<endl;
-  }
-  
+      
   // Initialize analysis class
   // -------------------------
   AjAnalysis AjA( R,
@@ -417,25 +291,16 @@ int main ( int argc, const char** argv ) {
 		  AjParameters::dPhiCut
 		  );  
   
-  // // DEBUG: KK: Reject jets near bad phi strip  
-  // Selector& sjet = AjA.GetJetSelector();
-  // // Note: It's not 100% clear to me whether jet phi is in -pi--pi or 0--2pi. So we'll provide for both
-  // Selector sphi = fastjet::SelectorPhiRange ( -TMath::Pi(), -1.2 - R ) || fastjet::SelectorPhiRange ( 0 + R, TMath::TwoPi() -1.2 - R );
-  // sjet = sjet * sphi;
-
   // Cycle through events
   // --------------------
   vector<PseudoJet> particles;
-  TStarJetVectorContainer<TStarJetVector>* container;
   TStarJetVector* sv; // TLorentzVector* would be sufficient. 
   
   int nHardDijets = 0;
   int nCorrespondingLowDijets = 0;
   int nMatchedDijets=0;
-  
-  Long64_t nEvents=-1; // -1 for all
-  //nEvents=100000;
-  reader.Init(nEvents);
+ 
+
 
   PseudoJet pj;
   float pt1, pt2;
@@ -444,21 +309,34 @@ int main ( int argc, const char** argv ) {
   vector<int> SeedStatus;
   
   fastjet::Selector GrabCone = fastjet::SelectorCircle( R );    
-  // // DEBUG
-  // int No4Gev=0;
+
+  Long64_t evi =0;
   try{
-    while ( reader.NextEvent() ) {
-      reader.PrintStatus(10);
+    while ( true ){    
+      if ( evi>= NEvents ) {
+	break;
+      }
+      if ( !(evi%1000) ) cout << "Working on " << evi << " / " << NEvents << endl;
+      Events->GetEntry(evi);
+      ++evi;
 
-      // event info
-      // ----------
-      TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
+      fAJ_hi=fAJ_lo=-1;
+
+      // Fill particle container
+      // -----------------------
+      particles.clear();
+      for ( int i=0 ; i<pFullEvent->GetEntries() ; ++i ){
+	sv = (TStarJetVector*) pFullEvent->At(i);
+	// Ensure kinematic similarity
+	if ( sv->Pt()< PtConsLo ) continue;
+	if ( fabs( sv->Eta() )>AjParameters::max_track_rap ) continue;
+	
+	pj=MakePseudoJet( sv );
+      	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
+	particles.push_back ( pj );
+      }
+      if ( particles.size()==0 ) continue;
       
-      eventid = header->GetEventId();
-      runid   = header->GetRunId();
-      // // DEBUG: KK: Reject suspicious refMult runs
-      // if (runid >= 12138081 && runid<= 12145020 ) continue;
-
       // Let's use the eventid as random seed.
       // that way things stay reproducible between different trees
       // but at the same time there's enough randomness
@@ -478,53 +356,20 @@ int main ( int argc, const char** argv ) {
       TmpArea.set_random_status(SeedStatus);
       
       refmult=0;
-      //if ( isAuAu ) refmult=header->GetGReferenceMultiplicity();
-      if ( isAuAu ) refmult=header->GetProperReferenceMultiplicity();
       
-      // Load event
-      // ----------
-      container = reader.GetOutputContainer();
-      
-      // Make particle vector
-      // --------------------
-      particles.clear();
-
-      // // DEBUG: Look for HT trigger
-      // bool Has4GevTower=false;
-
-      for (int ip = 0; ip<container->GetEntries() ; ++ip ){
-      	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
-
-      	// // DEBUG
-      	// if (sv->GetCharge()==0 && sv->Pt() > 4 ) Has4GevTower=true;
-
-      	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
-      	pj=MakePseudoJet( sv );
-      	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
-
-      	if ( sv->GetCharge()!=0 && tEff ) {
-      	  Double_t reff=tEff->EffRatio_20(sv->Eta(),sv->Pt());
-      	  Double_t mran=gRandom->Uniform(0,1);
-      	  // cout << reff << "  " << mran << endl;
-      	  if (mran<reff)  {
-      	    particles.push_back ( pj );
-      	  }
-      	} else { // no charge or no efficiency class
-      	  particles.push_back ( pj );
-      	}	      
+      // For pythia, use cross section as weight
+      // ---------------------------------------
+      weight=1;
+      if ( TParameter<double>* sigmaGen=(TParameter<double>*) Events->GetCurrentFile()->Get("sigmaGen") ){
+	weight=sigmaGen->GetVal();
       }
-
-      // // DEBUG
-      // if ( !Has4GevTower ) {
-      // 	cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
-      // 	No4Gev++;
-      // }
 
       // Run analysis
       // ------------
       int ret;      
-      ret =AjA.AnalyzeAndFill( particles, 0,refmult, 
-			       UnmatchedAJ_hi, AJ_hi, AJ_lo,
+      ret =AjA.AnalyzeAndFill( particles, 0, refmult, 
+			       dummy, dummy, dummy,
+			       // UnmatchedAJ_hi, AJ_hi, AJ_lo,
 
 			       UnmatchedhPtHi,  hPtHi, hPtLo,
 			       UnmatchedhdPtHi, hdPtHi, hdPtLo,
@@ -640,17 +485,8 @@ int main ( int argc, const char** argv ) {
 	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_jets_used() << " used for HI BG" << endl;
 	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_empty_jets() << " of them empty" << endl;
 
-	// For Elke
-	// PseudoJet& pj1 = DiJetsHi.at(0);
-	// PseudoJet& pj2 = DiJetsHi.at(1);
-	// PseudoJet& pjm1 = DiJetsLo.at(0);
-	// PseudoJet& pjm2 = DiJetsLo.at(1);
-
-	// cout << pj1.constituents().size() << "  " << pjm1.constituents().size() << endl;
-	// hNConstChHiLead
-
-
-	if ( refmult >= 269 ){
+	
+	if ( refmult >= 0 ){
 	  hrho->Fill(rho) ;
 	  hrhoerr->Fill(rhoerr) ;
 	  hrhoHi->Fill(rhoHi) ;
@@ -691,85 +527,16 @@ int main ( int argc, const char** argv ) {
 
 	  }
 	}
+
+	// Fill here instead b/c of the weight
+	AJ_hi->Fill( AjA.CalcAj( DiJetsHi ), refmult, weight );
+	AJ_lo->Fill( AjA.CalcAj( DiJetsLo ), refmult, weight );
+
+	fAJ_hi=AjA.CalcAj( DiJetsHi );
+	fAJ_lo=AjA.CalcAj( DiJetsLo );
+
 	ResultTree->Fill();
       }
-      
-      if ( RunEtaCone ) {      
-	// If possible, shift jets along eta and try again
-	// -----------------------------------------------
-	// Could make parameters dependent on R but that's a little tricky
-	float MinDist = 2*0.4;
-	float MaxJetRap = 0.6;
-	
-	if ( DiJetsLo.size()==2 ){	
-	  // THESE WILL BE CHANGED!
-	  PseudoJet j1 = DiJetsHi.at(0);
-	  PseudoJet j2 = DiJetsHi.at(1);
-	  
-	  float orig1 = j1.eta();
-	  float orig2 = j2.eta();
-	  
-	  if ( !ShiftEta ( j1, MinDist, MaxJetRap ) ) goto donewithetacone;
-	  if ( !ShiftEta ( j2, MinDist, MaxJetRap ) ) goto donewithetacone;
-	  
-	  if ( fabs( j1.eta()-orig1 ) < 0.8 || fabs( j2.eta()-orig2 ) < 0.8 ){
-	    cout << orig1 << " --> " << j1.eta() << endl;
-	    cout << orig2 << "--> " << j2.eta() << endl << endl;
-	    cerr << "What the hell??" << endl;
-	    return -1;
-	  }
-
-	  GrabCone.set_reference( j1 );
-	  vector<PseudoJet> C1 = GrabCone( AjA.GetLoConstituents() );
-	  PseudoJet RC1 (0,0,0,0);
-	  for (vector<PseudoJet>::iterator it = C1.begin() ; it!= C1.end() ; ++ it ) RC1+= *it;
-	  
-	  GrabCone.set_reference( j2 );
-	  vector<PseudoJet> C2 = GrabCone( AjA.GetLoConstituents() );
-	  PseudoJet RC2 (0,0,0,0);
-	  for (vector<PseudoJet>::iterator it = C2.begin() ; it!= C2.end() ; ++ it ) RC2+= *it;
-	  	  
-	  // // =================== METHOD A ======================
-	  // // "Mix" with this event
-	  
-	  // pt1 = j1.pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	  // pt2 = j2.pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	  // EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
-	  // =================== END METHOD A ======================
-	  
-		
-	  // =================== METHOD B ======================
-	  // Instead of the original jet, use a couple of other ones
-	  int nMix=6;
-	  random_shuffle(OrigEvents.begin(), OrigEvents.end()) ;
-	  int mixed=0;
-	  for ( int i=0; i<OrigEvents.size(); ++i ){
-	    OrigJets->GetEntry ( OrigEvents.at(i) );
-
-	    if ( runid == Origrunid && eventid == Origeventid ) continue; // avoid self-correlation
-	    // Some matching options, pretty much unnecessary
-	    // if ( fabs ( pJ1->Eta() - orig1 ) > 0.1 ) continue;
-	    // if ( fabs ( pJ2->Eta() - orig2 ) > 0.1 ) continue;
-	    // if ( fabs ( pJ1->Eta() - j1.eta() ) > 0.1 ) continue;
-	    // if ( fabs ( pJ2->Eta() - j2.eta() ) > 0.1 ) continue;
-	    // if ( fabs ( refmult - Origrefmult ) > 20 ) continue;
-	    
-	    mixed++;
-	    if ( mixed>=nMix ) break;
-	    pt1 = pJ1->Pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	    pt2 = pJ2->Pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	    EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
-	  }
-	  
-	  if ( mixed != nMix){
-	    cerr << "WARNING: Only matched " << mixed << " jets" << endl;
-	  }	
-	  // =================== END METHOD B ======================
-	}
-      donewithetacone:
-	;
-      } // etacone
-      
     } // while NextEvent
   } catch ( exception& e) {
     cerr << "Caught " << e.what() << endl;
@@ -777,16 +544,13 @@ int main ( int argc, const char** argv ) {
   }
   
   cout << "##################################################################" << endl;
-  
-  Long64_t nEventsUsed=reader.GetNOfEvents();  
 
   // Close up shop
   // -------------
   fout->cd();
-  reader.GetHadronicResult()->Write();
   fout->Write();
 
-  cout << "In " << nEventsUsed << " events, found " << endl
+  cout << "In " << NEvents << " events, found " << endl
        << nHardDijets << " dijets with constituents above 2 GeV," << endl
        << nCorrespondingLowDijets << " corresponding dijets with constituents above 0.2 GeV," << endl
        << " of which " <<  nMatchedDijets << " could be matched." << endl;

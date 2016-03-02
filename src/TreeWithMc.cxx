@@ -45,7 +45,6 @@ Int_t main(int argc, char **argv) {
     pseed = atoi( seed );
     OutFileName.ReplaceAll ( ".root", "_" + seed + ".root" );
   }
-  cout << "Writing to: " << OutFileName << endl;
 
   // Multiplicity -- pull before opening outfile
   // -------------------------------------------
@@ -75,7 +74,9 @@ Int_t main(int argc, char **argv) {
     ptHatMax = atof( s2 );
     OutFileName.ReplaceAll ( ".root", "_ptHat=" + s1 + "_" + s2 + ".root" );
   }
-  
+  cout << "Writing to: " << OutFileName << endl;
+
+
   // Pythia pythia("/Users/putschke/pythia8100/xmldoc");
   Pythia pythia("/Users/putschke/pythia8100/xmldoc");
   Event& event = pythia.event;
