@@ -22,14 +22,17 @@ setenv ROOUNFOLD ${BASEDIR}/RooUnfold
 
 #### On rhic21, you can use
 if ( `echo $HOST|grep -c rhic21` ) then
-    setenv BASEDIR /Users/putschke
-    setenv ROOTSYS /usr/local/root_v5.32_binary_m64/
+    setenv BASEDIR /usr/local
     setenv FASTJETDIR ${BASEDIR}/fastjet3
-    setenv PYTHIA8DIR ${BASEDIR}/pythia8100.new
+    setenv ROOTSYS ${BASEDIR}/root_v5.34-00-patches
+    setenv PYTHIA8DIR ${BASEDIR}/pythia8
     setenv PYTHIA8DATA ${PYTHIA8DIR}/xmldoc
     setenv STARPICOPATH /Users/kkauder/eventStructuredAu
     # setenv STARPICOPATH /Users/kkauder/old/eventStructuredAu
     setenv ROOUNFOLD /Users/kkauder/RooUnfold-1.1.1
+#    setenv BASEDIR /Users/putschke
+#    setenv ROOTSYS /usr/local/root_v5.32_binary_m64/
+#    setenv PYTHIA8DIR ${BASEDIR}/pythia8100.new
 endif
 
 

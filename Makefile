@@ -86,9 +86,10 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/TreeWithMc \
 	 $(BDIR)/JustMc \
 	 $(BDIR)/MakeSmallerTrees \
-	 $(BDIR)/ScanTree \
 	 lib/libMyJetlib.so \
 	 doxy
+
+#	 $(BDIR)/ScanTree \
 
 # lib/libMyJetlib.a \
 

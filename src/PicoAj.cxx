@@ -60,9 +60,10 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  // const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
+  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
+  // const char *defaults[] = {"PicoAj","HTMBtest.root","All","Data/HaddedAuAu11picoMB/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0", "" };
-  const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -191,7 +192,7 @@ int main ( int argc, const char** argv ) {
   reader.SetApplyFractionHadronicCorrection(kTRUE);
   reader.SetFractionHadronicCorrection(0.9999);
   reader.SetRejectTowerElectrons( kFALSE );
-  //  reader.SetApplyFractionHadronicCorrection(kFALSE);
+  // reader.SetApplyFractionHadronicCorrection(kFALSE);
   
   // Run 11: Use centrality cut
   if ( InPattern.Contains("NPE") ){
@@ -202,7 +203,7 @@ int main ( int argc, const char** argv ) {
 
   // Explicitly choose bad tower list here
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  if ( InPattern.Contains("NPE") ){
+  if ( InPattern.Contains("NPE") || InPattern.Contains("11picoMB") ){
     towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
   } else {
     // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
@@ -497,12 +498,15 @@ int main ( int argc, const char** argv ) {
 
       // // DEBUG: Look for HT trigger
       // bool Has4GevTower=false;
+      // TEST
+      bool Has55GevTower=false;
 
       for (int ip = 0; ip<container->GetEntries() ; ++ip ){
       	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
 
       	// // DEBUG
       	// if (sv->GetCharge()==0 && sv->Pt() > 4 ) Has4GevTower=true;
+	if (sv->GetCharge()==0 && sv->Pt() > 5.5 ) Has55GevTower=true;
 
       	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
       	pj=MakePseudoJet( sv );
@@ -524,6 +528,13 @@ int main ( int argc, const char** argv ) {
       // if ( !Has4GevTower ) {
       // 	cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
       // 	No4Gev++;
+      // }
+      // if ( !Has55GevTower ) {
+      // 	//cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
+      // 	// No4Gev++;
+      // 	continue;
+      // } else {
+      // 	cerr << "Found a 5.5 GeV tower" << endl;
       // }
 
       // Run analysis
