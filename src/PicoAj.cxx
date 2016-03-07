@@ -60,9 +60,9 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
-  // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0" };
-  // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0" };
+  // const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
+  // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0", "" };
+  const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -307,6 +307,7 @@ int main ( int argc, const char** argv ) {
 
   FileStat_t filestat;
   // TString OrigResultName="AjResults/Presel_AuAuAj.root";
+
   TString OrigResultName=arguments.at(5);
   bool RunEtaCone= isAuAu && gSystem->GetPathInfo(OrigResultName, filestat)==0 && fabs(R-0.4)<1e-4 && true;
 
@@ -442,8 +443,13 @@ int main ( int argc, const char** argv ) {
 	
   fastjet::GhostedAreaSpec TmpArea; // for access to static random seed
   vector<int> SeedStatus;
-  
+
+  // For additional QA things
   fastjet::Selector GrabCone = fastjet::SelectorCircle( R );    
+  fastjet::Selector NotGhost = !fastjet::SelectorIsPureGhost ();    
+  fastjet::Selector OnlyCharged = NotGhost && ( SelectorChargeRange( -3, -1) || SelectorChargeRange( 1, 3) );
+  fastjet::Selector OnlyNeutral = NotGhost && SelectorChargeRange( 0, 0);
+
   // // DEBUG
   // int No4Gev=0;
   try{
@@ -641,13 +647,26 @@ int main ( int argc, const char** argv ) {
 	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_empty_jets() << " of them empty" << endl;
 
 	// For Elke
-	// PseudoJet& pj1 = DiJetsHi.at(0);
-	// PseudoJet& pj2 = DiJetsHi.at(1);
-	// PseudoJet& pjm1 = DiJetsLo.at(0);
-	// PseudoJet& pjm2 = DiJetsLo.at(1);
+	PseudoJet& pj1 = DiJetsHi.at(0);
+	PseudoJet& pj2 = DiJetsHi.at(1);
+	PseudoJet& pjm1 = DiJetsLo.at(0);
+	PseudoJet& pjm2 = DiJetsLo.at(1);
 
-	// cout << pj1.constituents().size() << "  " << pjm1.constituents().size() << endl;
-	// hNConstChHiLead
+// 	cout << pj1.constituents().size() << "  " << pjm1.constituents().size() << endl;
+// 	cout << NotGhost(pj1.constituents()).size() << "  " << NotGhost(pjm1.constituents()).size() << endl;
+// 	cout << OnlyCharged(pj1.constituents()).size() << "  " << OnlyCharged(pjm1.constituents()).size() << endl;
+// 	cout << OnlyNeutral(pj1.constituents()).size() << "  " << OnlyNeutral(pjm1.constituents()).size() << endl;
+// 	cout << " === " << endl;
+
+	hNConstChHiLead->Fill( OnlyCharged(pj1.constituents()).size(), refmult);
+	hNConstChHiSubLead->Fill( OnlyCharged(pj2.constituents()).size(), refmult);
+	hNConstChLoLead->Fill( OnlyCharged(pjm1.constituents()).size(), refmult);
+	hNConstChLoSubLead->Fill( OnlyCharged(pjm2.constituents()).size(), refmult);
+
+	hNConstNeHiLead->Fill( OnlyNeutral(pj1.constituents()).size(), refmult);
+	hNConstNeHiSubLead->Fill( OnlyNeutral(pj2.constituents()).size(), refmult);
+	hNConstNeLoLead->Fill( OnlyNeutral(pjm1.constituents()).size(), refmult);
+	hNConstNeLoSubLead->Fill( OnlyNeutral(pjm2.constituents()).size(), refmult);
 
 
 	if ( refmult >= 269 ){
