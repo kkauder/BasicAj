@@ -14,7 +14,7 @@ make $Exec || exit
 
 # choose R or Pt options
 set RMod = ""
-#set RMod = R0.2_
+# set RMod = R0.2_
 # set RMod = Pt1_
 
 # Input files

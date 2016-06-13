@@ -120,7 +120,8 @@ public:
       throw ( -1 );
       return -1e10;
     }
-    return fabs (( jets.at(0).pt()-jets.at(1).pt() ) / ( jets.at(0).pt()+jets.at(1).pt() ));    
+    // return fabs (( jets.at(0).pt()-jets.at(1).pt() ) / ( jets.at(0).pt()+jets.at(1).pt() ));
+    return ( jets.at(0).pt()-jets.at(1).pt() ) / ( jets.at(0).pt()+jets.at(1).pt() );
   }
 
   
@@ -158,12 +159,15 @@ public:
   int AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch=0,
 		       Double_t EventClassifier = 0,
 		       TH2D* UnmatchedAJ_hi=0, TH2D* AJ_hi=0, TH2D* AJ_lo=0,
+		       TH2D* UnmatchedNoFabsAJ_hi=0, TH2D* NoFabsAJ_hi=0, TH2D* NoFabsAJ_lo=0,
 		       TH2D* UnmatchedhPtHi=0, TH2D* hPtHi=0, TH2D* hPtLo=0,  
 		       TH1D* UnmatchedhdPtHi=0, TH1D* hdPtHi=0, TH1D* hdPtLo=0,
 		       TH1D* hdphiHi=0, TH1D* hdphiLo=0,
 		       TH2D* OtherAJ_lo=0, TH2D* OtherLeadPtLoss_lo=0, TH2D* OtherSubLeadPtLoss_lo=0, float OtherR=0,
 		       TH2D* hdPtLead=0, TH2D* hdPtSubLead=0,
-		       TH2D* SpecialhdPtLead=0, TH2D* SpecialhdPtSubLead=0
+		       TH2D* SpecialhdPtLead=0, TH2D* SpecialhdPtSubLead=0,
+		       std::vector<fastjet::PseudoJet>* ToReject=0,
+		       double ForceRho=-1
 		       );
   /** This little helper is true if there's at least one 10 GeV jet
    **/

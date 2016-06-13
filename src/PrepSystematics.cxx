@@ -2,8 +2,8 @@
 
 #define REBIN 2
 
-void CalcAj ( TFile* file, int AuAuMultL, int AuAuMultR, vector<double>& UnbinnedAj_lo, vector<double>& UnbinnedAj_hi );
-double CalcAj ( TLorentzVector* j1, TLorentzVector* j2 );
+void CalcAj ( TFile* file, int AuAuMultL, int AuAuMultR, vector<double>& UnbinnedAj_lo, vector<double>& UnbinnedAj_hi, TString opt="fabs" );
+double CalcAj ( TLorentzVector* j1, TLorentzVector* j2, bool nofabs=false );
 TH1D* minmax ( vector<TFile*> files, TString which, int AuAuMultL, int AuAuMultR, TString namehelper,  vector<TH1D*>& histos, 
 	       vector<TH1D*>& ratios, vector<TH1D*>& minandmax );
 
@@ -94,6 +94,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   vector<TH1D*> EhistosHi;
   vector<TH1D*> ThistosLo;
   vector<TH1D*> EhistosLo;
+  vector<TH1D*> NoFabsThistosLo;
+  vector<TH1D*> NoFabsEhistosLo;
 
   bool visualize=true;
   if (visualize){
@@ -161,13 +163,14 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     plotname = "plots/" + R + "_" + AJ_lo_T->GetName() + ".png";
     gPad->SaveAs( plotname );
   }
-
+  
   TH1D* AJ_lo_E = minmax (  Efiles, "AJ_lo", AuAuMultL, AuAuMultR, "E", Ehistos, ratios, minandmax );
   AJ_lo_E->SetName("AJ_lo_E");
   if (gPad){
     plotname = "plots/" + R + "_" + AJ_lo_E->GetName() + ".png";
     gPad->SaveAs( plotname );
   }
+
   TH1D* AJ_lo_minmax = AJ_lo_T->Clone("AJ_lo_minmax");
   TH1D* AJ_lo_min = AJ_lo_T->Clone("AJ_lo_min");
   TH1D* AJ_lo_max = AJ_lo_T->Clone("AJ_lo_max");
@@ -182,10 +185,44 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
 
     AJ_lo_max->SetBinContent (i, Thistos.at(0)->GetBinContent(i) + AJ_lo_minmax->GetBinError (i) );
     AJ_lo_max->SetBinError   (i, Thistos.at(0)->GetBinError(i) );
-
   }
+  
   ThistosLo=Thistos;
   EhistosLo=Ehistos;
+
+  
+  // Matched, low, allowing negative NoFabsAJ
+  // ---------------------------------
+  TH1D* NoFabsAJ_lo_T = minmax (  Tfiles, "NoFabsAJ_lo", AuAuMultL, AuAuMultR, "T", Thistos, ratios, minandmax );
+  NoFabsAJ_lo_T->SetName("NoFabsAJ_lo_T");
+  if (gPad){
+    plotname = "plots/" + R + "_" + NoFabsAJ_lo_T->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }
+  
+  TH1D* NoFabsAJ_lo_E = minmax (  Efiles, "NoFabsAJ_lo", AuAuMultL, AuAuMultR, "E", Ehistos, ratios, minandmax );
+  NoFabsAJ_lo_E->SetName("NoFabsAJ_lo_E");
+  if (gPad){
+    plotname = "plots/" + R + "_" + NoFabsAJ_lo_E->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }  
+  TH1D* NoFabsAJ_lo_minmax = NoFabsAJ_lo_T->Clone("NoFabsAJ_lo_minmax");
+  TH1D* NoFabsAJ_lo_min = NoFabsAJ_lo_T->Clone("NoFabsAJ_lo_min");
+  TH1D* NoFabsAJ_lo_max = NoFabsAJ_lo_T->Clone("NoFabsAJ_lo_max");
+  for (int i=1; i<=NoFabsAJ_lo_minmax->GetNbinsX() ; ++ i ){
+    NoFabsAJ_lo_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
+    NoFabsAJ_lo_minmax->SetBinError (i, sqrt( pow( NoFabsAJ_lo_T->GetBinError(i), 2) +
+					      pow( NoFabsAJ_lo_E->GetBinError(i), 2) ) );
+
+    NoFabsAJ_lo_min->SetBinContent (i, Thistos.at(0)->GetBinContent(i) - NoFabsAJ_lo_minmax->GetBinError (i) );
+    NoFabsAJ_lo_min->SetBinError   (i, Thistos.at(0)->GetBinError(i) );
+
+    NoFabsAJ_lo_max->SetBinContent (i, Thistos.at(0)->GetBinContent(i) + NoFabsAJ_lo_minmax->GetBinError (i) );
+    NoFabsAJ_lo_max->SetBinError   (i, Thistos.at(0)->GetBinError(i) );
+  }
+
+  NoFabsThistosLo=Thistos;
+  NoFabsEhistosLo=Ehistos;
 
   // Followed
   // --------
@@ -238,9 +275,13 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   // For Unbinned KS value
   // ---------------------
   vector<double> RefUnbinnedAJ_lo;
+  vector<double> NoFabsRefUnbinnedAJ_lo;
   vector<double> RefUnbinnedAJ_hi;
-  CalcAj( reffile, AuAuMultL, AuAuMultR, RefUnbinnedAJ_lo, RefUnbinnedAJ_hi );    
+  CalcAj( reffile, AuAuMultL, AuAuMultR, RefUnbinnedAJ_lo, RefUnbinnedAJ_hi,"fabs" );
+  CalcAj( reffile, AuAuMultL, AuAuMultR, NoFabsRefUnbinnedAJ_lo, RefUnbinnedAJ_hi,"nofabs" );
+  cout << "Done" << endl;
   vector<double> UnbinnedAJ_lo;
+  vector<double> NoFabsUnbinnedAJ_lo;
   vector<double> UnbinnedAJ_hi;
 
   // Open outputfile before creating output numbers
@@ -307,6 +348,10 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     Pvalue.SetVal( TMath::KolmogorovTest( UnbinnedAJ_lo.size(), (const double*) &UnbinnedAJ_lo.at(0), RefUnbinnedAJ_lo.size(), (const double*) &RefUnbinnedAJ_lo.at(0), "") );
     Pvalue.Write( "KS_" + PvalBase+"E_Lo");
 
+    CalcAj( Efiles.at(i), AuAuMultL, AuAuMultR, NoFabsUnbinnedAJ_lo, UnbinnedAJ_hi, "nofabs" );
+    Pvalue.SetVal( TMath::KolmogorovTest( NoFabsUnbinnedAJ_lo.size(), (const double*) &NoFabsUnbinnedAJ_lo.at(0), NoFabsRefUnbinnedAJ_lo.size(), (const double*) &NoFabsRefUnbinnedAJ_lo.at(0), "") );
+    Pvalue.Write( "KS_NoFabs" + PvalBase+"E_Lo");
+
     // cout << "HI, KS UNbinned, p-value = "
     // 	 << TMath::KolmogorovTest( UnbinnedAJ_hi.size(), (const double*) &UnbinnedAJ_hi.at(0), RefUnbinnedAJ_hi.size(), (const double*) &RefUnbinnedAJ_hi.at(0), "")
     // 	 << endl;
@@ -320,6 +365,10 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     Pvalue.Write( "KS_" + PvalBase+"T_Hi");
     Pvalue.SetVal( TMath::KolmogorovTest( UnbinnedAJ_lo.size(), (const double*) &UnbinnedAJ_lo.at(0), RefUnbinnedAJ_lo.size(), (const double*) &RefUnbinnedAJ_lo.at(0), "") );
     Pvalue.Write( "KS_" + PvalBase+"T_Lo");
+
+    CalcAj( Tfiles.at(i), AuAuMultL, AuAuMultR, NoFabsUnbinnedAJ_lo, UnbinnedAJ_hi, "nofabs" );
+    Pvalue.SetVal( TMath::KolmogorovTest( NoFabsUnbinnedAJ_lo.size(), (const double*) &NoFabsUnbinnedAJ_lo.at(0), NoFabsRefUnbinnedAJ_lo.size(), (const double*) &NoFabsRefUnbinnedAJ_lo.at(0), "") );
+    Pvalue.Write( "KS_NoFabs" + PvalBase+"T_Lo");
 
     // cout << "HI, KS UNbinned, p-value = "
     // 	 << TMath::KolmogorovTest( UnbinnedAJ_hi.size(), (const double*) &UnbinnedAJ_hi.at(0), RefUnbinnedAJ_hi.size(), (const double*) &RefUnbinnedAJ_hi.at(0), "")
@@ -433,7 +482,11 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   AJ_lo_min->Write();
   AJ_lo_max->Write();
   
-
+  NoFabsAJ_lo_E->Write();
+  NoFabsAJ_lo_T->Write();
+  NoFabsAJ_lo_minmax->Write();
+  NoFabsAJ_lo_min->Write();
+  NoFabsAJ_lo_max->Write();
 
   cout << "Wrote to " << endl << out->GetName() << endl;
   return 0;
@@ -572,7 +625,7 @@ TH1D* minmax ( vector<TFile*> files, TString which, int AuAuMultL, int AuAuMultR
 }
 
 // ===========================================================================
-void CalcAj ( TFile* file, int AuAuMultL, int AuAuMultR, vector<double>& UnbinnedAj_lo, vector<double>& UnbinnedAj_hi ){
+void CalcAj ( TFile* file, int AuAuMultL, int AuAuMultR, vector<double>& UnbinnedAj_lo, vector<double>& UnbinnedAj_hi, TString opt ){
 
   UnbinnedAj_hi.clear();
   UnbinnedAj_lo.clear();
@@ -595,9 +648,11 @@ void CalcAj ( TFile* file, int AuAuMultL, int AuAuMultR, vector<double>& Unbinne
 
   for ( int i=0; i<ResultTree->GetEntries(); ++i ){
     ResultTree->GetEntry ( i );
+    // cout << i << endl;
+
     if ( refmult<AuAuMultL || refmult > AuAuMultR ) continue;
-    UnbinnedAj_hi.push_back( CalcAj( pJ1, pJ2 ) );
-    UnbinnedAj_lo.push_back( CalcAj( pJM1, pJM2 ) );
+    UnbinnedAj_hi.push_back( CalcAj( pJ1, pJ2, opt=="nofabs" ) );
+    UnbinnedAj_lo.push_back( CalcAj( pJM1, pJM2, opt=="nofabs" ) );
   }
 
   // Grrr - need to be sorted
@@ -606,8 +661,12 @@ void CalcAj ( TFile* file, int AuAuMultL, int AuAuMultR, vector<double>& Unbinne
 }
 
 // ===========================================================================
-double CalcAj ( TLorentzVector* j1, TLorentzVector* j2 ){
-  return fabs (( j1->Pt()-j2->Pt() ) / ( j1->Pt()+j2->Pt() ));    
+double CalcAj ( TLorentzVector* j1, TLorentzVector* j2, bool nofabs ){
+  // return fabs (( j1->Pt()-j2->Pt() ) / ( j1->Pt()+j2->Pt() ));
+  if ( nofabs )  return ( j1->Pt()-j2->Pt() ) / ( j1->Pt()+j2->Pt() );
+  return fabs( ( j1->Pt()-j2->Pt() ) / ( j1->Pt()+j2->Pt() ) );
+
+  return -999;
 }
     
     

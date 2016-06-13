@@ -87,6 +87,7 @@ AjAnalysis::AjAnalysis ( double R,
 int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fastjet::PseudoJet* ToMatch,
 				 Double_t EventClassifier,
 				 TH2D* UnmatchedAJ_hi, TH2D* AJ_hi, TH2D* AJ_lo,
+				 TH2D* UnmatchedNoFabsAJ_hi, TH2D* NoFabsAJ_hi, TH2D* NoFabsAJ_lo,
 
 				 TH2D* UnmatchedhPtHi,  TH2D* hPtHi,  TH2D* hPtLo,
 				 TH1D* UnmatchedhdPtHi, TH1D* hdPtHi, TH1D* hdPtLo,  
@@ -95,7 +96,9 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
 				 TH2D* OtherAJ_lo, TH2D* OtherLeadPtLoss_lo, TH2D* OtherSubLeadPtLoss_lo, float OtherR,
 
 				 TH2D* hdPtLead, TH2D* hdPtSubLead,
-				 TH2D* SpecialhdPtLead, TH2D* SpecialhdPtSubLead
+				 TH2D* SpecialhdPtLead, TH2D* SpecialhdPtSubLead,
+				 std::vector<fastjet::PseudoJet>* ToReject,
+				 double ForceRho
 				 ){
 
   // We want to hold onto the jetanalyzer objects, so they're created dynamically
@@ -135,7 +138,21 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   pJAhi = new JetAnalyzer( pHi, jet_def ); // NO background subtraction
   JetAnalyzer& JAhi = *pJAhi;
   
-  JAhiResult = fastjet::sorted_by_pt( sjet ( JAhi.inclusive_jets() ) );  
+  JAhiResult = fastjet::sorted_by_pt( sjet ( JAhi.inclusive_jets() ) );
+
+  // Remove some jets (for eta-cone like analyses)
+  int origsize = JAhiResult.size();// DEBUG  
+  fastjet::Selector RejectClose = !fastjet::SelectorCircle( R );
+  if ( ToReject ) {
+    for ( int i=0; i< ToReject->size(); ++i ){
+      RejectClose.set_reference( ToReject->at(i) );
+      JAhiResult = fastjet::sorted_by_pt( RejectClose ( JAhiResult ) );
+    }
+    // DEBUG
+    if ( origsize - ToReject->size() != JAhiResult.size() )
+      std::cout << origsize << " - " << ToReject->size() << " != " << JAhiResult.size() << std::endl;
+  }  
+    
   if ( JAhiResult.size() < 1 )                 {     return 0; }
   if ( JAhiResult.at(0).pt() > 10 )            { Has10Gev=true; }
 
@@ -159,7 +176,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   }
 
   // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
-  UnmatchedAJ_hi->Fill ( CalcAj( DiJetsHi ), EventClassifier );
+  UnmatchedAJ_hi->Fill ( fabs(CalcAj( DiJetsHi )), EventClassifier );
+  UnmatchedNoFabsAJ_hi->Fill ( CalcAj( DiJetsHi ), EventClassifier );
   UnmatchedhPtHi->Fill ( DiJetsHi.at(0).pt() , DiJetsHi.at(1).pt());  
   UnmatchedhdPtHi->Fill ( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());  
       
@@ -168,7 +186,13 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
   JetAnalyzer& JAlo = *pJAlo;
   fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
+  if ( ForceRho >=0 ) BackgroundSubtractor = new fastjet::Subtractor( ForceRho );
   JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
+  if ( ForceRho >=0 ) {
+    delete BackgroundSubtractor;
+    BackgroundSubtractor=0;
+  }
+    
 
   // Old logic: Run the same logic on JAloResult, then reject the event if DiJetsLo is not matched to DiJetsHi
   // std::vector<fastjet::PseudoJet> DiJetsLo = SelectorDijets ( dPhiCut ) ( sjet ( JAloResult)  );
@@ -222,8 +246,10 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   
   // And we're done! Calculate A_J
   // -----------------------------
-  AJ_hi->Fill( CalcAj( DiJetsHi ), EventClassifier );
-  AJ_lo->Fill( CalcAj( DiJetsLo ), EventClassifier );
+  AJ_hi->Fill( fabs(CalcAj( DiJetsHi )), EventClassifier );
+  AJ_lo->Fill( fabs(CalcAj( DiJetsLo )), EventClassifier );
+  NoFabsAJ_hi->Fill( CalcAj( DiJetsHi ), EventClassifier );
+  NoFabsAJ_lo->Fill( CalcAj( DiJetsLo ), EventClassifier );
 
   // Also fill some diagnostic histos
   // -----------------------------
@@ -233,7 +259,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   if ( hdPtLead )    hdPtLead->Fill( DiJetsLo.at(0).pt() - DiJetsHi.at(0).pt(), EventClassifier );
   if ( hdPtSubLead ) hdPtSubLead->Fill( DiJetsLo.at(1).pt() - DiJetsHi.at(1).pt(), EventClassifier );
 
-  if ( CalcAj( DiJetsHi )>0.25 ){
+  if ( fabs(CalcAj( DiJetsHi ))>0.25 ){
     if ( SpecialhdPtLead )    SpecialhdPtLead->Fill( DiJetsLo.at(0).pt() - DiJetsHi.at(0).pt(), EventClassifier );
     if ( SpecialhdPtSubLead ) SpecialhdPtSubLead->Fill( DiJetsLo.at(1).pt() - DiJetsHi.at(1).pt(), EventClassifier );
   }
@@ -243,7 +269,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   hdPtHi->Fill( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());
   hdPtLo->Fill( DiJetsLo.at(0).pt() - DiJetsLo.at(1).pt());
 
-  // If requested, also see how much is recovered in a other R
+  // If requested, also see how much is recovered with another R
   // -----------------------------------------------------------
   if ( OtherAJ_lo ){
     // need new jet definition
@@ -275,7 +301,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
     OtherDiJetsLo.push_back ( OtherMatchedToSubLead.at(0) );
 
     // And fill
-    OtherAJ_lo->Fill( CalcAj( OtherDiJetsLo ), EventClassifier );
+    OtherAJ_lo->Fill( fabs(CalcAj( OtherDiJetsLo )), EventClassifier );
     OtherLeadPtLoss_lo->Fill( DiJetsLo.at(0).pt() - OtherDiJetsLo.at(0).pt() , EventClassifier );
     OtherSubLeadPtLoss_lo->Fill( DiJetsLo.at(1).pt() - OtherDiJetsLo.at(1).pt() , EventClassifier );
 

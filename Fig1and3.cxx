@@ -8,7 +8,7 @@
 #include <iostream>
 using namespace std;
 
-int Fig1and3() {
+int Fig1and3( TString R = "" ) {
 
   int RefmultCut = 269;  // 269 for 0-20%, 399 for 0-10%
   // int RefmultCut = 351;  // 269 for 0-20%, 399 for 0-10%
@@ -21,31 +21,37 @@ int Fig1and3() {
   TCanvas* c = new TCanvas("c");
   gPad->SetGridx(0);  gPad->SetGridy(0);
 
-  // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
-  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_MixTest_ppInAuAuAj.root");
-  // TFile *fSyst         = TFile::Open("AjResults/Systematics_MixTest_ppInAuAuAj.root");
+  bool nofabs=true;
+  // bool nofabs=false;
 
-  // 100% hadronic correction
+  // axis labels and titles
+  float ls = 0.05;
+  float ts = 0.05;
+  float yoff = 1.06;
+  float xoff = 0.92;
+
+  // legend
+  float legs = 0.04;
+
+    // 100% hadronic correction
+    // ========================
+  if ( R=="" ){
+    TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
+    TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
+    TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  } else if ( R.Contains("0.2") ){
+    TFile *fAuAu         = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root");
+    TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
+    TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  } else return 0;
+  
+  // Others
+  // ======
   // TFile *fAuAu         = TFile::Open("AjResults/rndm2/HC30_Presel.root");
   // TFile *fAuAu         = TFile::Open("AjResults/FixedTowers_AuAu.root");
   // TFile *fAuAu         = TFile::Open("AjResults/OldTowers_AuAu.root");
   // TFile *fAuAu         = TFile::Open("AjResults/OldCodeTowers_AuAu.root");
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
-
-  TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
-  TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
-  TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
-  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
-  // TFile *fSyst         = TFile::Open("AjResults/Systematics_SoftDropped_Fresh_NicksList_HC100_ppInAuAuAj.root");
-
-  // TFile *fAuAu         = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root");
-  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
-  // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
-
-
-  // TFile *fAuAu         = TFile::Open("AjResults/R0.2_NicksList_HC100_AuAu.root");
-  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_NicksList_HC100_ppInAuAuAj.root");
-  // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_NicksList_HC100_ppInAuAuAj.root");
 
   // TFile *fAuAu         = TFile::Open("AjResults/HC30_Presel.root");
   // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_HC30_ppInAuAuAj.root");
@@ -93,10 +99,12 @@ int Fig1and3() {
        << h2->GetYaxis()->GetBinLowEdge( AuAuMultBinL ) << " -- "
        << h2->GetYaxis()->GetBinLowEdge( AuAuMultBinR+1 ) << endl;
   
-  TH1D* AuAuAJ_lo     = (TH1D*) ( (TH2D*) fAuAu->Get( "AJ_lo") )->ProjectionX("AuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
-  TH1D* ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "AJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
-  // TH1D* AuAuAJ_lo     = (TH1D*) ( (TH2D*) fAuAu->Get( "SmallAJ_lo") )->ProjectionX("AuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
-  // TH1D* ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "SmallAJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
+  TH1D* AuAuAJ_lo=0;
+  if ( nofabs ) AuAuAJ_lo = (TH1D*) ( (TH2D*) fAuAu->Get( "NoFabsAJ_lo") )->ProjectionX("AuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
+  else AuAuAJ_lo = (TH1D*) ( (TH2D*) fAuAu->Get( "AJ_lo") )->ProjectionX("AuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
+  TH1D* ppInAuAuAJ_lo=0;
+  if ( nofabs ) ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "NoFabsAJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
+  else ppInAuAuAJ_lo = (TH1D*) ( (TH2D*) fppInAuAu->Get( "AJ_lo") )->ProjectionX("ppInAuAuAJ_lo", AuAuMultBinL, AuAuMultBinR);
   cout << AuAuAJ_lo ->Integral(1,100) << " dijets in AuAu" << endl;
   cout << ppInAuAuAJ_lo ->Integral(1,100) << " dijets in pp@AuAu" << endl;
   
@@ -116,7 +124,9 @@ int Fig1and3() {
   for (int i=0 ; i<toa.GetEntries() ; ++i ){
     h=(TH1D*) toa.At(i);
     h->SetLineWidth( 2 );
+
     h->SetTitle(";|A_{J}|;Fraction");
+    if ( nofabs ) h->SetTitle(";A_{J};Fraction");
     
     h->Rebin(2);
     // h->Scale(1./h->Integral());
@@ -124,7 +134,21 @@ int Fig1and3() {
     
     h->SetAxisRange(  0.0, 0.23, "y");
     h->SetAxisRange(  0.0, 0.72, "x");
-    
+    if ( nofabs ) h->SetAxisRange(  0.0, 0.25, "y");
+    if ( nofabs ) h->SetAxisRange(  -0.3, 0.8, "x");
+
+    h->GetXaxis()->SetLabelSize( ls );
+    h->GetXaxis()->SetTitleSize( ls );
+    h->GetXaxis()->SetTitleOffset( xoff );
+    h->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
+    h->GetXaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
+
+    h->GetYaxis()->SetLabelSize( ls );
+    h->GetYaxis()->SetTitleSize( ls );
+    h->GetYaxis()->SetTitleOffset( yoff );
+    h->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
+    h->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
+	  
   }
   
   AuAuAJ_lo->SetLineColor( kBlack );
@@ -151,18 +175,18 @@ int Fig1and3() {
   // ppInAuAuAJ_hi->SetMarkerColor( kMagenta );
   ppInAuAuAJ_hi->SetMarkerStyle( 24 );
   
-  ppInAuAuAJ_hi->GetYaxis()->SetTitleSize(0.04);
-  ppInAuAuAJ_hi->GetYaxis()->SetLabelSize(0.04);
+  // ppInAuAuAJ_hi->GetYaxis()->SetTitleSize(0.04);
+  // ppInAuAuAJ_hi->GetYaxis()->SetLabelSize(0.04);
   ppInAuAuAJ_hi->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
   ppInAuAuAJ_hi->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
 
-  ppInAuAuAJ_hi->GetXaxis()->SetTitleSize(0.04);
-  ppInAuAuAJ_hi->GetXaxis()->SetLabelSize(0.04);
+  // ppInAuAuAJ_hi->GetXaxis()->SetTitleSize(0.04);
+  // ppInAuAuAJ_hi->GetXaxis()->SetLabelSize(0.04);
   ppInAuAuAJ_hi->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
   ppInAuAuAJ_hi->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
   
   
-  ppInAuAuAJ_hi->GetYaxis()->SetTitleOffset(1.14);
+  //  ppInAuAuAJ_hi->GetYaxis()->SetTitleOffset(1.14);
   ppInAuAuAJ_hi->Draw("9");
   
   TH1D* AJ_hi_minmax=0;
@@ -215,19 +239,25 @@ int Fig1and3() {
     }
     AJ_hi_minmax = (TH1D*) fSyst->Get("AJ_hi_minmax");
     AJ_hi_minmax->SetFillColor( kRed-10 );
+    AJ_hi_minmax->SetFillStyle(1001);
     AJ_hi_minmax->SetMarkerColor(kRed-10);
     AJ_hi_minmax->SetMarkerSize(0);
+    AJ_hi_minmax->SetLineWidth( 0 );
     
-    AJ_lo_minmax = (TH1D*) fSyst->Get("AJ_lo_minmax");
+    if ( nofabs ) AJ_lo_minmax = (TH1D*) fSyst->Get("NoFabsAJ_lo_minmax");
+    else AJ_lo_minmax = (TH1D*) fSyst->Get("AJ_lo_minmax");
     AJ_lo_minmax->SetFillColor( kGray );
+    AJ_lo_minmax->SetFillStyle(1001);
     AJ_lo_minmax->SetMarkerColor( kGray );
     AJ_lo_minmax->SetMarkerSize(0);
+    AJ_lo_minmax->SetLineWidth( 0 );
 
     // Also pull p-values from that file
-    ShowPvalue=true;
     Tpar=(TParameter<double>*) fSyst->Get("KS_NominalE_Hi");
     KS_NominalE_Hi = Tpar->GetVal();
-    Tpar=(TParameter<double>*) fSyst->Get("KS_NominalE_Lo");
+    
+    if ( nofabs ) Tpar=(TParameter<double>*) fSyst->Get("KS_NoFabsNominalE_Lo");
+    else Tpar=(TParameter<double>*) fSyst->Get("KS_NominalE_Lo");
     KS_NominalE_Lo = Tpar->GetVal();
   }
   
@@ -283,81 +313,80 @@ int Fig1and3() {
   AJ_lo_minmax->SetMarkerSize(0);
 
   ppInAuAuAJ_hi->Draw("9");
-  // if ( fSyst || true){
-    AJ_hi_minmax->Draw("9E2same");
-    //   }
+  AJ_hi_minmax->Draw("9E2same");
+
   ppInAuAuAJ_hi->Draw("9same");
   AuAuAJ_hi->Draw("9same");
 
-  // For p-value, add systematics in quadrature
-  TH1D* AJ_hi_sysstat = (TH1D*) ppInAuAuAJ_hi->Clone("AJ_hi_sysstat");
-  if ( AJ_hi_minmax ){
-    for (int i=1; i<AJ_hi_sysstat->GetNbinsX(); ++i ){
-      if ( fabs (AJ_hi_sysstat->GetBinContent(i)-AJ_hi_minmax->GetBinContent(i))> 1e-4 ){
-  	cerr << "syst. and stat. histo are incompatible" << endl;
-  	return -1;
-      }
-      AJ_hi_sysstat->SetBinError( i, TMath::Sqrt(
-  						 pow( AJ_hi_sysstat->GetBinError(i), 2) +
-  						 pow( AJ_hi_minmax->GetBinError(i), 2) ));
-    }
-  }
+  // // For p-value, add systematics in quadrature
+  // TH1D* AJ_hi_sysstat = (TH1D*) ppInAuAuAJ_hi->Clone("AJ_hi_sysstat");
+  // if ( AJ_hi_minmax ){
+  //   for (int i=1; i<AJ_hi_sysstat->GetNbinsX(); ++i ){
+  //     if ( fabs (AJ_hi_sysstat->GetBinContent(i)-AJ_hi_minmax->GetBinContent(i))> 1e-4 ){
+  // 	cerr << "syst. and stat. histo are incompatible" << endl;
+  // 	return -1;
+  //     }
+  //     AJ_hi_sysstat->SetBinError( i, TMath::Sqrt(
+  // 						 pow( AJ_hi_sysstat->GetBinError(i), 2) +
+  // 						 pow( AJ_hi_minmax->GetBinError(i), 2) ));
+  //   }
+  // }
 
-  TH1D* AJ_lo_sysstat = (TH1D*) ppInAuAuAJ_lo->Clone("AJ_lo_sysstat");
-  if ( AJ_lo_minmax ){
-    for (int i=1; i<AJ_lo_sysstat->GetNbinsX(); ++i ){
-      if ( fabs (AJ_lo_sysstat->GetBinContent(i)-AJ_lo_minmax->GetBinContent(i))> 1e-3 ){
-  	cerr << "syst. and stat. histo are incompatible" << endl;
-  	new TCanvas;
-  	ppInAuAuAJ_lo->Draw();
-  	AJ_lo_minmax->Draw("same");
-  	return -1;
-      }
-      AJ_lo_sysstat->SetBinError( i, TMath::Sqrt(
-  						 pow( AJ_lo_sysstat->GetBinError(i), 2) +
-  						 pow( AJ_lo_minmax->GetBinError(i), 2) ));
-    }
-  }
-
-
+  // TH1D* AJ_lo_sysstat = (TH1D*) ppInAuAuAJ_lo->Clone("AJ_lo_sysstat");
+  // if ( AJ_lo_minmax ){
+  //   for (int i=1; i<AJ_lo_sysstat->GetNbinsX(); ++i ){
+  //     if ( fabs (AJ_lo_sysstat->GetBinContent(i)-AJ_lo_minmax->GetBinContent(i))> 1e-3 ){
+  // 	cerr << "syst. and stat. histo are incompatible" << endl;
+  // 	new TCanvas;
+  // 	ppInAuAuAJ_lo->Draw();
+  // 	AJ_lo_minmax->Draw("same");
+  // 	return -1;
+  //     }
+  //     AJ_lo_sysstat->SetBinError( i, TMath::Sqrt(
+  // 						 pow( AJ_lo_sysstat->GetBinError(i), 2) +
+  // 						 pow( AJ_lo_minmax->GetBinError(i), 2) ));
+  //   }
+  // }
 
   
-  TLegend* leg = new TLegend( 0.48, 0.7, 0.89, 0.9, "" );
-  leg->SetBorderSize(0);
-  leg->SetLineWidth(10);
-  leg->SetFillStyle(0);
-  leg->SetMargin(0.1);
-  leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
-  leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
+  // TLegend* leg = new TLegend( 0.48, 0.7, 0.89, 0.9, "" );
+  // if ( nofabs ) {
+  //   leg = new TLegend( 0.12, 0.7, 0.53, 0.9, "" );
+  // }
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
+  // leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
+  // leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
   // 
-  // TLegendEntry* l1 = leg->AddEntry ( (TH1D*) NULL,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "");
-  // l1->SetTextColor(kWhite); // Doesn't Work :(
-  leg->AddEntry ( (TH1D*) NULL,     "", "");
-  leg->AddEntry ( (TH1D*) NULL,     "", "");
+  // // TLegendEntry* l1 = leg->AddEntry ( (TH1D*) NULL,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "");
+  // // l1->SetTextColor(kWhite); // Doesn't Work :(
+  // leg->AddEntry ( (TH1D*) NULL,     "", "");
+  // leg->AddEntry ( (TH1D*) NULL,     "", "");
   
-  leg->Draw();
+  // leg->Draw();
   // return;
 
   TLatex latex;
   latex.SetNDC();
-  latex.SetTextSize(0.04);
+  latex.SetTextSize(ls);
+  // latex.SetTextSize(0.04);
+  // if ( nofabs ) latex.SetTextSize(0.037);
   char plabel[400];
 
-  float threshhi = 1e-5;
-  // // if ( ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") >1e-4  || ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") >1e-4 ){
-  // if ( ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") > threshhi ){
-  //   cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "") << endl;
-  //   cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
-  //   return;    
-  // }
 
-  // sprintf ( plabel, "p-value < %g", threshhi);
   // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, ""));
   // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, ""));
   if ( ShowPvalue ){
     sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Hi);
+    latex.SetTextSize(0.04);
     latex.SetTextColor( AuAuAJ_hi->GetLineColor() );
-    latex.DrawLatex( .6,.5, plabel);
+    // if ( nofabs ) latex.DrawLatex( .7,.5, plabel);
+    // if ( nofabs ) latex.DrawLatex( .65,.5, plabel);
+    // if ( nofabs ) latex.DrawLatex( .14,.6, plabel);
+    if ( nofabs ) latex.DrawLatex( .33,.23, plabel);
+    else latex.DrawLatex( .6,.5, plabel);
   }
 
   // cout << "HI: Nominal chi^2: " << ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "") << endl;
@@ -371,9 +400,26 @@ int Fig1and3() {
 
   // return 0;
 
+  // latex.SetTextColor(kBlack);
+  // if ( nofabs ) {
+  //   latex.DrawLatex( 0.57, 0.84, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
+  //   latex.DrawLatex( 0.57, 0.78, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  // } else {
+  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
+  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  // }
+
   latex.SetTextColor(kBlack);
-  latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  latex.SetTextSize( 0.04);
+  // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
+  // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+
+  latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
+
+  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 Gev/c");
+  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 Gev/c");
+
+
   // if (TString(fAuAu->GetName()).Contains("R0.2") ){
   // latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>16 Gev/c");
   // latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>8 Gev/c");
@@ -382,6 +428,7 @@ int Fig1and3() {
   //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
   // }
   
+  latex.SetTextSize( 0.04);
   latex.DrawLatex( 0.65, 0.63, "Au+Au, 0-20%");
   if (TString(fAuAu->GetName()).Contains("R0.2") ){
     latex.DrawLatex( 0.65, 0.58, "Anti-k_{T}, R=0.2");
@@ -389,38 +436,90 @@ int Fig1and3() {
     latex.DrawLatex( 0.65, 0.58, "Anti-k_{T}, R=0.4");
   }  
 
-  if (TString(fAuAu->GetName()).Contains("R0.2") ){
-    gPad->SaveAs("plots/R0.2_Part1.png");
-  } else if (TString(fAuAu->GetName()).Contains("Pt1") ){
-    gPad->SaveAs("plots/Pt1_Part1.png");
-  } else {
-    gPad->SaveAs("plots/R0.4_Part1.png");
-  }
+  // if (TString(fAuAu->GetName()).Contains("R0.2") ){
+  //   gPad->SaveAs("plots/R0.2_Part1.png");
+  // } else if (TString(fAuAu->GetName()).Contains("Pt1") ){
+  //   gPad->SaveAs("plots/Pt1_Part1.png");
+  // } else {
+  //   gPad->SaveAs("plots/R0.4_Part1.png");
+  // }
 
 
 
   // Second part of animation
   // ------------------------
-  //  if ( fSyst || true){
-    AJ_lo_minmax->Draw("9E2same");
-    //}
+  AJ_lo_minmax->Draw("9E2same");
+
+  ppInAuAuAJ_hi->Draw("9same");
+  AuAuAJ_hi->Draw("9same");
   ppInAuAuAJ_lo->Draw("9same");
   AuAuAJ_lo->Draw("9same");
 
-  leg->Clear();
-  leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
-  leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
-  leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  leg->Draw();
+  TLegend* leghi = new TLegend( 0.15, 0.7, 0.48, 0.88, "p_{T}^{Cut}>2 GeV/c:" );
+  leghi->SetBorderSize(0);
+  leghi->SetTextColor( kRed);
+  leghi->SetTextSize(legs);
+  // leghi->SetLineWidth(10);
+  leghi->SetFillStyle(0);
+  // leghi->SetMargin(0.1);
 
-  float threshlo = 0.05;
+  leghi->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB", "p");
+  leghi->AddEntry ( AuAuAJ_hi,     "AuAu HT", "p");
+  leghi->Draw();
 
-    if ( ShowPvalue ){
-      sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Lo);
-      latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
-      latex.DrawLatex( .6,.45, plabel);
-    }
+  TLegend* leglo = new TLegend( 0.55, 0.7, 0.88, 0.88, "p_{T}^{Cut}>0.2 GeV/c, Matched:" );
+  leglo->SetBorderSize(0);
+  leglo->SetTextSize(legs);
+  // leglo->SetLineWidth(10);
+  leglo->SetFillStyle(0);
+  // leglo->SetMargin(0.1);
+  leglo->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB", "p");
+  leglo->AddEntry ( AuAuAJ_lo,     "AuAu HT", "p");
+  leglo->Draw();
+
+  // if ( nofabs ) {
+  //   leg = new TLegend( 0.12, 0.7, 0.53, 0.9, "" );
+  // }
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
+
+  // leg->Clear();
+  // leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
+  // leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
+  // leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->Draw();
+
+  // leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
+  // leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
+  // leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
+
+  // TLegend* leg = new TLegend( 0.48, 0.7, 0.89, 0.9, "" );
+  // if ( nofabs ) {
+  //   leg = new TLegend( 0.12, 0.7, 0.53, 0.9, "" );
+  // }
+
+  // Line to guide the eye
+  TLine line;
+  line.SetLineStyle( 2 );
+  line.SetLineColor( kGray+2 );
+  gPad->Update();
+  line.DrawLine( 0, gPad->GetFrame()->GetY1(), 0, gPad->GetFrame()->GetY2() );
+  
+  
+  if ( ShowPvalue ){
+    sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Lo);
+    latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
+    latex.SetTextSize(0.04);
+    // if ( nofabs ) latex.DrawLatex( .7,.45, plabel);
+    // if ( nofabs ) latex.DrawLatex( .65,.45, plabel);
+    // if ( nofabs ) latex.DrawLatex( .14,.55, plabel);
+    if ( nofabs ) latex.DrawLatex( .33,.18, plabel);
+    else latex.DrawLatex( .6,.45, plabel);
+  }
 
   if (TString(fAuAu->GetName()).Contains("R0.2") ){
     // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") );
@@ -432,15 +531,6 @@ int Fig1and3() {
     gPad->SaveAs("plots/Pt1_Fig.png");
     gPad->SaveAs("plots/Pt1_Fig.pdf");
   } else {
-    // if ( ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") < threshlo ){
-    //   cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") << endl;
-    //   cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut: " << ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
-    //   return;    
-    // }    
-    // sprintf ( plabel, "p-value >> %g", threshlo);
-    // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, ""));
-    // latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
-    // latex.DrawLatex( .6,.45, plabel);
     gPad->SaveAs("plots/R0.4_Fig1.png");
     gPad->SaveAs("plots/R0.4_Fig1.pdf");
     TString alttitle = gSystem->BaseName( fAuAu->GetName() );
@@ -449,29 +539,159 @@ int Fig1and3() {
         
   }
 
-  float KSqHi = AJ_hi_sysstat->KolmogorovTest(AuAuAJ_hi, "");
-  float C2qHi = AJ_hi_sysstat->Chi2Test(AuAuAJ_hi, "");
-  float KSHi = ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "");
-  float C2Hi = ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "");
-  cerr << "WITH quadrature errors:" << endl;
-  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << KSqHi<< endl;
-  cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << C2qHi<< endl;
-  cerr << "WITHOUT quadrature errors:" << endl;
-  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << KSHi << endl;
-  cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << C2Hi << endl;
+  // float KSqHi = AJ_hi_sysstat->KolmogorovTest(AuAuAJ_hi, "");
+  // float C2qHi = AJ_hi_sysstat->Chi2Test(AuAuAJ_hi, "");
+  // float KSHi = ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "");
+  // float C2Hi = ppInAuAuAJ_hi->Chi2Test(AuAuAJ_hi, "");
+  // cerr << "WITH quadrature errors:" << endl;
+  // cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << KSqHi<< endl;
+  // cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << C2qHi<< endl;
+  // cerr << "WITHOUT quadrature errors:" << endl;
+  // cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, HIGH cut: " << KSHi << endl;
+  // cerr << "chi^2 test for pp @ AuAu vs. AuAu, HIGH cut: " << C2Hi << endl;
 
-  float KSqLo = AJ_lo_sysstat->KolmogorovTest(AuAuAJ_lo, "");
-  float C2qLo = AJ_lo_sysstat->Chi2Test(AuAuAJ_lo, "");
-  float KSLo = ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "");
-  float C2Lo = ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "");
-  cerr << "WITH quadrature errors:" << endl;
-  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut:        " << KSqLo << endl;
-  cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut:                " << C2qLo << endl;
-  cerr << "WITHOUT quadrature errors:" << endl;
-  cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut:        " << KSLo << endl;
-  cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut:                " << C2Lo << endl;
+  // float KSqLo = AJ_lo_sysstat->KolmogorovTest(AuAuAJ_lo, "");
+  // float C2qLo = AJ_lo_sysstat->Chi2Test(AuAuAJ_lo, "");
+  // float KSLo = ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "");
+  // float C2Lo = ppInAuAuAJ_lo->Chi2Test(AuAuAJ_lo, "");
+  // cerr << "WITH quadrature errors:" << endl;
+  // cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut:        " << KSqLo << endl;
+  // cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut:                " << C2qLo << endl;
+  // cerr << "WITHOUT quadrature errors:" << endl;
+  // cerr << "Kolmogorov-Smirnov for pp @ AuAu vs. AuAu, LOW cut:        " << KSLo << endl;
+  // cerr << "chi^2 test for pp @ AuAu vs. AuAu, LOW cut:                " << C2Lo << endl;
 
 
+  // // Ratios
+  // // ------
+
+  // new TCanvas;
+  // gPad->SetGridx(0);  gPad->SetGridy(0);
+
+  // leg->Clear();
+  
+  // TH1D* ratio_hi = AuAuAJ_hi->Clone( "ratio_hi" );
+  // ratio_hi->Divide( ppInAuAuAJ_hi );
+  
+  // TH1D* ratio_lo = AuAuAJ_lo->Clone( "ratio_lo" );
+  // ratio_lo->Divide( ppInAuAuAJ_lo );
+
+  // ratio_hi->SetAxisRange( -0.1,2.1,"y");        
+  // ratio_hi->Draw("9");
+  // ratio_lo->Draw("9same");
+  
+  // leg->AddEntry ( ratio_hi, "AuAu / pp, p_{T}^{Cut}>2 GeV/c", "p");
+  // leg->AddEntry ( ratio_lo, "AuAu / pp, p_{T}^{Cut}>0.2 GeV/c", "p");
+  // leg->Draw();
+  
+  // if (TString(fAuAu->GetName()).Contains("R0.2") ){
+  //   gPad->SaveAs("plots/R0.2_Ratio.png");
+  //   gPad->SaveAs("plots/R0.2_Ratio.pdf");
+  // } else if (TString(fAuAu->GetName()).Contains("Pt1") ){
+  //   gPad->SaveAs("plots/Pt1_Ratio.png");
+  //   gPad->SaveAs("plots/Pt1_Ratio.pdf");
+  // } else {
+  //   gPad->SaveAs("plots/R0.4_Ratio.png");
+  //   gPad->SaveAs("plots/R0.4_Ratio.pdf");        
+  // }
+
+  // p-value systematics
+  Tpar=(TParameter<double>*) fSyst->Get("KS_PlusE_Hi");
+  KS_PlusE_Hi = Tpar->GetVal();
+  Tpar=(TParameter<double>*) fSyst->Get("KS_MinusE_Hi");
+  KS_MinusE_Hi = Tpar->GetVal();
+  Tpar=(TParameter<double>*) fSyst->Get("KS_PlusT_Hi");
+  KS_PlusT_Hi = Tpar->GetVal();
+  Tpar=(TParameter<double>*) fSyst->Get("KS_MinusT_Hi");
+  KS_MinusT_Hi = Tpar->GetVal();
+
+  if ( nofabs ){
+    Tpar=(TParameter<double>*) fSyst->Get("KS_NoFabsPlusE_Lo");
+    KS_PlusE_Lo = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_NoFabsMinusE_Lo");
+    KS_MinusE_Lo = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_NoFabsPlusT_Lo");
+    KS_PlusT_Lo = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_NoFabsMinusT_Lo");
+    KS_MinusT_Lo = Tpar->GetVal();
+  } else {
+    Tpar=(TParameter<double>*) fSyst->Get("KS_PlusE_Lo");
+    KS_PlusE_Lo = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_MinusE_Lo");
+    KS_MinusE_Lo = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_PlusT_Lo");
+    KS_PlusT_Lo = Tpar->GetVal();
+    Tpar=(TParameter<double>*) fSyst->Get("KS_MinusT_Lo");
+    KS_MinusT_Lo = Tpar->GetVal();
+  }
+
+  double min_E_Hi  = TMath::Min(KS_PlusE_Hi,KS_MinusE_Hi);
+  double max_E_Hi  = TMath::Max(KS_PlusE_Hi,KS_MinusE_Hi);
+  double min_T_Hi  = TMath::Min(KS_PlusT_Hi,KS_MinusT_Hi);
+  double max_T_Hi  = TMath::Max(KS_PlusT_Hi,KS_MinusT_Hi);
+  double min_E_Lo  = TMath::Min(KS_PlusE_Lo,KS_MinusE_Lo);
+  double max_E_Lo  = TMath::Max(KS_PlusE_Lo,KS_MinusE_Lo);
+  double min_T_Lo  = TMath::Min(KS_PlusT_Lo,KS_MinusT_Lo);
+  double max_T_Lo  = TMath::Max(KS_PlusT_Lo,KS_MinusT_Lo);
+
+  if ( min_E_Hi > KS_NominalE_Hi ) min_E_Hi = KS_NominalE_Hi;
+  if ( max_E_Hi < KS_NominalE_Hi ) max_E_Hi = KS_NominalE_Hi;
+  if ( min_E_Lo > KS_NominalE_Lo ) min_E_Lo = KS_NominalE_Lo;
+  if ( max_E_Lo < KS_NominalE_Lo ) max_E_Lo = KS_NominalE_Lo;
+  if ( min_T_Hi > KS_NominalE_Hi ) min_T_Hi = KS_NominalE_Hi;
+  if ( max_T_Hi < KS_NominalE_Hi ) max_T_Hi = KS_NominalE_Hi;
+  if ( min_T_Lo > KS_NominalE_Lo ) min_T_Lo = KS_NominalE_Lo;
+  if ( max_T_Lo < KS_NominalE_Lo ) max_T_Lo = KS_NominalE_Lo;
+
+
+  double min_Hi = TMath::Min(min_E_Hi,min_T_Hi);
+  double max_Hi = TMath::Max(max_E_Hi,max_T_Hi);
+  double min_Lo = TMath::Min(min_E_Lo,min_T_Lo);
+  double max_Lo = TMath::Max(max_E_Lo,max_T_Lo);
+  
+  cout.precision(1);
+  cout << scientific;
+  
+  cout << "p-value range, E, hi:  	"
+       << min_E_Hi << "  -  " << KS_NominalE_Hi << "  -  " << max_E_Hi
+       << endl;
+  cout << "p-value range, T, hi:  	"
+       << min_T_Hi << "  -  " << KS_NominalE_Hi << "  -  " << max_T_Hi
+       << endl;
+
+
+  if ( ! (TString(fAuAu->GetName()).Contains("R0.2")) ){
+    cout.precision(2);
+    cout << fixed;
+  }
+  cout << "p-value range, E, lo:  	"
+       << min_E_Lo << "  -  " << KS_NominalE_Lo << "  -  " << max_E_Lo
+       << endl;
+  cout << "p-value range, T, lo:  	"
+       << min_T_Lo << "  -  " << KS_NominalE_Lo << "  -  " << max_T_Lo
+       << endl;
+
+  cout.precision(1);
+  cout << scientific;
+
+  cout << endl;
+  cout << "p-value range, total, hi:  	"
+       << min_Hi << "  -  " << KS_NominalE_Hi << "  -  " << max_Hi
+       << endl;
+  if ( ! (TString(fAuAu->GetName()).Contains("R0.2")) ){
+    cout.precision(2);
+    cout << fixed;
+  }
+  cout << "p-value range, total, lo:  	"
+       << min_Lo << "  -  " << KS_NominalE_Lo << "  -  " << max_Lo
+       << endl;
+  cout << endl;
+
+  
+
+  
+  // Done. Save
+  // ==========
   out->Write();
   cout << "Wrote to " << out->GetName() << endl;
 

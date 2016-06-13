@@ -137,8 +137,9 @@ int main ( int argc, const char** argv ) {
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
   
-  TH2D* OrigAJ_hi = new TH2D( "OrigAJ_hi","Original A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
-  TH2D* RandomAJ_lo = new TH2D( "RandomAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* OrigAJ_hi = new TH2D( "OrigAJ_hi","Original A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* RandomAJ_lo = new TH2D( "RandomAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsRandomAJ_lo = new TH2D( "NoFabsRandomAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
 
   TH1D* DebugRhoDiff = new TH1D("DebugRhoDiff", "Difference in median pT when excluding two highest jets", 100, -10, 10 );
   
@@ -336,7 +337,8 @@ int main ( int argc, const char** argv ) {
       float pt1 = j1.pt() + RC1.pt() - TMath::Pi()*R*R * JAlo.GetBackgroundEstimator()->rho() ;
       float pt2 = j2.pt() + RC2.pt() - TMath::Pi()*R*R * JAlo.GetBackgroundEstimator()->rho() ;
 
-      RandomAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );            
+      RandomAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
+      NoFabsRandomAJ_lo->Fill( (pt1 - pt2) / (pt1 + pt2), refmult );
     }
             
 

@@ -1,8 +1,9 @@
-/** @file ppInAuAuAj.cxx
+/** @file PicoAj.cxx
     @author Kolja Kauder
-    @version Revision 0.2
-    @brief Aj analysis on pp jets embedded into AuAu.
-    @date Mar 04, 2015
+    @version Revision 0.1
+    @brief p+p Embedding using Eta Cone-type method
+    @details p+p Embedding using Eta Cone-type method.
+    @date May 04, 2016
 */
 
 #include "AjAnalysis.hh"
@@ -33,6 +34,9 @@
 using namespace std;
 using namespace fastjet;
 
+bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap );
+
+
 /** 
     - Set up vector of pp jets
     - Set up Au+Au input tree
@@ -46,16 +50,18 @@ using namespace fastjet;
     the tree gets read sequentially, and exactly twice.
 */
 int main ( int argc, const char** argv ) {
-  
-  // const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
-  const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+
+  // if true, rotate the pp event to align the two leading jets in phi and eta
+  bool ShiftPhiEta=true;  
+
+  const char *defaults[4] = {"AlternateEmbedding","AlternateEmbeddingTest.root","AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppAj.root","AjResults/Full_Fresh_NicksList_HC100_AuAu.root"};
   if ( argc==1 ) {
     argv=defaults;
-    argc=5;
+    argc=4;
   }
 
   // float RemoveSoftFromAway = 0.75;
-  float RemoveSoftFromAway = -1;
+  // float RemoveSoftFromAway = -1;
 
   // Throw arguments in a vector
   // ---------------------------
@@ -116,18 +122,7 @@ int main ( int argc, const char** argv ) {
   int RefMultCut=0;
 
   // How many times to use every pp jet
-  // THIS SHOULD MAYBE BE ONE IN THE FINAL VERSION
-  // ----------------------------------------------
-  Int_t nMix=6;
-  if ( OutFileName.Contains ("MixTest") ){
-    nMix=1;
-    RefMultCut=269;
-  }
-
-  if ( nMix !=1 ){
-    cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
-    cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
-  }
+  Int_t nMix=24;
   
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
@@ -161,8 +156,7 @@ int main ( int argc, const char** argv ) {
   ppJets->GetBranch("jm2")->SetAutoDelete(kFALSE);
   ppJets->SetBranchAddress("jm2", &pOrigJM2);
 
-  
-  
+    
   // Throw them into convenient vectors
   // ----------------------------------
   vector< vector<PseudoJet> > FullPpEvent;
@@ -173,6 +167,7 @@ int main ( int argc, const char** argv ) {
   vector<PseudoJet> vOrigJM1;
   vector<PseudoJet> vOrigJM2;
   vector<PseudoJet> CurrentPpEvent;
+  // for ( Long64_t ppEv = 0; ppEv< 1000 ; ++ ppEv ){
   for ( Long64_t ppEv = 0; ppEv< ppJets->GetEntries() ; ++ ppEv ){
     ppJets->GetEntry(ppEv);
     CurrentPpEvent.clear();
@@ -194,37 +189,36 @@ int main ( int argc, const char** argv ) {
 
   // Load and set up AuAu tree
   // --------------------
-  TString ChainName  = "JetTree";
-  TString TriggerName = arguments.at(2);
-  TChain* chain = new TChain( ChainName );
-  TString InPattern=arguments.at(3);
-  chain->Add( InPattern );
-  // for (int i=3; i<arguments.size() ; ++i ) {
-  //   chain->Add( arguments.at(i).data() );
-  // }
 
-  TStarJetPicoReader reader = SetupReader( chain, TriggerName, RefMultCut );
-  reader.SetApplyFractionHadronicCorrection(kTRUE);
-  reader.SetFractionHadronicCorrection(0.9999);
-  reader.SetRejectTowerElectrons( kFALSE );
-  //   reader.SetApplyFractionHadronicCorrection(kFALSE);
-
-  // Explicitly choose bad tower list here
-  TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
-  if ( InPattern.Contains("NPE") ){
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
-  } else {
-    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_AuAu_Nick.txt");
-    towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-    // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-  }
-  // Add the following to y11 as well, once we're embedding!
-  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/Combined_y7_PP_Nick.txt");
-
+  TString InPattern=arguments.at(2);
+  TChain* AuAuTree = new TChain ( "TriggeredTree" );
+  AuAuTree->Add( InPattern );
+  AuAuTree->SetName("AuAuTree");
   
-  TStarJetPicoDefinitions::SetDebugLevel(0);
+  TClonesArray* AuAuFullEvent = new TClonesArray("TStarJetVector");
+  AuAuTree->GetBranch("FullEvent")->SetAutoDelete(kFALSE);
+  AuAuTree->SetBranchAddress("FullEvent", &AuAuFullEvent);
 
+  TClonesArray* AuAuTriggerJet = new TClonesArray("TLorentzVector");
+  AuAuTree->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
+  AuAuTree->SetBranchAddress("TriggerJet", &AuAuTriggerJet);
+
+  TClonesArray* AuAuAwayJet = new TClonesArray("TLorentzVector");
+  AuAuTree->GetBranch("AwayJet")->SetAutoDelete(kFALSE);
+  AuAuTree->SetBranchAddress("AwayJet", &AuAuAwayJet);
+
+  double refmult;
+  AuAuTree->SetBranchAddress("refmult", &refmult );
+  int eventid;
+  AuAuTree->SetBranchAddress("eventid", &eventid );
+  int runid;
+  AuAuTree->SetBranchAddress("runid", &runid );
+
+  float origrho;
+  AuAuTree->SetBranchAddress("rho", &origrho );
+
+  // Open outfile and create histos
+  // ------------------------------
   TFile* fout = new TFile( OutFileName, "RECREATE");
   
   TH1::SetDefaultSumw2(true);
@@ -267,10 +261,11 @@ int main ( int argc, const char** argv ) {
   // DEBUG
   TH1D* MBTracks = new TH1D("MBTracks","MB tracks, 0-20%; p_{T}", 200, 0, 50);
   TH1D* MBTowers = new TH1D("MBTowers","MB towers, 0-20%; E_{T}", 200, 0, 50);
-  TH1D* RemovedSoft = new TH1D( "RemovedSoft", "", 100, 0, 10 );
+  // TH1D* RemovedSoft = new TH1D( "RemovedSoft", "", 100, 0, 10 );
 
   TH2D* hLeadPtrecoVPtorigInTop20 = new TH2D( "hLeadPtrecoVPtorigInTop20",";p_{T}^{orig};p_{T}^{reco}", 120, 0, 60, 120, 0, 60 );
-
+  TH2D* rhodiff = new TH2D( "rhodiff","#rho - #rho_{orig};#Delta#rho;Refmult;", 120, -30, 30, 800, -0.5, 799.5 );
+  
   // For Elke...
   // -----------
   TH2D* hNConstChHiLead = new TH2D( "hNConstChHiLead","p_{T}^{C} > 2 GeV/c, Leading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
@@ -302,9 +297,9 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("j2",&j2);
   ResultTree->Branch("jm1",&jm1);
   ResultTree->Branch("jm2",&jm2);
-  int eventid;
-  int runid;
-  double refmult; // Really an int, but may change if using refmultcorr
+  // int eventid;
+  // int runid;
+  // double refmult; // Really an int, but may change if using refmultcorr
   ResultTree->Branch("eventid",&eventid, "eventid/i");
   ResultTree->Branch("runid",&runid, "runid/i");
   ResultTree->Branch("refmult",&refmult, "refmult/d");
@@ -342,19 +337,17 @@ int main ( int argc, const char** argv ) {
   fastjet::GhostedAreaSpec TmpArea; // for access to static random seed
   vector<int> SeedStatus;
 
-  // Long64_t nEvents=99; // -1 for all
-  Long64_t nEvents=-1;
-  reader.Init(nEvents);
-
   // First round - initialize AuAu data
   // ----------------------------------
-  cout << "First round - find acceptable AuAu events" << endl;
-  // NOTE: This could be a problem if we ever have more than INTMAX events :-/
-  // Could solve using http://en.cppreference.com/w/cpp/numeric/random
-  vector <Int_t> AcceptedEvents; 
-  while ( reader.NextEvent() ) {
-    reader.PrintStatus(10);      
-    AcceptedEvents.push_back( reader.GetNOfCurrentEvent() );
+  vector <Int_t> AcceptedEvents;
+  vector<PseudoJet> vAuAuJ1;
+  vector<PseudoJet> vAuAuJ2;
+  for ( Long64_t AuAuEv = 0; AuAuEv< AuAuTree->GetEntries() ; ++ AuAuEv ){
+    AuAuTree->GetEntry( AuAuEv );
+    //    cout << eventid << "  " << runid << "  " << refmult << endl;
+    vAuAuJ1.push_back( MakePseudoJet( (TLorentzVector*) AuAuTriggerJet->At(0) ) );
+    vAuAuJ2.push_back( MakePseudoJet( (TLorentzVector*) AuAuAwayJet->At(0) ) );
+    AcceptedEvents.push_back( AuAuEv );
   }
   
   // Now every pp jet gets assigned nMix many events to be embedded in
@@ -365,11 +358,41 @@ int main ( int argc, const char** argv ) {
   int emergencystop=nMix*100;
   vector< set<Int_t> > MixingPool;
   for ( int i =0; i< FullPpEvent.size() ; ++i ){
+    PseudoJet& ppJ1 = vTriggerJet.at (i);
+    PseudoJet& ppJ2 = vAwayJet.at (i);
+
     set<Int_t> EventNos;
     int tries=0;
+    bool singlejet=(ppJ2.pt() < 1e-4);
     while ( EventNos.size() < nMix ){
       if ( tries++ > emergencystop ) { cerr << "Stuck in endless loop - aborting." << endl; return -1;}
+      cout << EventNos.size() << endl;
       random = gRandom->Integer (AcceptedEvents.size() );
+
+      // does it fit?
+      PseudoJet& AuAuJ1 = vAuAuJ1.at(random);
+      PseudoJet& AuAuJ2 = vAuAuJ2.at(random);
+      
+      if ( ShiftPhiEta ){
+	// // Now need to fit neatly in rapidity but can separate near and away
+	// if ( fabs ( ppJ1.eta() - AuAuJ1.eta() ) < 2.0*R ) continue;
+	// if ( !singlejet && fabs ( ppJ2.eta() - AuAuJ2.eta() ) < 2.0*R ) continue;
+
+	// Do nothing. Should always be able to make it fit	
+      } else {
+	if ( ppJ1.delta_R  ( AuAuJ1 ) < 2.0*R ) continue;
+	if ( ppJ1.delta_R  ( AuAuJ2 ) < 2.0*R ) continue;      
+	
+	if ( !singlejet ){
+	  if ( ! (
+		  ( ppJ1.delta_R ( AuAuJ1 ) > 2.0*R && ppJ2.delta_R ( AuAuJ2 ) > 2.0*R ) || 
+		  ( ppJ1.delta_R ( AuAuJ2 ) > 2.0*R && ppJ2.delta_R ( AuAuJ1 ) > 2.0*R )
+		  )
+	       ){
+	    continue;
+	  }
+	}
+      }  // Shift phi,eta?
       EventNos.insert(AcceptedEvents.at(random) );	 
     }
     MixingPool.push_back( EventNos );
@@ -397,10 +420,6 @@ int main ( int argc, const char** argv ) {
 		  AjParameters::dPhiCut
 		  );  
 
-  // Reset the reader
-  // ----------------
-  reader.ResetEventCounters();
-  reader.Init(nEvents);
   
   Long64_t nJetsUsed=0;
 
@@ -426,21 +445,14 @@ int main ( int argc, const char** argv ) {
 
   
   PseudoJet pj;
-  while ( reader.NextEvent() ) {
-    reader.PrintStatus(10);      
+  for ( Long64_t AuAuEv = 0; AuAuEv< AuAuTree->GetEntries() ; ++ AuAuEv ){
+    if ( AuAuEv%100 == 0 ) cout << "AuAu Event # " << AuAuEv << endl;
+
     
     // Load event
     // ----------
-    container = reader.GetOutputContainer();
+    AuAuTree->GetEntry( AuAuEv );
 
-    // event info
-    // ----------
-    TStarJetPicoEventHeader* header = reader.GetEvent()->GetHeader();
-    //refmult=header->GetGReferenceMultiplicity();
-    refmult=header->GetProperReferenceMultiplicity();
-
-    eventid = header->GetEventId();
-    runid   = header->GetRunId();
 
     // NEW 05/07/15: For repeatability across different picoDSTs, set random seed
     // Static member, so we can set it here
@@ -459,8 +471,9 @@ int main ( int argc, const char** argv ) {
     // Make AuAu vector
     // ----------------
     AuAuparticles.clear();
-    for (int ip = 0; ip<container->GetEntries() ; ++ip ){
-      sv = container->Get(ip);
+
+    for (int ip = 0; ip<AuAuFullEvent->GetEntries() ; ++ip ){
+      sv = (TStarJetVector*) AuAuFullEvent->At(ip);
       pj = MakePseudoJet( sv );
       pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge(), "auau" ) );
       AuAuparticles.push_back ( pj );
@@ -473,12 +486,17 @@ int main ( int argc, const char** argv ) {
       }
     }
 
+    // Reject the original AuAu jets
+    vector<PseudoJet> ToReject;
+    ToReject.push_back( vAuAuJ1.at(AuAuEv) );
+    ToReject.push_back( vAuAuJ2.at(AuAuEv) );
+    
     // Find jets that want this event
     // ------------------------------
     vector <int> JetIndices;
     for ( int i =0; i< MixingPool.size() ; ++i ){
       set<Int_t>& EventNos = MixingPool.at(i);
-      if ( EventNos.find( reader.GetNOfCurrentEvent() ) != EventNos.end() ) {
+      if ( EventNos.find( AuAuEv ) != EventNos.end() ) {
 	JetIndices.push_back( i );
       }
     }
@@ -488,37 +506,50 @@ int main ( int argc, const char** argv ) {
     for ( vector<int>::iterator jit=JetIndices.begin(); jit!=JetIndices.end(); ++ jit ){
       // Add pp jets
       // -----------
-      // particles = AuAuparticles;
-      // for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
-      // 	particles.push_back( FullPpEvent.at(*jit).at(i) );
-      // }
+      particles = AuAuparticles;
+
+      PseudoJet& AuAuJ1 = vAuAuJ1.at(AuAuEv);
+      PseudoJet& TriggerJet = vTriggerJet.at(*jit);
+      float phishift = AuAuJ1.delta_phi_to( TriggerJet );
+      PseudoJet tmpj1 = TriggerJet;
+      if ( !ShiftEta ( j1, MinDist, MaxJetRap ) );
+      float etashift = AuAuJ1.eta() - TriggerJet.eta ;
+      for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
+	PseudoJet pj = FullPpEvent.at(*jit).at(i);
+	// void 	reset_momentum_PtYPhiM (double pt, double y, double phi, double m=0.0)
+	// reset the 4-momentum according to the specified pt, rapidity, azimuth and mass (phi should satisfy -2pi<phi<4pi) 
+	if ( ShiftPhiEta ){
+	  pj.reset_momentum_PtYPhiM( pj.pt(),pj.rap(), pj.phi()-phishift, pj.m() );
+	}
+	particles.push_back( pj );
+      }
 
       // Two steps for cross check - sort by pT first and remove some soft stuff
-      vector<PseudoJet> tmp;
-      for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
-       	tmp.push_back( FullPpEvent.at(*jit).at(i) );
-      }
-      tmp = sorted_by_pt( tmp );
+      // vector<PseudoJet> tmp;
+      // for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
+      //  	tmp.push_back( FullPpEvent.at(*jit).at(i) );
+      // }
+      // tmp = sorted_by_pt( tmp );
 	    
-      particles = AuAuparticles;
-      float removed=0.0;
-      for ( int i = tmp.size()-1; i>=0; --i ){
-      	// Remove some soft particles from the near side as a cross check
-      	if ( RemoveSoftFromAway > 0 && removed < RemoveSoftFromAway ){
-      	  // Only if we have something reasonable there
-	  TLorentzVector away =  MakeTLorentzVector( vAwayJet.at(*jit) );
-      	  if ( away.Pt() > 10 ){
-	    if ( away.DeltaR ( MakeTLorentzVector( tmp.at(i)) )<0.4 ){
-	      if ( tmp.at(i).pt() < 2.0 ){
-		// cout << "removing particle with pt = " << tmp.at(i).pt() << endl;
-		removed += tmp.at(i).pt();
-		continue;
-	      }  // is soft 
-	    } // is in Away Cone
-	  } // Away Jet is high enough
-      	} // removal goal not reached
-	particles.push_back( tmp.at(i) );
-      } 	
+      // particles = AuAuparticles;
+      // float removed=0.0;
+      // for ( int i = tmp.size()-1; i>=0; --i ){
+      // 	// Remove some soft particles from the near side as a cross check
+      // 	if ( RemoveSoftFromAway > 0 && removed < RemoveSoftFromAway ){
+      // 	  // Only if we have something reasonable there
+      // 	  TLorentzVector away =  MakeTLorentzVector( vAwayJet.at(*jit) );
+      // 	  if ( away.Pt() > 10 ){
+      // 	    if ( away.DeltaR ( MakeTLorentzVector( tmp.at(i)) )<0.4 ){
+      // 	      if ( tmp.at(i).pt() < 2.0 ){
+      // 		// cout << "removing particle with pt = " << tmp.at(i).pt() << endl;
+      // 		removed += tmp.at(i).pt();
+      // 		continue;
+      // 	      }  // is soft 
+      // 	    } // is in Away Cone
+      // 	  } // Away Jet is high enough
+      // 	} // removal goal not reached
+      // 	particles.push_back( tmp.at(i) );
+      // } 	
       
       // Run analysis
       // ------------
@@ -535,7 +566,10 @@ int main ( int argc, const char** argv ) {
 			      OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
 			      
 			      hdPtLead, hdPtSubLead,
-			      SpecialhdPtLead, SpecialhdPtSubLead
+			      SpecialhdPtLead, SpecialhdPtSubLead,
+			      &ToReject,
+			      -1
+			      // origrho
 			      );
       
       switch ( ret ){
@@ -545,7 +579,7 @@ int main ( int argc, const char** argv ) {
 	// FALLTHROUGH
       case 1 : nHardDijets++;
 	// FALLTHROUGH
-	if ( RemoveSoftFromAway > 0 )      RemovedSoft->Fill( removed );
+	// if ( RemoveSoftFromAway > 0 )      RemovedSoft->Fill( removed );
       case 0 : /* Nothing found */
 	break;
       default :
@@ -674,9 +708,11 @@ int main ( int argc, const char** argv ) {
 	
 	// DEBUG
 	rho=rhoerr=0;
-	fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
+	// fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
 	rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
 	rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
+
+	rhodiff->Fill( rho - origrho, refmult );
 	
 	// For Elke
 	PseudoJet& pj1 = DiJetsHi.at(0);
@@ -758,6 +794,9 @@ int main ( int argc, const char** argv ) {
 	AwayJet =  MakeTLorentzVector( vAwayJet.at(*jit) );
 	ResultTree->Fill();
 
+	// DEBUG: Check that we shifted correctly
+	cout << pj1.delta_phi_to ( vAuAuJ1.at(AuAuEv) ) << endl;
+
 	// Recover AuAu parts
 	vector<PseudoJet> HiCons = DiJetsHi.at(0).constituents();
 	for (int i=0; i<HiCons.size(); ++i ){
@@ -819,7 +858,7 @@ int main ( int argc, const char** argv ) {
   MBTowers->Write();
   
   
-  cout << "Embedded " << nJetsUsed << " jets above 10 GeV in " << reader.GetNOfEvents() << " events and found " << endl
+  cout << "Embedded " << nJetsUsed << " jets above 10 GeV in " << AuAuTree->GetEntries() << " events and found " << endl
        << nHardDijets << " dijets with constituents above 2 GeV," << endl
        << nCorrespondingLowDijets << " corresponding dijets with constituents above 0.2 GeV," << endl
        << " of which " <<  nMatchedDijets << " could be matched." << endl;
@@ -874,5 +913,41 @@ int main ( int argc, const char** argv ) {
   }
 
   return 0;
+  
+}
+// ==========================================================
+bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap ){
+  // we want to generate a random number that is outside
+  // j.eta +/- MinDist but inside MaxJetRap
+  // Without bias
+
+  // first see if there's empty space
+  float LeftEdge  = j.eta() - MinDist;
+  float RightEdge = j.eta() + MinDist;
+  if ( LeftEdge < -MaxJetRap && RightEdge > MaxJetRap ) return false;
+  // We could have done this below but I want to not worry about rounding errors
+
+  // now let's see how much room we have
+  if ( LeftEdge  < -MaxJetRap )   LeftEdge  = -MaxJetRap;
+  if ( RightEdge >  MaxJetRap )   RightEdge =  MaxJetRap;
+  float available = 2* MaxJetRap - ( RightEdge - LeftEdge );
+  // cout << " --------------------------------------> " << available << endl;
+
+  // get a random number in that interval and shift
+  Double_t shift=gRandom->Uniform(0,available);  
+
+  // NOTE: Ignoring the difference between eta and y here
+  if ( shift< LeftEdge + MaxJetRap ){
+    // stay on the left
+    // j.reset_PtYPhiM ( j.pt(), -MaxJetRap+shift, j.phi(), j.m() );
+    j.reset_PtYPhiM ( j.pt(), -MaxJetRap+shift, j.phi(), 0 );
+    return true;
+  }
+
+  // Else subtract the left and slap the remainder on the right
+  shift-= (LeftEdge + MaxJetRap);
+  j.reset_PtYPhiM ( j.pt(), RightEdge + shift, j.phi(), 0 );
+  
+  return true; 
   
 }

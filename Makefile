@@ -81,6 +81,7 @@ $(BDIR)/%  : $(ODIR)/%.o
 ############################# Main Targets ####################################
 ###############################################################################
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
+	 $(BDIR)/AlternateEmbedding  \
 	 $(BDIR)/PythiaAj  \
 	 $(BDIR)/RandomCone  \
 	 $(BDIR)/TreeWithMc \
@@ -136,6 +137,8 @@ $(BDIR)/TestCountPythia	: $(ODIR)/TestCountPythia.o 	$(ODIR)/AjAnalysis.o	 	lib/
 $(BDIR)/TreeWithMc      : $(ODIR)/TreeWithMc.o		lib/libMyJetlib.so
 $(BDIR)/JustMc		: $(ODIR)/JustMc.o
 $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+
+$(BDIR)/AlternateEmbedding 	: $(ODIR)/AlternateEmbedding.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 
 # helper

@@ -60,10 +60,10 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
+  // const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","HTMBtest.root","All","Data/HaddedAuAu11picoMB/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0", "" };
-  // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -235,9 +235,13 @@ int main ( int argc, const char** argv ) {
   TH2::SetDefaultSumw2(true);
   TH3::SetDefaultSumw2(true);
   
-  TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
-  TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
-  TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;|A_{J}|;Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;|A_{J}|;Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;|A_{J}|;Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+
+  TH2D* UnmatchedNoFabsAJ_hi = new TH2D( "UnmatchedNoFabsAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsAJ_hi = new TH2D( "NoFabsAJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsAJ_lo = new TH2D( "NoFabsAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
 
   TH2D* UnmatchedhPtHi = new TH2D( "UnmatchedhPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
   TH2D* hPtHi = new TH2D( "hPtHi","p_{T}^{C} > 2 GeV/c;p_{T}^{lead} [GeV/c];p_{T}^{sub} [GeV/c]", 100, 10 , 60, 100, 0, 50 );
@@ -266,7 +270,8 @@ int main ( int argc, const char** argv ) {
   TH2D* OtherSubLeadPtLoss_lo = new TH2D( "OtherSubLeadPtLoss_lo","SubLeading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
 
   // eta shift destroys "true" soft jet components
-  TH2D* EtaShiftAJ_lo = new TH2D( "EtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* EtaShiftAJ_lo = new TH2D( "EtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsEtaShiftAJ_lo = new TH2D( "NoFabsEtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
 	
   // DEBUG histos
   // ------------
@@ -282,7 +287,6 @@ int main ( int argc, const char** argv ) {
   TH1D* hj2area    = new TH1D( "hj2area","j2 area", 320, 0.0, 0.8 );
   TH1D* hrestarea    = new TH1D( "hrestarea","restarea", 160, 0.0, 0.8 );
 
-
   // For Elke...
   // -----------
   TH2D* hNConstChHiLead = new TH2D( "hNConstChHiLead","p_{T}^{C} > 2 GeV/c, Leading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
@@ -294,6 +298,13 @@ int main ( int argc, const char** argv ) {
   TH2D* hNConstChLoSubLead = new TH2D( "hNConstChLoSubLead","p_{T}^{C} > 0.2 GeV/c, SubLeading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
   TH2D* hNConstNeHiSubLead = new TH2D( "hNConstNeHiSubLead","p_{T}^{C} > 2 GeV/c, SubLeading;Neutral Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
   TH2D* hNConstNeLoSubLead = new TH2D( "hNConstNeLoSubLead","p_{T}^{C} > 0.2 GeV/c, SubLeading;Neutral Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
+
+  TH2D* hPtMissed1 = new TH2D( "hPtMissed1","Missed After Matching, Leading;p_{T}^{C};Refmult", 100, 0, 20, 800, -0.5, 799.5 );
+  TH2D* hPtMissed2 = new TH2D( "hPtMissed2","Missed After Matching, SubLeading;p_{T}^{C};Refmult", 100, 0, 20, 800, -0.5, 799.5 );
+  TH2D* hDRMissed1 = new TH2D( "hDRMissed1","Missed After Matching, Leading;#Delta R to orig Jet;Refmult", 80, 0, 0.8, 800, -0.5, 799.5 );
+  TH2D* hDRMissed2 = new TH2D( "hDRMissed2","Missed After Matching, SubLeading;#Delta R to orig Jet;Refmult", 80, 0, 0.8, 800, -0.5, 799.5 );
+  TH2D* hvDRMissed1 = new TH2D( "hvDRMissed1","Missed After Matching, Leading;#Delta R to new Jet;Refmult", 80, 0, 0.8, 800, -0.5, 799.5 );
+  TH2D* hvDRMissed2 = new TH2D( "hvDRMissed2","Missed After Matching, SubLeading;#Delta R to new Jet;Refmult", 80, 0, 0.8, 800, -0.5, 799.5 );
 
 
   // For eta cone embedding: need a previous result
@@ -354,6 +365,13 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("j1area",&j1area, "j1area/f");
   ResultTree->Branch("j2area",&j2area, "j2area/f");
 
+  float MatchPerc1, MatchPerc2;
+  ResultTree->Branch("MatchPerc1",&MatchPerc1, "MatchPerc1/f");
+  ResultTree->Branch("MatchPerc2",&MatchPerc2, "MatchPerc2/f");
+  float MatchLoss1, MatchLoss2;
+  ResultTree->Branch("MatchLoss1",&MatchLoss1, "MatchLoss1/f");
+  ResultTree->Branch("MatchLoss2",&MatchLoss2, "MatchLoss2/f");
+
   // area and pT of all remaining jets (those used for rho)
   static const Int_t kmaxJ=500; // max # of jets
   int nRestJ=0;
@@ -367,10 +385,8 @@ int main ( int argc, const char** argv ) {
   // if this is pp and there's at least a 10 GeV jet.
   // -------------------------------------------------------------------
   // This is somewhat wasteful, we could instead read the original trees.
-  bool SaveFullEvents = TriggerName.Contains("ppHT");
-  // // DEBUG
-  // bool SaveFullEvents = true;
-
+  bool PrepEtaConeEmbedding=true;
+  bool SaveFullEvents = TriggerName.Contains("ppHT") || PrepEtaConeEmbedding;
   TTree* TriggeredTree=0;
 
 
@@ -378,12 +394,14 @@ int main ( int argc, const char** argv ) {
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
   TClonesArray AwayJet( "TLorentzVector",1 ); 
   static const Int_t kmaxT=5000; // max # of particles
-  TClonesArray FullEvent("TLorentzVector",kmaxT);
+  // TClonesArray FullEvent("TLorentzVector",kmaxT);
+  TClonesArray FullEvent("TStarJetVector",kmaxT);
 
   // // Split up
   // TClonesArray Tracks("TLorentzVector",kmaxT);
   // TClonesArray Towers("TLorentzVector",kmaxT);
 
+  float aj_lo, aj_hi;
   if (SaveFullEvents) {
     TriggeredTree = new TTree("TriggeredTree","Triggered Events");
     // NOTE: Ignore "Warning in <TTree::Bronch>: Using split mode on a class: TLorentzVector with a custom Streamer"
@@ -395,6 +413,17 @@ int main ( int argc, const char** argv ) {
     TriggeredTree->Branch("eventid",&eventid, "eventid/i");
     TriggeredTree->Branch("runid",&runid, "runid/i");
 
+    TriggeredTree->Branch("refmult",&refmult, "refmult/d");
+    TriggeredTree->Branch("rho",&rho, "rho/f");
+    TriggeredTree->Branch("rhoerr",&rhoerr, "rhoerr/f");
+
+    TriggeredTree->Branch("j1",&j1);
+    TriggeredTree->Branch("j2",&j2);
+    TriggeredTree->Branch("jm1",&jm1);
+    TriggeredTree->Branch("jm2",&jm2);
+
+    TriggeredTree->Branch("aj_hi",&aj_hi, "aj_hi/f");
+    TriggeredTree->Branch("aj_lo",&aj_lo, "aj_lo/f");
   } 
     
   // Initialize tracking efficiency
@@ -540,8 +569,16 @@ int main ( int argc, const char** argv ) {
       // Run analysis
       // ------------
       int ret;      
+      j1 = TLorentzVector();
+      j2 = TLorentzVector();
+      jm1 = TLorentzVector();
+      jm2 = TLorentzVector();
+      aj_lo=-999;
+      aj_hi=-999;
+      
       ret =AjA.AnalyzeAndFill( particles, 0,refmult, 
 			       UnmatchedAJ_hi, AJ_hi, AJ_lo,
+			       UnmatchedNoFabsAJ_hi, NoFabsAJ_hi, NoFabsAJ_lo,
 
 			       UnmatchedhPtHi,  hPtHi, hPtLo,
 			       UnmatchedhdPtHi, hdPtHi, hdPtLo,
@@ -586,51 +623,6 @@ int main ( int argc, const char** argv ) {
 
       }
       
-      // Save the full event for embedding if there's at least one 10 GeV jet
-      // ------------------------------------------------------------------
-      if (SaveFullEvents){
-	FullEvent.Clear();
-	TriggerJet.Clear();
-	AwayJet.Clear();
-	if ( AjA.Has10Gev )  { 
-	  int j=0;
-	  int k=0;
-	  for ( int i = 0; i<particles.size() ; ++i ){
-	    if ( particles.at(i).pt() >50 ) { 
-	      cerr << " =====> " <<particles.at(i).pt()
-		   << "  " << particles.at(i).phi()
-		   << "  " << particles.at(i).eta()
-		   << "  " << particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge() << endl;
-	      if ( ret>0 ) {
-		cerr << " AND ret == " << ret << endl;
-	      }
-	    } 
-	    TLorentzVector lv = MakeTLorentzVector( particles.at(i) );
-	    new (FullEvent[i])   TLorentzVector ( lv  );
-	    // //DEBUG -- quick and dirty differentiation betwen towers and tracks
-	    // if ( abs( particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge())>0 ){
-	    //   new (Towers[j++])   TLorentzVector ( lv  );
-	    // } else{
-	    //   new (Tracks[k++])   TLorentzVector ( lv  );
-	    // }	    
-	  } // for particles
-	  // Save trigger jet as well
-	  vector<PseudoJet> JAhiResult = AjA.GetJAhiResult();
-	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );	  
-	  vector<PseudoJet> DiJetsHi = SelectorDijets( AjParameters::dPhiCut ) ( JAhiResult );
-	  if ( DiJetsHi.size()>1 ){
-	    if ( DiJetsHi.at(0).pt() < DiJetsHi.at(1).pt() ) {
-	      cerr << "Huh??" << endl;
-	      return -1;
-	    }	    
-	    new (AwayJet[0]) TLorentzVector ( MakeTLorentzVector( DiJetsHi.at(1) )  );
-	  } else {
-	    new (AwayJet[0]) TLorentzVector ();
-	  }
-	  TriggeredTree->Fill();
-	} // has Trigger
-      } // SaveFullEvents
-
       // Save results
       vector<PseudoJet> DiJetsHi = AjA.GetDiJetsHi();
       vector<PseudoJet> DiJetsLo = AjA.GetDiJetsLo();
@@ -657,6 +649,9 @@ int main ( int argc, const char** argv ) {
 	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_jets_used() << " used for HI BG" << endl;
 	// // cout << AjA.GetJAhi()->GetBackgroundEstimator()->n_empty_jets() << " of them empty" << endl;
 
+	aj_hi=AjA.CalcAj( DiJetsHi );
+	aj_lo=AjA.CalcAj( DiJetsLo );
+
 	// For Elke
 	PseudoJet& pj1 = DiJetsHi.at(0);
 	PseudoJet& pj2 = DiJetsHi.at(1);
@@ -679,6 +674,68 @@ int main ( int argc, const char** argv ) {
 	hNConstNeLoLead->Fill( OnlyNeutral(pjm1.constituents()).size(), refmult);
 	hNConstNeLoSubLead->Fill( OnlyNeutral(pjm2.constituents()).size(), refmult);
 
+	// save matching percentage (number of shared constituents)
+	MatchPerc1=0;
+	MatchLoss1=0;
+	vector <PseudoJet> j1consts = NotGhost( pj1.constituents() );
+	vector <PseudoJet> jm1consts = NotGhost( pjm1.constituents() );
+	if ( j1consts.size()<1 ){
+	  cerr << "Empty jet?" << endl;
+	  return -1;
+	}
+	for ( vector<PseudoJet>::iterator c = j1consts.begin(); c != j1consts.end(); ++c ){
+	  bool found=false;
+	  for ( vector<PseudoJet>::iterator cm = jm1consts.begin(); cm != jm1consts.end(); ++cm ){
+	    if ( have_same_momentum ( *c, *cm ) ){
+	      // if ( pjm1.contains ( *c ) ){
+	      MatchLoss1+=1.0;
+	      found=true;
+	      break;
+	    } else {
+	      // if ( (*c - *cm).p()<0.05 ) 
+	      // 	cout << "However... " << (*c - *cm).p() << endl;
+	    } 
+	  }
+	  if ( !found ) {
+	    hPtMissed1->Fill( c->pt(), refmult );
+	    hDRMissed1->Fill( c->delta_R( j1 ), refmult );
+	    hvDRMissed1->Fill( c->delta_R( jm1 ), refmult );
+	  }
+	}
+	MatchPerc1 = MatchLoss1 / j1consts.size();
+	MatchLoss1 = j1consts.size() - MatchLoss1;
+
+	MatchPerc2=0;
+	MatchLoss2=0;
+	vector <PseudoJet> j2consts = NotGhost( pj2.constituents() );
+	vector <PseudoJet> jm2consts = NotGhost( pjm2.constituents() );
+	if ( j2consts.size()<1 ){
+	  cerr << "Empty jet?" << endl;
+	  return -1;
+	}
+	for ( vector<PseudoJet>::iterator c = j2consts.begin(); c != j2consts.end(); ++c ){
+	  bool found=false;
+	  for ( vector<PseudoJet>::iterator cm = jm2consts.begin(); cm != jm2consts.end(); ++cm ){
+	    if ( have_same_momentum ( *c, *cm ) ){
+	      // if ( pjm2.contains ( *c ) ){
+	      MatchLoss2+=1.0;
+	      found=true;
+	      break;
+	    } else {
+	      // if ( (*c - *cm).p()<0.05 ) 
+	      // 	cout << "However... " << (*c - *cm).p() << endl;
+	    } 
+	  }
+	  if (!found){
+	    cout << c->plain_distance( j2 ) << endl;
+	    hPtMissed2->Fill( c->pt(), refmult );
+	    hDRMissed2->Fill( c->delta_R( j2 ), refmult );
+	    hvDRMissed2->Fill( c->delta_R( jm2 ), refmult );
+	  }
+	}
+	MatchPerc2 = MatchLoss2 / j2consts.size();
+	MatchLoss2 = j2consts.size() - MatchLoss2;
+// 	cout << MatchPerc1 << "  " << MatchPerc2 << endl;
 
 	if ( refmult >= 269 ){
 	  hrho->Fill(rho) ;
@@ -724,6 +781,58 @@ int main ( int argc, const char** argv ) {
 	ResultTree->Fill();
       }
       
+      // Save the full event for embedding if there's at least one 10 GeV jet
+      // -------------------------------------------------------------------
+      // ALSO save the full event for Au+Au HT events that qualify for Eta Cone
+      if (SaveFullEvents){
+	FullEvent.Clear();
+	TriggerJet.Clear();
+	AwayJet.Clear();
+	
+	if (  ( InPattern.Contains("pp") && AjA.Has10Gev)  ||
+	      ( !(InPattern.Contains("pp")) && PrepEtaConeEmbedding && DiJetsLo.size()==2) ) { 
+	  int j=0;
+	  int k=0;
+	  for ( int i = 0; i<particles.size() ; ++i ){
+	    if ( particles.at(i).pt() >50 ) { 
+	      cerr << " =====> " <<particles.at(i).pt()
+		   << "  " << particles.at(i).phi()
+		   << "  " << particles.at(i).eta()
+		   << "  " << particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge() << endl;
+	      if ( ret>0 ) {
+		cerr << " AND ret == " << ret << endl;
+	      }
+	    } 
+	    TLorentzVector lv = MakeTLorentzVector( particles.at(i) );
+	    new (FullEvent[i])   TStarJetVector ( lv  );
+	    // Multiply by 1.1 to avoid rounding to integer problems
+	    ((TStarJetVector*)FullEvent[i])->SetCharge( int ( 1.1* particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge()/3.0) );
+	    // cout << ((TStarJetVector*)FullEvent[i])->GetCharge() << "  " << particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge() << endl;
+	    // //DEBUG -- quick and dirty differentiation betwen towers and tracks
+	    // if ( abs( particles.at(i).user_info<JetAnalysisUserInfo>().GetQuarkCharge())>0 ){
+	    //   new (Towers[j++])   TLorentzVector ( lv  );
+	    // } else{
+	    //   new (Tracks[k++])   TLorentzVector ( lv  );
+	    // }	    
+	  } // for particles
+	  // Save trigger jet as well
+	  vector<PseudoJet> JAhiResult = AjA.GetJAhiResult();
+	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );	  
+	  vector<PseudoJet> DiJetsHi = SelectorDijets( AjParameters::dPhiCut ) ( JAhiResult );
+	  if ( DiJetsHi.size()>1 ){
+	    if ( DiJetsHi.at(0).pt() < DiJetsHi.at(1).pt() ) {
+	      cerr << "Huh??" << endl;
+	      return -1;
+	    }	    
+	    new (AwayJet[0]) TLorentzVector ( MakeTLorentzVector( DiJetsHi.at(1) )  );
+	  } else {
+	    new (AwayJet[0]) TLorentzVector ();
+	  }
+	  TriggeredTree->Fill();
+	} // has Trigger
+      } // SaveFullEvents
+
+
       if ( RunEtaCone ) {      
 	// If possible, shift jets along eta and try again
 	// -----------------------------------------------
@@ -765,6 +874,7 @@ int main ( int argc, const char** argv ) {
 	  // pt1 = j1.pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
 	  // pt2 = j2.pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
 	  // EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
+	  // NoFabsEtaShiftAJ_lo->Fill( (pt1 - pt2) / (pt1 + pt2), refmult );
 	  // =================== END METHOD A ======================
 	  
 		
@@ -789,6 +899,7 @@ int main ( int argc, const char** argv ) {
 	    pt1 = pJ1->Pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
 	    pt2 = pJ2->Pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
 	    EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
+	    NoFabsEtaShiftAJ_lo->Fill( (pt1 - pt2) / (pt1 + pt2), refmult );
 	  }
 	  
 	  if ( mixed != nMix){

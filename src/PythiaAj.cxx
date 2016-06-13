@@ -369,7 +369,9 @@ int main ( int argc, const char** argv ) {
       int ret;      
       ret =AjA.AnalyzeAndFill( particles, 0, refmult, 
 			       dummy, dummy, dummy,
+			       dummy, dummy, dummy,
 			       // UnmatchedAJ_hi, AJ_hi, AJ_lo,
+			       // UnmatchedNoFabsAJ_hi, NoFabsAJ_hi, NoFabsAJ_lo,
 
 			       UnmatchedhPtHi,  hPtHi, hPtLo,
 			       UnmatchedhdPtHi, hdPtHi, hdPtLo,
