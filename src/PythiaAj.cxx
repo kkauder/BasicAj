@@ -162,6 +162,10 @@ int main ( int argc, const char** argv ) {
   TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
   TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
 
+  TH2D* UnmatchedNoFabsAJ_hi = new TH2D( "UnmatchedNoFabsAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsAJ_hi = new TH2D( "NoFabsAJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsAJ_lo = new TH2D( "NoFabsAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+
   // Filling these differently, so we need a dummy
   TH2D* dummy = (TH2D*) AJ_hi->Clone("dummy");
 
@@ -531,11 +535,14 @@ int main ( int argc, const char** argv ) {
 	}
 
 	// Fill here instead b/c of the weight
-	AJ_hi->Fill( AjA.CalcAj( DiJetsHi ), refmult, weight );
-	AJ_lo->Fill( AjA.CalcAj( DiJetsLo ), refmult, weight );
+	AJ_hi->Fill( fabs( AjA.CalcAj( DiJetsHi ) ), refmult, weight );
+	AJ_lo->Fill( fabs( AjA.CalcAj( DiJetsLo ) ), refmult, weight );
 
-	fAJ_hi=AjA.CalcAj( DiJetsHi );
-	fAJ_lo=AjA.CalcAj( DiJetsLo );
+	NoFabsAJ_hi->Fill( AjA.CalcAj( DiJetsHi ), refmult, weight );
+	NoFabsAJ_lo->Fill( AjA.CalcAj( DiJetsLo ), refmult, weight );
+
+	fAJ_hi=fabs( AjA.CalcAj( DiJetsHi ) );
+	fAJ_lo=fabs( AjA.CalcAj( DiJetsLo ) );
 
 	ResultTree->Fill();
       }

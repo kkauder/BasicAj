@@ -262,15 +262,29 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   refAJ_lo->Rebin( REBIN );
   refAJ_lo->Scale(1./refAJ_lo->Integral(0, refAJ_lo->GetNbinsX()+1)); // Include over/underflow
 
+  h2 = (TH2D*) reffile->Get("NoFabsAJ_lo");
+  newname= "NoFabsrefAJ_lo";
+  TH1D* NoFabsrefAJ_lo = h2->ProjectionX( newname, AuAuMultBinL, AuAuMultBinR );
+  NoFabsrefAJ_lo->Rebin( REBIN );
+  NoFabsrefAJ_lo->Scale(1./NoFabsrefAJ_lo->Integral(0, NoFabsrefAJ_lo->GetNbinsX()+1)); // Include over/underflow
+
   float xl=0.0;
   float xr=0.72-0.01;
   float yl=0.0;
   float yr=0.23;
 
+
   refAJ_hi->SetAxisRange(  yl, yr, "y");
   refAJ_hi->SetAxisRange(  xl, xr, "x");
   refAJ_lo->SetAxisRange(  yl, yr, "y");
   refAJ_lo->SetAxisRange(  xl, xr, "x");
+
+  float NoFabsxl=-0.3;
+  float NoFabsxr=0.8;
+  float NoFabsyl=0.0;
+  float NoFabsyr=0.25;
+  NoFabsrefAJ_lo->SetAxisRange(  NoFabsyl, NoFabsyr, "y");
+  NoFabsrefAJ_lo->SetAxisRange(  NoFabsxl, NoFabsxr, "x");
 
   // For Unbinned KS value
   // ---------------------
@@ -319,12 +333,16 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     Pvalue.Write( "Chi2_" + PvalBase+"E_Hi");
     Pvalue.SetVal( EhistosLo.at(i)->Chi2Test(refAJ_lo, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"E_Lo");
+    Pvalue.SetVal( NoFabsEhistosLo.at(i)->Chi2Test(NoFabsrefAJ_lo, ""));
+    Pvalue.Write( "NoFabsChi2_" + PvalBase+"E_Lo");    
+
     //  ---- Tower Scale
     Pvalue.SetVal( ThistosHi.at(i)->Chi2Test(refAJ_hi, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"T_Hi");
     Pvalue.SetVal( ThistosLo.at(i)->Chi2Test(refAJ_lo, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"T_Lo");
-
+    Pvalue.SetVal( NoFabsThistosLo.at(i)->Chi2Test(NoFabsrefAJ_lo, ""));
+    Pvalue.Write( "NoFabsChi2_" + PvalBase+"T_Lo");    
 
     // Kolmogorov BINNED
     // -----------------
@@ -333,11 +351,16 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     Pvalue.Write( "BinKS_" + PvalBase+"E_Hi");
     Pvalue.SetVal( EhistosLo.at(i)->KolmogorovTest(refAJ_lo, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"E_Lo");
+    Pvalue.SetVal( NoFabsEhistosLo.at(i)->KolmogorovTest(NoFabsrefAJ_lo, ""));
+    Pvalue.Write( "NoFabsBinKS_" + PvalBase+"E_Lo");
+    
     //  ---- Tower Scale
     Pvalue.SetVal( ThistosHi.at(i)->KolmogorovTest(refAJ_hi, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"T_Hi");
     Pvalue.SetVal( ThistosLo.at(i)->KolmogorovTest(refAJ_lo, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"T_Lo");
+    Pvalue.SetVal( NoFabsThistosLo.at(i)->KolmogorovTest(NoFabsrefAJ_lo, ""));
+    Pvalue.Write( "NoFabsBinKS_" + PvalBase+"T_Lo");
 
     // Kolmogorov UNBINNED
     // -------------------
@@ -401,7 +424,7 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   Pvalue.Write( "Chi2_Lo_min");
   Pvalue.SetVal( AJ_lo_max->Chi2Test(refAJ_lo, ""));
   Pvalue.Write( "Chi2_Lo_max");
-  
+
   // KS using dumb qudrature min max
   // -------------------------------
   Pvalue.SetVal( AJ_hi_min->KolmogorovTest(refAJ_hi, ""));
@@ -433,11 +456,22 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     }
     AJ_lo_sysstat->SetBinError( i, TMath::Sqrt( pow( AJ_lo_sysstat->GetBinError(i), 2) + pow( AJ_lo_minmax->GetBinError(i), 2) ));
   }
+  
+  TH1D* NoFabsAJ_lo_sysstat = (TH1D*) NoFabsEhistosLo.at(0)->Clone( "NoFabsAJ_lo_sysstat");
+  for (int i=1; i<NoFabsAJ_lo_sysstat->GetNbinsX(); ++i ){
+    if ( fabs (NoFabsAJ_lo_sysstat->GetBinContent(i)-NoFabsAJ_lo_minmax->GetBinContent(i))> 1e-4 ){
+      cerr << "syst. and stat. histo are incompatible" << endl;
+      return -1;
+    }
+    NoFabsAJ_lo_sysstat->SetBinError( i, TMath::Sqrt( pow( NoFabsAJ_lo_sysstat->GetBinError(i), 2) + pow( NoFabsAJ_lo_minmax->GetBinError(i), 2) ));
+  }
 
   AJ_hi_sysstat->SetAxisRange(  yl, yr, "y");
   AJ_hi_sysstat->SetAxisRange(  xl, xr, "x");
   AJ_lo_sysstat->SetAxisRange(  yl, yr, "y");
   AJ_lo_sysstat->SetAxisRange(  xl, xr, "x");
+  NoFabsAJ_lo_sysstat->SetAxisRange(  NoFabsyl, NoFabsyr, "y");
+  NoFabsAJ_lo_sysstat->SetAxisRange(  NoFabsxl, NoFabsxr, "x");
 
   // Chi^2 using dumb errors
   // -----------------------
@@ -445,6 +479,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   Pvalue.Write( "Chi2_QErrors_Hi");
   Pvalue.SetVal( AJ_lo_sysstat->Chi2Test(refAJ_lo, ""));
   Pvalue.Write( "Chi2_QErrors_Lo");
+  Pvalue.SetVal( NoFabsAJ_lo_sysstat->Chi2Test(NoFabsrefAJ_lo, ""));
+  Pvalue.Write( "NoFabsChi2_QErrors_Lo");
 
   // KS using dumb errors
   // --------------------
@@ -452,6 +488,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   Pvalue.Write( "BinKS_QErrors_Hi");
   Pvalue.SetVal( AJ_lo_sysstat->KolmogorovTest(refAJ_lo, ""));
   Pvalue.Write( "BinKS_QErrors_Lo");
+  Pvalue.SetVal( NoFabsAJ_lo_sysstat->KolmogorovTest(NoFabsrefAJ_lo, ""));
+  Pvalue.Write( "NoFabsBinKS_QErrors_Lo");
 
   // Done. Save
   // ----------
@@ -576,8 +614,10 @@ TH1D* minmax ( vector<TFile*> files, TString which, int AuAuMultL, int AuAuMultR
 
   if ( gPad ){      
     histos.at(0)->SetTitle( "");
-    histos.at(0)->SetAxisRange(  0.0, 0.23, "y");
-    histos.at(0)->SetAxisRange(  0.0, 0.72, "x");
+    // histos.at(0)->SetAxisRange(  0.0, 0.23, "y");
+    // histos.at(0)->SetAxisRange(  0.0, 0.72, "x");
+    histos.at(0)->SetAxisRange(  0.0, 0.25, "y");
+    histos.at(0)->SetAxisRange(  -0.3, 0.8, "x");
     histos.at(0)->Draw();
 
     histos.at(1)->SetLineWidth(2);

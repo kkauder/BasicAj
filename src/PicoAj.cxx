@@ -221,7 +221,7 @@ int main ( int argc, const char** argv ) {
   // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
   // trackCuts->SetPhiCut(0, -1.2);
 
-  TStarJetPicoDefinitions::SetDebugLevel(0);
+  TStarJetPicoDefinitions::SetDebugLevel(2);
     
   // Files and histograms
   // --------------------

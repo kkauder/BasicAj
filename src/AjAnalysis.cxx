@@ -330,6 +330,9 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   evCuts->SetVertexZDiffCut( AjParameters::VzDiffCut );
   evCuts->SetMaxEventPtCut ( AjParameters::MaxEventPtCut );
   evCuts->SetMaxEventEtCut ( AjParameters::MaxEventEtCut );
+  // // TESTING ONLY:
+  // evCuts->SetMaxEventPtCut ( 20000000. );
+  // evCuts->SetMaxEventEtCut ( 20000000. );
   // evCuts->SetReferenceCentralityCut (  6, 8 ); // 6,8 for 0-20%
   // evCuts->SetMinEventEtCut ( -1.0 );
   // evCuts->SetMinEventEtCut ( 6.0 );

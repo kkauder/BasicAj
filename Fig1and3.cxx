@@ -694,9 +694,9 @@ int Fig1and3( TString R = "" ) {
   // ==========
   out->Write();
   cout << "Wrote to " << out->GetName() << endl;
-
-  return 0;
   
+  return 0;
+
   // cout << ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "D") << endl;
   // cout << ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo,"D") << endl;
   
