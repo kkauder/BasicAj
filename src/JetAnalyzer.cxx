@@ -71,6 +71,9 @@ fastjet::Subtractor* JetAnalyzer::GetBackgroundSubtractor(){
     return 0;
   }
 
+  // Avoid multiple construction!
+  if ( bkgd_subtractor ) return bkgd_subtractor;
+
   // // Area
   // // ----
   // // Construct from jet definition and radius
