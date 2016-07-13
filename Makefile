@@ -1,4 +1,4 @@
-os = $(shell uname -s)
+		os = $(shell uname -s)
 
 #INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(STARPICOPATH)
 INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(PYTHIA8DIR)/include/Pythia8/ -I$(PYTHIA8DIR)/include/Pythia8Plugins/ -I$(STARPICOPATH)
@@ -6,16 +6,22 @@ INCFLAGS      += -I./src
 
 
 ifeq ($(os),Linux)
-CXXFLAGS      = 
+CXXFLAGS      = -O2 -fPIC -pipe -Wall -std=c++11
+CXXFLAGS     += -Wno-unused-variable
+CXXFLAGS     += -Wno-unused-but-set-variable
+CXXFLAGS     += -Wno-sign-compare
 else
 CXXFLAGS      = -O -fPIC -pipe -Wall -Wno-deprecated-writable-strings -Wno-unused-variable -Wno-unused-private-field -Wno-gnu-static-float-init
+CXXFLAGS     += -Wno-return-type-c-linkage
 ## for debugging:
 # CXXFLAGS      = -g -O0 -fPIC -pipe -Wall -Wno-deprecated-writable-strings -Wno-unused-variable -Wno-unused-private-field -Wno-gnu-static-float-init
 endif
 
 ifeq ($(os),Linux)
-LDFLAGS       = -g
-LDFLAGSS      = -g --shared 
+#LDFLAGS       = -g
+#LDFLAGSS      = -g --shared 
+LDFLAGS       = 
+LDFLAGSS      = --shared 
 else
 LDFLAGS       = -O -Xlinker -bind_at_load -flat_namespace
 LDFLAGSS      = -flat_namespace -undefined suppress
@@ -31,7 +37,6 @@ endif
 # # uncomment for debug info in the library
 # CXXFLAGS     += -g
 
-CXXFLAGS		+= -Wno-return-type-c-linkage
 
 ROOTLIBS      = $(shell root-config --libs)
 
@@ -73,7 +78,7 @@ $(ODIR)/%.o : $(SDIR)/%.cxx $(INCS)
 $(BDIR)/%  : $(ODIR)/%.o 
 	@echo 
 	@echo LINKING
-	$(CXX) $(LDFLAGS) $(LIBPATH) $(LIBS) $^ -o $@
+	$(CXX) $(LDFLAGS) $(LIBPATH) $^ $(LIBS) -o $@
 
 ###############################################################################
 
@@ -87,8 +92,9 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/JustMc \
 	 $(BDIR)/MakeSmallerTrees \
 	 lib/libMyJetlib.so \
-	 $(BDIR)/GroomPicoAj $(BDIR)/GroomppInAuAuAj \
-	 doxy
+	 $(BDIR)/GroomPicoAj \
+	 $(BDIR)/GroomppInAuAuAj
+#	 doxy
 
 #	 $(BDIR)/ScanTree \
 #	 $(BDIR)/AlternateEmbedding  \

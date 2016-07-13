@@ -32,6 +32,8 @@
 #include <exception>
 #include <cstdlib>      // std::rand, std::srand
 #include <algorithm>    // std::random_shuffle
+#include <cstdint>
+#include <limits.h>      // INT_MAX
 
 using namespace std;
 using namespace fastjet;
