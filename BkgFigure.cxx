@@ -54,7 +54,7 @@ void BkgFigure() {
 
   
   TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
-  TFile *fRC           = TFile::Open("AjResults/Fresh_NicksList_HC100_RandomCone.root"); // RandomCone_Fresh_NicksList_HC100_AuAu.root
+  TFile *fRC           = TFile::Open("AjResults/Fresh_NicksList_HC100_RandomCone.root");
   TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
   TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
 
@@ -226,9 +226,6 @@ void BkgFigure() {
   //}
 
   
-  gPad->SaveAs("plots/BkgFigure.png");
-  gPad->SaveAs("plots/BkgFigure.pdf");
-
   // Line to guide the eye
   TLine line;
   line.SetLineStyle( 2 );
@@ -236,6 +233,8 @@ void BkgFigure() {
   gPad->Update();
   line.DrawLine( 0, gPad->GetFrame()->GetY1(), 0, gPad->GetFrame()->GetY2() );
 
+  gPad->SaveAs("plots/BkgFigure.png");
+  gPad->SaveAs("plots/BkgFigure.pdf");
 
 
   // leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
