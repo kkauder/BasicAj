@@ -514,9 +514,6 @@ int Fig1and3( TString R = "" ) {
     sprintf ( plabel, "p-value = %0.1g", KS_NominalE_Lo);
     latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
     latex.SetTextSize(0.04);
-    // if ( nofabs ) latex.DrawLatex( .7,.45, plabel);
-    // if ( nofabs ) latex.DrawLatex( .65,.45, plabel);
-    // if ( nofabs ) latex.DrawLatex( .14,.55, plabel);
     if ( nofabs ) latex.DrawLatex( .33,.18, plabel);
     else latex.DrawLatex( .6,.45, plabel);
   }
