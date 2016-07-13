@@ -60,10 +60,10 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  // const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
+  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","HTMBtest.root","All","Data/HaddedAuAu11picoMB/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0", "" };
-  const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -221,7 +221,7 @@ int main ( int argc, const char** argv ) {
   // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
   // trackCuts->SetPhiCut(0, -1.2);
 
-  TStarJetPicoDefinitions::SetDebugLevel(2);
+  TStarJetPicoDefinitions::SetDebugLevel(0);
     
   // Files and histograms
   // --------------------
@@ -263,6 +263,9 @@ int main ( int argc, const char** argv ) {
   TH1D* hJetHadronHiSubLead = new TH1D( "hJetHadronHiSubLead","Jet-h for sub-leading hard constituent jets; #Delta#phi", 200, -2, 2 );
   TH1D* hJetHadronLoLead = new TH1D( "hJetHadronLoLead","Jet-h for leading soft constituent jets; #Delta#phi", 200, -2, 2 );
   TH1D* hJetHadronLoSubLead = new TH1D( "hJetHadronLoSubLead","Jet-h for sub-leading soft constituent jets; #Delta#phi", 200, -2, 2 );
+
+  TH2D* hPtJetHadronLoLead = new TH2D( "hPtJetHadronLoLead","Jet-h for leading soft constituent jets; #Delta#phi;p_{T}", 200, -2, 2, 100, 0, 10 );
+  TH2D* hPtJetHadronLoSubLead = new TH2D( "hPtJetHadronLoSubLead","Jet-h for sub-leading soft constituent jets; #Delta#phi;p_{T}", 200, -2, 2, 100, 0, 10 );
 
   // Follow to different R
   TH2D* OtherAJ_lo = new TH2D( "OtherAJ_lo","A_{J} for soft constituent jets with other R ;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
@@ -769,6 +772,9 @@ int main ( int argc, const char** argv ) {
 	    if ( p.perp() > 0.2 ){
 	      hJetHadronLoLead->Fill( jm1.DeltaPhi( lv ) );
 	      hJetHadronLoSubLead->Fill( jm2.DeltaPhi( lv ) );
+
+	      hPtJetHadronLoLead->Fill( jm1.DeltaPhi( lv ), p.perp() );
+	      hPtJetHadronLoSubLead->Fill( jm2.DeltaPhi( lv ), p.perp() );
 	    }
 
 	    if ( p.perp() > 2 ){
