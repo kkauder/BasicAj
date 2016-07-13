@@ -36,7 +36,7 @@ CXXFLAGS		+= -Wno-return-type-c-linkage
 ROOTLIBS      = $(shell root-config --libs)
 
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
-LIBS          = -lfastjet -lfastjettools -lpythia8  -lTStarJetPico
+LIBS          = -lfastjet -lfastjettools -lpythia8  -lTStarJetPico -lRecursiveTools
 ## fun with pythia :-/
 ## make is a horrible horrible tool. Do not touch these lines, any whitespace will make it break
 dummy := "$(shell find $(PYTHIA8DIR)/lib/ -name liblhapdfdummy\*)"
@@ -87,6 +87,7 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/JustMc \
 	 $(BDIR)/MakeSmallerTrees \
 	 lib/libMyJetlib.so \
+	 $(BDIR)/GroomPicoAj $(BDIR)/GroomppInAuAuAj \
 	 doxy
 
 #	 $(BDIR)/ScanTree \
@@ -137,6 +138,9 @@ $(BDIR)/TestCountPythia	: $(ODIR)/TestCountPythia.o 	$(ODIR)/AjAnalysis.o	 	lib/
 $(BDIR)/TreeWithMc      : $(ODIR)/TreeWithMc.o		lib/libMyJetlib.so
 $(BDIR)/JustMc		: $(ODIR)/JustMc.o
 $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+
+$(BDIR)/GroomPicoAj	: $(ODIR)/GroomPicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/GroomppInAuAuAj	: $(ODIR)/GroomppInAuAuAj.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 #$(BDIR)/AlternateEmbedding 	: $(ODIR)/AlternateEmbedding.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
