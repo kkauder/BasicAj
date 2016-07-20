@@ -66,7 +66,8 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"GroomPicoAj","Groomtest.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  // const char *defaults[] = {"GroomPicoAj","Groomtest.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/GeantPythia/25_35/picoDst*root", "0", "0", "" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -224,7 +225,7 @@ int main ( int argc, const char** argv ) {
   // TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
   // trackCuts->SetPhiCut(0, -1.2);
 
-  // TStarJetPicoDefinitions::SetDebugLevel(2);
+  TStarJetPicoDefinitions::SetDebugLevel(0);
     
   // Files and histograms
   // --------------------
@@ -323,7 +324,8 @@ int main ( int argc, const char** argv ) {
   FileStat_t filestat;
   // TString OrigResultName="AjResults/Presel_AuAuAj.root";
 
-  TString OrigResultName=arguments.at(5);
+  TString OrigResultName= "";
+  if ( arguments.size() >=6 ) OrigResultName=arguments.at(5);
   bool RunEtaCone= isAuAu && gSystem->GetPathInfo(OrigResultName, filestat)==0 && fabs(R-0.4)<1e-4 && true;
 
   if ( RunEtaCone ){
@@ -884,6 +886,7 @@ int main ( int argc, const char** argv ) {
 	AwayJet.Clear();
 	
 	if (  ( InPattern.Contains("pp") && AjA.Has10Gev)  ||
+	      ( InPattern.Contains("Geant") && AjA.Has10Gev)  ||
 	      ( !(InPattern.Contains("pp")) && PrepEtaConeEmbedding && DiJetsLo.size()==2) ) { 
 	  int j=0;
 	  int k=0;
