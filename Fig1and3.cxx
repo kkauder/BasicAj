@@ -33,8 +33,8 @@ int Fig1and3( TString R = "" ) {
   // legend
   float legs = 0.04;
 
-    // 100% hadronic correction
-    // ========================
+  // 100% hadronic correction
+  // ========================
   if ( R=="" ){
     TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
     TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
