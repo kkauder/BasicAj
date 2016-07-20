@@ -6,6 +6,10 @@
     @date Apr 28, 2015
 */
 
+/* Submit using
+   qsub -V -q erhiq -o logs/RandomCone.out -e -o logs/RandomCone.err -- `pwd`/qwrap.sh `pwd` ./bin/RandomCone
+*/
+
 #include "AjAnalysis.hh"
 #include "AjParameters.hh"
 
