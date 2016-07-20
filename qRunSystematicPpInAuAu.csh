@@ -10,7 +10,7 @@ make $Exec || exit
 set base = Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root
 
 set RMod = ""
-#set RMod = R0.2_
+# set RMod = R0.2_
 # set RMod = "Pt1_"
 
 # Loop over combinations and data
