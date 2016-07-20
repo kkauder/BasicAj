@@ -35,9 +35,13 @@ int main ( int argc, const char** argv ) {
 
   // TString inname="CleanAuAu/Clean809.root";
   // TString outname="SmallAuAu/TEST.root";
-  TString inname="/data3/HaddedAuAu11picoNPE18/AuAu11PicoNPE18_Cent8_0.root";
-  TString outname="/Users/kkauder/SmallNPE18/TEST.root";
+  // TString inname="/data3/HaddedAuAu11picoNPE18/AuAu11PicoNPE18_Cent8_0.root";
+  // TString outname="/Users/kkauder/SmallNPE18/TEST.root";
+  TString inname="Data/y14_AuAu_HT2/101-105/AuAu14Pico_2DE36CC733533CA27F75404C86640322_99.root";
+  TString outname="Y14TEST.root";
   TString TriggerName="HT";
+
+  Long64_t CustomnEvents=-1;
 
   switch (argc){
   case 1 :
@@ -46,10 +50,20 @@ int main ( int argc, const char** argv ) {
   case 2 :
     inname = argv[1];
     outname=gSystem->BaseName(inname);
-    outname.Prepend("/Users/kkauder/SmallNPE18/Small_");
+    // outname.Prepend("/Users/kkauder/SmallNPE18/Small_");
+    break;
+  case 3 :
+    inname  = argv[1];
+    outname = argv[2];
+    break;
+  case 4 :
+    inname  = argv[1];
+    outname = argv[2];
+    CustomnEvents = atoi(argv[3]);
     break;
   default :
     cerr << "Incompatible arguments." << endl;
+    cerr << "argc = " << argc << endl;  
     return -1;
     break;
   }
@@ -100,8 +114,9 @@ int main ( int argc, const char** argv ) {
   // Towers
   TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
   towerCuts->SetMaxEtCut( 1000 ); // SHOULD be smaller, say 45
-  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
+  // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/badTowerList_y11.txt");
   // towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/OrigY7MBBadTowers.txt");
+  towerCuts->AddBadTowers( TString( getenv("STARPICOPATH" )) + "/QuickAndDirty_y14.txt");
 
   cout << "Using these tower cuts:" << endl;
   cout << "  GetMaxEtCut = " << towerCuts->GetMaxEtCut() << endl;
@@ -112,7 +127,7 @@ int main ( int argc, const char** argv ) {
   TStarJetPicoDefinitions::SetDebugLevel(0);
 
   Long64_t nEvents=-1; // -1 for all
-  // nEvents=10000;
+  if ( CustomnEvents > 0 ) nEvents=CustomnEvents;
   reader.Init(nEvents);
 
   Int_t nAccepted=0;
@@ -122,8 +137,9 @@ int main ( int argc, const char** argv ) {
   // -------------
   TFile * fout = new TFile (outname, "RECREATE");
   // TTree::SetMaxTreeSize(40000000LL ); // 10000000LL == 10 MB
-  TTree::SetMaxTreeSize(200000000LL ); // 10000000LL == 10 MB
-  // TTree::SetMaxTreeSize( 1000000LL);
+  // TTree::SetMaxTreeSize(200000000LL ); // 200 MB
+  TTree::SetMaxTreeSize(500000000LL ); // 0.5GB
+  // TTree::SetMaxTreeSize( 1000000LL); // 1MB
   TTree* outTree=new TTree("JetTree","Preselected Pico Tree for Jet");
   TStarJetPicoEvent *mEvPico;
   outTree->Branch("PicoJetTree",&mEvPico);
