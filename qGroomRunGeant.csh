@@ -16,6 +16,7 @@ set RMod = ""
 set ResultDir   = AjResults
 set OutBase     = ${RMod}Groom_GeantAj
 set TriggerName = All
+# set ChainName   = JetTreeMc
 
 set noglob
 
@@ -40,7 +41,7 @@ foreach directory ( `find Data/GeantPythia/ -maxdepth 1 -name "[1-9]*"` )
     echo "Logging errors to " $ErrFile
     echo
 
-    qsub -V -q erhiq -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+    qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N GeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
     
 end
 unset noglob

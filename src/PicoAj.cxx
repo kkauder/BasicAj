@@ -195,7 +195,7 @@ int main ( int argc, const char** argv ) {
   // reader.SetApplyFractionHadronicCorrection(kFALSE);
   
   // Run 11: Use centrality cut
-  if ( InPattern.Contains("NPE") ){
+  if ( InPattern.Contains("NPE18") ){
     TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();    
     evCuts->SetReferenceCentralityCut (  6, 8 ); // 6,8 for 0-20%
   }

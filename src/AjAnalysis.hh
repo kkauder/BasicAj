@@ -38,6 +38,11 @@
 #include <iostream>
 #include <cmath>
 
+/** 
+    A helper for geant data
+ */
+double LookupXsec( TString filename );
+
 /**
    The main class
  */

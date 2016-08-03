@@ -25,6 +25,7 @@ JetAnalyzer::JetAnalyzer( std::vector<fastjet::PseudoJet>& InOrigParticles, fast
 	 
   // this should not be necessary :-/
   bkgd_subtractor=0;
+  c_bkgd_subtractor=0;
   jet_def_bkgd = 0;
   bkgd_estimator = 0;
   bkgd_subtractor = 0;
@@ -49,6 +50,7 @@ JetAnalyzer::JetAnalyzer( std::vector<fastjet::PseudoJet>& InOrigParticles, fast
 
   // this should not be necessary :-/
   bkgd_subtractor=0;
+  c_bkgd_subtractor=0;
   area_def_bkgd=0;
   jet_def_bkgd = 0;
   bkgd_estimator = 0;
@@ -119,6 +121,55 @@ fastjet::Subtractor* JetAnalyzer::GetBackgroundSubtractor(){
   // std::cout << "    sigma   = " << bkgd_estimator->sigma() << std::endl;
   
   return bkgd_subtractor;
+}
+// ------------------------------------------------------------------------
+// ConstituentSubtractor functionality
+fastjet::contrib::ConstituentSubtractor* JetAnalyzer::GetConstituentBackgroundSubtractor(){
+  if ( !CanDoBackground ) {
+    // throw std::string("Should not be called unless we can actually do background subtraction.");
+    return 0;
+  }
+
+  // Avoid multiple construction!
+  if ( c_bkgd_subtractor ) return c_bkgd_subtractor;
+
+  // Background jet definition
+  // -------------------------
+  if ( !jet_def_bkgd ) jet_def_bkgd = new fastjet::JetDefinition (fastjet::kt_algorithm, jet_def().R());
+  
+  // Estimator and subtractor
+  // ------------------------
+  bkgd_estimator  = new fastjet::JetMedianBackgroundEstimator(selector_bkgd, *jet_def_bkgd, *area_def_bkgd);
+  scalarPtDensity=new fastjet::BackgroundJetScalarPtDensity();
+
+  bkgd_estimator->set_jet_density_class(scalarPtDensity); // this changes the computation of pt of patches from vector sum to scalar sum. The scalar sum seems more reasonable.
+  // bkgd_estimator.set_particles(full_event);
+
+  c_bkgd_subtractor = new fastjet::contrib::ConstituentSubtractor(bkgd_estimator);
+
+  // since FastJet 3.1.0, rho_m is supported natively in background
+  // estimation (both JetMedianBackgroundEstimator and
+  // GridMedianBackgroundEstimator).
+  //
+  // For backward-compatibility reasons its use is by default switched off
+  // (as is the enforcement of m>0 for the subtracted jets). The
+  // following 2 lines of code switch these on. They are strongly
+  // recommended and should become the default in future versions of
+  // FastJet.
+#if FASTJET_VERSION_NUMBER >= 30100 
+  // c_bkgd_subtractor->set_use_rho_m(true);
+  // c_bkgd_subtractor->set_safe_mass(true);
+
+  c_bkgd_subtractor->set_common_bge_for_rho_and_rhom(true); // for massless input particles it does not make any difference (rho_m is always zero)
+#endif
+
+  bkgd_estimator->set_particles( OrigParticles );
+  
+  // std::cout << OrigParticles.size() <<  std::endl;
+  // std::cout << "    rho     = " << bkgd_estimator->rho()   << std::endl;
+  // std::cout << "    sigma   = " << bkgd_estimator->sigma() << std::endl;
+  
+  return c_bkgd_subtractor;
 }
 // ------------------------------------------------------------------------
 // ----------------

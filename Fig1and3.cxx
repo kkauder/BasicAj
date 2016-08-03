@@ -16,7 +16,6 @@ int Fig1and3( TString R = "" ) {
   // This would give 40-100%:
   // int AuAuMultBinL = h2->GetYaxis()->FindBin( 0 ); 
   // int AuAuMultBinR = h2->GetYaxis()->FindBin( 113 ); 
-
   gStyle->SetOptStat(0);
   TCanvas* c = new TCanvas("c");
   gPad->SetGridx(0);  gPad->SetGridy(0);
@@ -121,8 +120,11 @@ int Fig1and3( TString R = "" ) {
   toa.Add(ppInAuAuAJ_hi);
   
   TH1D* h;
+  cout.precision(4);
   for (int i=0 ; i<toa.GetEntries() ; ++i ){
     h=(TH1D*) toa.At(i);
+    cout << h->GetName() << ": <AJ> = " << h->GetMean() << " +/- " << h->GetMeanError() << endl;
+
     h->SetLineWidth( 2 );
 
     h->SetTitle(";|A_{J}|;Fraction");
@@ -685,7 +687,13 @@ int Fig1and3( TString R = "" ) {
   cout << endl;
 
   
-
+  // For Lanny:
+  cout.precision(4);
+  cout << "<AJ> for pp @ AuAu, HIGH cut: " << ppInAuAuAJ_hi->GetMean() << " +/- " << ppInAuAuAJ_hi->GetMeanError() << endl;
+  cout << "<AJ> for      AuAu, HIGH cut: " <<     AuAuAJ_hi->GetMean() << " +/- " <<     AuAuAJ_hi->GetMeanError() << endl;
+  cout << "<AJ> for pp @ AuAu, LOW cut: " << ppInAuAuAJ_lo->GetMean() << " +/- " << ppInAuAuAJ_lo->GetMeanError() << endl;
+  cout << "<AJ> for      AuAu, LOW cut: " <<     AuAuAJ_lo->GetMean() << " +/- " <<     AuAuAJ_lo->GetMeanError() << endl;
+  
   
   // Done. Save
   // ==========

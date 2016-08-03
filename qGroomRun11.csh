@@ -1,12 +1,5 @@
 #!/usr/bin/env csh
 
-### Combine with
-# foreach n ( `seq 1 3` )
-# hadd -f AjResults/rndm$n/R0.2_HC30_Presel.root AjResults/rndm$n/R0.2_HC30_Small_Clean8*root
-# end
-#hadd -f AjResults/Presel_AuAuAj.root AjResults/Presel_AuAuAj_Small_Clean8*root
-#hadd -f AjResults/R0.2_HC30_Presel.root AjResults/R0.2_HC30_Small_Clean8*root
-
 set ExecPath = `pwd`
 set Exec = "./bin/GroomPicoAj"
 
@@ -19,15 +12,11 @@ set RMod = ""
 # set RMod = Pt1_
 
 # Input files
-set base = Data/SmallAuAu/Small_Clean8
-# TEST
-# set base = Data/CleanAuAuY7/Clean8
+# set base = Data/SmallNPE18/Small_AuAu11PicoNPE18_Cent[678]*.root
+# set NameBase=Groom_Run11NPE18
 
-# DON'T try this! It will kill the server :)
-#foreach randomoff ( `seq 0 9 ` )
-#end # foreach randomoff
-
-# you can reasonably run two sets at once
+set base = Data/HaddedAuAu11picoNPE25_150526/*.root
+set NameBase=Groom_Run11NPE25
 
 # choose random seed offset
 set randomoff = 0
@@ -50,8 +39,6 @@ if ( $randomoff > 0 ) then
     mkdir -pv logs/${rndname}
 endif
 
-set NameBase=Groom_Fresh_NicksList_HC100
-#set NameBase=Groom_ConstSub
 
 foreach input ( ${base}* )
     # arguments
@@ -59,8 +46,8 @@ foreach input ( ${base}* )
     set OutName    = AjResults/${rndname}/${RMod}${NameBase}_${OutBase}.root
 
     # Use this for EtaCone
-    # set OrigResultName = NONE 
-    set OrigResultName = AjResults/${rndname}/${RMod}${NameBase}_AuAu.root
+    set OrigResultName = NONE 
+    # set OrigResultName = AjResults/${rndname}/${RMod}${NameBase}_AuAu.root
 	
     set TriggerName = HT
     set Files      = ${input}
@@ -76,10 +63,8 @@ foreach input ( ${base}* )
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
     echo
-    
-    qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N PreselGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
-    # echo qsub -V -q erhiq -o $LogFile -e $ErrFile -- $Exec $Args 
 
+    qsub -V -q erhiq -o $LogFile -e $ErrFile -N Run11 -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args    
 end # foreach input
 
 

@@ -9,6 +9,9 @@
 #include "AjAnalysis.hh"
 #include <stdlib.h>     // for getenv
 
+using std::cout;
+using std::cerr;
+using std::endl;
 
 // Standard ctor
 AjAnalysis::AjAnalysis ( double R,
@@ -185,6 +188,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   // ----------------------------------------------
   pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
   JetAnalyzer& JAlo = *pJAlo;
+
+  // Standard:
   fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
   if ( ForceRho >=0 ) BackgroundSubtractor = new fastjet::Subtractor( ForceRho );
   JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
@@ -192,29 +197,46 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
     delete BackgroundSubtractor;
     BackgroundSubtractor=0;
   }
-    
+  if ( ForceRho >=0 ) {
+    delete BackgroundSubtractor;
+    BackgroundSubtractor=0;
+  }
+  JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
 
-  // Old logic: Run the same logic on JAloResult, then reject the event if DiJetsLo is not matched to DiJetsHi
-  // std::vector<fastjet::PseudoJet> DiJetsLo = SelectorDijets ( dPhiCut ) ( sjet ( JAloResult)  );
-  // if ( DiJetsLo.size() == 0 ) {
-  //   // std::cout << " NO dijet found" << std::endl;
-  //   return 1;
+  // // Let's try something new:
+  // fastjet::contrib::ConstituentSubtractor* BackgroundSubtractor =  pJAlo->GetConstituentBackgroundSubtractor();
+  // if ( ForceRho >=0 ) {
+  //   std::cerr << "Can't currently handle ForceRho" << std::endl;
+  //   throw(-1);
+  //   // BackgroundSubtractor = new fastjet::contrib::ConstituentSubtractor( ForceRho );
   // }
-  // assert ( DiJetsLo.size() == 2 && "SelectorDijets returned impossible number of Dijets." );
+
+  //   //  Introducing a finite standardDeltaR may improve the performance of the correction and the speed of the algorithm when running over the full event.
+  // BackgroundSubtractor->set_max_standardDeltaR(1); // free parameter for the maximal allowed distance sqrt((y_i-y_k)^2+(phi_i-phi_k)^2) between particle i and ghost k
+  // BackgroundSubtractor->set_alpha(0);  // free parameter for the distance measure (the exponent of particle pt). The larger the parameter alpha, the more are favoured the lower pt particles in the subtraction process
+  // // BackgroundSubtractor->set_ghost_area(0.01); // free parameter for the density of ghosts. The smaller, the better - but also the computation is slower.
+
+
+  // // for ( int i=0; i<JAlo.inclusive_jets().size() ; ++i ){
+  // //   fastjet::PseudoJet hhh = JAlo.inclusive_jets().at(i);
+  // //   std::cout << hhh.has_associated_cluster_sequence();
+  // //   hhh = (*BackgroundSubtractor)(hhh);
+  // //   std::cout << "  --  > "
+  // // 	      << hhh.has_associated_cluster_sequence()
+  // // 	      << std::endl;
+  // // }
+  // // cout << "Trying subtraction." << endl;
+  // std::vector<fastjet::PseudoJet> corrected_particles=BackgroundSubtractor->subtract_event( pLo, 1.0 );
+  // // Remember the old estimator
+  // fastjet::JetMedianBackgroundEstimator* bge = pJAlo->GetBackgroundEstimator();
+
+  // // Now create a new ClusterSequence
+  // pJAlo = new JetAnalyzer( corrected_particles, jet_def ); // Now WITHOUT background subtraction
+  // JetAnalyzer& JAlo = *pJAlo;
+  // JAlo.SetBackgroundEstimator( bge );  // Remember the old estimator
+  // JAloResult = fastjet::sorted_by_pt( JAlo.inclusive_jets() );
+      
   
-  // // cout << " SOFT constituents: Found a dijet!" << endl;
-  // // cout << " Jet 1: pt = " << DiJetsLo.at(0).pt() << "  phi = " << DiJetsLo.at(0).phi() << endl;
-  // // cout << " Jet 2: pt = " << DiJetsLo.at(1).pt() << "  phi = " << DiJetsLo.at(1).phi() << endl;
-
-  // // Matched?
-  // // --------
-  // // Top two hard constituent jets should be geometrically close to the top two soft ones.
-  // // Overloading the == operator for vector<PseudoJet> does NOT work.
-  // // This function is implemented in JetAnalyzer
-  // if ( !IsMatched( DiJetsHi, DiJetsLo, R ) ){
-  //   // cout << " Couldn't find a match" << endl;
-  //   return 2;
-  // }
 
   // New logic, Apr 09, 2015: Just find the closest, highest pT jet near leading and sub-leading
   // NO further requirements.
@@ -307,7 +329,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
 
     
   }
-
+  //cout << "Done here." << endl;
   return 3;
   
 }
@@ -363,5 +385,110 @@ TStarJetPicoReader SetupReader ( TChain* chain, TString TriggerString, const dou
   reader.SetProcessV0s(false);
 
   return reader;
+}
+//----------------------------------------------------------------------
+double LookupXsec( TString filename ){
+  // Some data for geant
+  // -------------------
+  //cross-sections for simulated GEANT data sample
+  // From Renee.
+  // also available via
+  // http://people.physics.tamu.edu/sakuma/star/jets/c101121_event_selection/s0150_mclist_001/web.php
+  // Double_t MinbXsec=28.12;
+  // Double_t Xsec[12];
+  // Xsec[0]=28.11;//2
+  // Xsec[1]=1.287;//3
+  // Xsec[2]=0.3117;//4
+  // Xsec[3]=0.1360;//5
+  // Xsec[4]=0.02305;//7
+  // Xsec[5]=0.005494;//9
+  // Xsec[6]=0.002228;//11
+  // Xsec[7]=0.0003895;//15
+  // Xsec[8]=0.00001016;//25
+  // Xsec[9]=0.0000005010;//35
+  // Xsec[10]=0.0000000283;//45
+  // Xsec[11]=0.000000001443;//55
+  
+  static const Double_t MinbXsec=28.12;
+  // static const Double_t Xsec[12] = {
+  //   28.11,		// 2-3
+  //   1.287,		// 3-4
+  //   0.3117,		// 4-5
+  //   0.1360,		// 5-7
+  //   0.02305,		// 7-9
+  //   0.005494,		// 9-11
+  //   0.002228,		// 11-15
+  //   0.0003895,		// 15-25
+  //   0.00001016,		// 25-35
+  //   0.0000005010,	// 35-45
+  //   0.0000000283,	// 45-55
+  //   0.000000001443	// 55-65
+  // };
+
+  static const Double_t Xsec[12] = {
+    1.0,        // Placeholder for 2-3
+    1.30E+09,	// 3-4
+    3.15E+08,	// 4-5
+    1.37E+08,	// 5-7
+    2.30E+07,	// 7-9
+    5.53E+06,	// 9-11
+    2.22E+06,	// 11-15
+    3.90E+05,	// 15-25
+    1.02E+04,	// 25-35
+    5.01E+02,	// 35-45
+    2.86E+01,	// 45-55
+    1.46E+00	// 55-65
+  };
+
+  static const Double_t Nmc[12] = {
+    1,			// 2-3
+    672518,		// 3-4
+    672447,		// 4-5
+    393498,		// 5-7
+    417659,		// 7-9
+    412652,		// 9-11
+    419030,		// 11-15
+    396744,		// 15-25
+    399919,		// 25-35
+    119995,		// 35-45
+    117999,		// 45-55
+    119999		// 55-65
+  };
+
+  Double_t w[12];
+  for ( int i=0; i<12 ; ++i ){
+    w[i] = Xsec[i] / Nmc[i];
+    // w[i] = Nmc[i] / Xsec[i] ;
+  }
+
+  // static const Double_t w[12] = {
+  //   1,			// Placeholder
+  //   1.90E+03,
+  //   6.30E+02,
+  //   3.43E+02,
+  //   5.49E+01,
+  //   1.33E+01,
+  //   5.30E+00,
+  //   9.81E-01,
+  //   2.56E-02,
+  //   4.56E-03,
+  //   2.43E-04,
+  //   1.20E-05
+  // };
+    
+  if ( filename.Contains("3_4") ) return w[1];
+  if ( filename.Contains("4_5") ) return w[2];
+  if ( filename.Contains("5_7") ) return w[3];
+  if ( filename.Contains("7_9") ) return w[4];
+  if ( filename.Contains("9_11") ) return w[5];
+  if ( filename.Contains("11_15") ) return w[6];
+  if ( filename.Contains("15_25") ) return w[7];
+  if ( filename.Contains("25_35") ) return w[8];
+  if ( filename.Contains("35_45") ) return w[9];
+  if ( filename.Contains("45_55") ) return w[10];
+  if ( filename.Contains("55_65") ) return w[11];
+
+  return 1;
+
 }
 

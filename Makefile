@@ -42,6 +42,7 @@ ROOTLIBS      = $(shell root-config --libs)
 
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
 LIBS          = -lfastjet -lfastjettools -lpythia8  -lTStarJetPico -lRecursiveTools
+LIBS         += -lConstituentSubtractor
 ## fun with pythia :-/
 ## make is a horrible horrible tool. Do not touch these lines, any whitespace will make it break
 dummy := "$(shell find $(PYTHIA8DIR)/lib/ -name liblhapdfdummy\*)"
@@ -93,7 +94,8 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/MakeSmallerTrees \
 	 lib/libMyJetlib.so \
 	 $(BDIR)/GroomPicoAj \
-	 $(BDIR)/GroomppInAuAuAj
+	 $(BDIR)/GroomppInAuAuAj \
+	 $(BDIR)/Y14analyzer
 #	 doxy
 
 #	 $(BDIR)/ScanTree \
@@ -152,8 +154,11 @@ $(BDIR)/GroomppInAuAuAj	: $(ODIR)/GroomppInAuAuAj.o	$(ODIR)/AjAnalysis.o	 	lib/l
 
 
 # helper
+$(BDIR)/Y14analyzer	: $(ODIR)/Y14analyzer.o		$(ODIR)/AjAnalysis.o		lib/libMyJetlib.so
+
 $(BDIR)/MakeSmallerTrees	: $(ODIR)/MakeSmallerTrees.o	 	lib/libMyJetlib.so
-$(BDIR)/ScanTree		: $(ODIR)/ScanTree.o	 		lib/libMyJetlib.so	
+$(BDIR)/ScanTree		: $(ODIR)/ScanTree.o	 		lib/libMyJetlib.so
+
 
 ###############################################################################
 ##################################### MISC ####################################

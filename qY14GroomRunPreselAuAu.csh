@@ -19,9 +19,7 @@ set RMod = ""
 # set RMod = Pt1_
 
 # Input files
-set base = Data/SmallAuAu/Small_Clean8
-# TEST
-# set base = Data/CleanAuAuY7/Clean8
+set base = Data/SmallY14HT/AuAu14Pico_
 
 # DON'T try this! It will kill the server :)
 #foreach randomoff ( `seq 0 9 ` )
@@ -50,19 +48,22 @@ if ( $randomoff > 0 ) then
     mkdir -pv logs/${rndname}
 endif
 
-set NameBase=Groom_Fresh_NicksList_HC100
-#set NameBase=Groom_ConstSub
+# set TriggerName = HT
+# set NameBase=Groom_Y14_QNDlist_HC100
 
+set TriggerName = HT2
+set NameBase=HT2_Groom_Y14_QNDlist_HC100
+
+set submitted=0
 foreach input ( ${base}* )
     # arguments
     set OutBase=`basename $input | sed 's/.root//g'`
     set OutName    = AjResults/${rndname}/${RMod}${NameBase}_${OutBase}.root
 
     # Use this for EtaCone
-    # set OrigResultName = NONE 
-    set OrigResultName = AjResults/${rndname}/${RMod}${NameBase}_AuAu.root
+    set OrigResultName = NONE 
+    # set OrigResultName = AjResults/${rndname}/${RMod}${NameBase}_AuAu.root
 	
-    set TriggerName = HT
     set Files      = ${input}
     
     # Logfiles.
@@ -76,10 +77,15 @@ foreach input ( ${base}* )
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
     echo
-    
-    qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N PreselGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+
+    # 1.5gb might be enough
+    qsub -V -p 10 -q  erhiq -l mem=2gb -W umask=0022 -N Y14Groom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+    @ submitted = $submitted + 1
     # echo qsub -V -q erhiq -o $LogFile -e $ErrFile -- $Exec $Args 
 
 end # foreach input
+
+echo Submitted $submitted jobs to the grid.
+
 
 

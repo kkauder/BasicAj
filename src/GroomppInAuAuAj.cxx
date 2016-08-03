@@ -277,6 +277,10 @@ int main ( int argc, const char** argv ) {
 
   TH2D* hLeadPtrecoVPtorigInTop20 = new TH2D( "hLeadPtrecoVPtorigInTop20",";p_{T}^{orig};p_{T}^{reco}", 120, 0, 60, 120, 0, 60 );
 
+  // Quick debug
+  TH1D* hLeadPtInTop20 = new TH1D( "hLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
+  TH1D* hSubLeadPtInTop20 = new TH1D( "hSubLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
+  
   // For Elke...
   // -----------
   TH2D* hNConstChHiLead = new TH2D( "hNConstChHiLead","p_{T}^{C} > 2 GeV/c, Leading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
@@ -684,7 +688,16 @@ int main ( int argc, const char** argv ) {
 
       }
       
+      // quick debug
+      if ( AjA.Has10Gev && refmult >= 269 ){
+	vector<PseudoJet> JAhiResult = AjA.GetJAhiResult();	
+	hLeadPtInTop20->Fill( JAhiResult.at(0).pt() );
+	if (JAhiResult.size()>1){
+	  hSubLeadPtInTop20->Fill( JAhiResult.at(1).pt() );
+	}
+      }
 
+	
       // Check for matching? yes, for now.
       // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
       // cout << " going in"  << endl;      

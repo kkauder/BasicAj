@@ -43,9 +43,10 @@ foreach Tow ( -1 0 1 )
 	    echo "Logging output to " $LogFile
 	    echo "Logging errors to " $ErrFile
 	    
-	    ### hand to condor
 	    set Args = ( $OutName $PpName $TriggerName $Files )
-	    qsub -V -q erhiq -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+
+	    qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N PpInAuAuGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+	    # qsub -V -q erhiq -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
 
 	end
     end

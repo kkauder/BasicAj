@@ -19,9 +19,7 @@ set RMod = ""
 # set RMod = Pt1_
 
 # Input files
-set base = Data/SmallAuAu/Small_Clean8
-# TEST
-# set base = Data/CleanAuAuY7/Clean8
+set base = Data/HaddedAuAu11picoNPE25_150526/
 
 # DON'T try this! It will kill the server :)
 #foreach randomoff ( `seq 0 9 ` )
@@ -50,8 +48,7 @@ if ( $randomoff > 0 ) then
     mkdir -pv logs/${rndname}
 endif
 
-set NameBase=Groom_Fresh_NicksList_HC100
-#set NameBase=Groom_ConstSub
+set NameBase=Groom_NPE25
 
 foreach input ( ${base}* )
     # arguments
@@ -77,7 +74,7 @@ foreach input ( ${base}* )
     echo "Logging errors to " $ErrFile
     echo
     
-    qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N PreselGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+    qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N NPE25Groom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
     # echo qsub -V -q erhiq -o $LogFile -e $ErrFile -- $Exec $Args 
 
 end # foreach input

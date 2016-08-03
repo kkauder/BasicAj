@@ -52,6 +52,10 @@
 #include "fastjet/ClusterSequenceActiveAreaExplicitGhosts.hh"
 #include "fastjet/Selector.hh"
 
+#include "fastjet/tools/JetMedianBackgroundEstimator.hh"
+#include "fastjet/contrib/ConstituentSubtractor.hh"
+
+
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
 
@@ -90,6 +94,10 @@ private :
   fastjet::JetMedianBackgroundEstimator* bkgd_estimator;
   /** Subtractor */
   fastjet::Subtractor* bkgd_subtractor;
+
+  /** ConstituentSubtractor */
+  fastjet::contrib::ConstituentSubtractor* c_bkgd_subtractor;
+  fastjet::BackgroundJetScalarPtDensity *scalarPtDensity;
 
   /** Background jet cut */
   fastjet::Selector selector_bkgd;
@@ -159,7 +167,24 @@ public :
   /**
      Handle to BackgroundEstimator()
    */
-  fastjet::JetMedianBackgroundEstimator* GetBackgroundEstimator() { return bkgd_estimator; };
+  fastjet::JetMedianBackgroundEstimator* GetBackgroundEstimator() {
+    if (!bkgd_estimator) throw ( std::string("No estimator available") );
+    return bkgd_estimator;
+  };
+
+  /**
+     Set BackgroundEstimator by hand
+   */
+  void SetBackgroundEstimator( fastjet::JetMedianBackgroundEstimator* bge ) {
+    bkgd_estimator = bge;
+  };
+
+
+  /** EXPERIMENTAL
+      Add support for fastjet::contrib::ConstituentSubtractor
+   */
+  fastjet::contrib::ConstituentSubtractor* GetConstituentBackgroundSubtractor();
+
   // ---------
   // Operators 
   // ---------

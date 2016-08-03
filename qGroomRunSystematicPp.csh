@@ -45,7 +45,8 @@ foreach Tow ( -1 0 1 )
 	echo "Logging errors to " $ErrFile
 	echo
 
-	qsub -V -q erhiq -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+	qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N PpGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+	# qsub -V -q erhiq -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
 
     end
 end

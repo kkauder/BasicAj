@@ -2,6 +2,7 @@
   // gSystem->Load("./libMuMCEvent.so");
 
   // Style options
+  gROOT->ForceStyle();
   gROOT->SetStyle("Plain");// Default white background for all plots
   gStyle->SetPalette(1);
 
