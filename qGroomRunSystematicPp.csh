@@ -13,7 +13,8 @@ set RMod = ""
 
 # standard arguments
 # note that outname will be modified by the binary!
-set OutName     = AjResults/${RMod}Groom_Fresh_NicksList_HC100_ppAj.root
+#set OutName     = AjResults/${RMod}Groom_Fresh_NicksList_HC100_ppAj.root
+set OutName     = AjResults/${RMod}Groom_HT64_ppAj.root
 set TriggerName = ppHT
 
 set noglob
@@ -30,8 +31,10 @@ foreach Tow ( -1 0 1 )
 	# if ( $Tow == 0 && $Eff == 0 ) continue;
 	
 	# Logfiles.
-	set LogFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.out
-	set ErrFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.err	
+	set LogFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_HT64_ppAj.out
+	set ErrFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_HT64_ppAj.err	
+	# set LogFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.out
+	# set ErrFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.err	
 
 	echo "Logging output to " $LogFile
 	echo "Logging errors to " $ErrFile

@@ -50,9 +50,11 @@ if ( $randomoff > 0 ) then
     mkdir -pv logs/${rndname}
 endif
 
-set NameBase=Groom_Fresh_NicksList_HC100
+# set NameBase=Groom_Fresh_NicksList_HC100
+set NameBase=Groom_HT64
 #set NameBase=Groom_ConstSub
 
+set submitted=0
 foreach input ( ${base}* )
     # arguments
     set OutBase=`basename $input | sed 's/.root//g'`
@@ -78,8 +80,9 @@ foreach input ( ${base}* )
     echo
     
     qsub -V -p 10 -q  erhiq -l mem=4gb -W umask=0022 -N PreselGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+    @ submitted = $submitted + 1
     # echo qsub -V -q erhiq -o $LogFile -e $ErrFile -- $Exec $Args 
 
 end # foreach input
 
-
+echo Submitted $submitted jobs to the grid.

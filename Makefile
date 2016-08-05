@@ -1,6 +1,5 @@
-		os = $(shell uname -s)
+os = $(shell uname -s)
 
-#INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(STARPICOPATH)
 INCFLAGS      = -I$(ROOTSYS)/include -I$(FASTJETDIR)/include -I$(PYTHIA8DIR)/include -I$(PYTHIA8DIR)/include/Pythia8/ -I$(PYTHIA8DIR)/include/Pythia8Plugins/ -I$(STARPICOPATH)
 INCFLAGS      += -I./src
 
@@ -43,20 +42,13 @@ ROOTLIBS      = $(shell root-config --libs)
 LIBPATH       = $(ROOTLIBS) -L$(FASTJETDIR)/lib -L$(PYTHIA8DIR)/lib -L$(STARPICOPATH)
 LIBS          = -lfastjet -lfastjettools -lpythia8  -lTStarJetPico -lRecursiveTools
 LIBS         += -lConstituentSubtractor
+
 ## fun with pythia :-/
 ## make is a horrible horrible tool. Do not touch these lines, any whitespace will make it break
 dummy := "$(shell find $(PYTHIA8DIR)/lib/ -name liblhapdfdummy\*)"
 ifneq ("",$(dummy))
 LIBS         += -llhapdfdummy
 endif
-
-
-# ## Unfolding Test
-# INCFLAGS      += -I/Users/kkauder/RooUnfold-1.1.1/src
-# LIBPATH       += -L/Users/kkauder/RooUnfold-1.1.1
-# LIBS          += -lRooUnfold
-
-
 
 # for cleanup
 SDIR          = src

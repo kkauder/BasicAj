@@ -6,6 +6,12 @@
     @date Mar 04, 2015
 */
 
+// FOR MC:
+// If using PicoReader class to read MC, it would be NOT be a
+// problem as the number of towers is set to 0 and nothing could be
+// loaded. and I think that is the way both Kolja and I read the Pico
+// data instead of pulling out of branch by hand.
+
 #include "AjAnalysis.hh"
 #include "AjParameters.hh"
 #include "ktTrackEff.hh"
@@ -205,10 +211,15 @@ int main ( int argc, const char** argv ) {
   reader.SetFractionHadronicCorrection(0.9999);
   reader.SetRejectTowerElectrons( kFALSE );
   // reader.SetApplyFractionHadronicCorrection(kFALSE);
+
+  TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();
+
+  // DEBUG: Add High Tower cuts:
+  // evCuts->SetMinEventEtCut ( 6.4 );
+  // evCuts->SetUseRawForMinEventEtCut ( true );
   
   // Run 11: Use centrality cut
   if ( InPattern.Contains("NPE18") ){
-    TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();    
     evCuts->SetReferenceCentralityCut (  6, 8 ); // 6,8 for 0-20%
   }
 
