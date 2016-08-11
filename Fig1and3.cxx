@@ -20,6 +20,11 @@ int Fig1and3( TString R = "" ) {
   TCanvas* c = new TCanvas("c");
   gPad->SetGridx(0);  gPad->SetGridy(0);
 
+  gStyle->SetTitleX(0.1f);
+  gStyle->SetTitleW(0.8f);
+  gStyle->SetTitleBorderSize(0);	//Title box border thickness
+	
+
   bool nofabs=true;
   // bool nofabs=false;
 
@@ -38,6 +43,11 @@ int Fig1and3( TString R = "" ) {
     TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
     TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
     TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
+    // // cross check
+    // TFile *fAuAu         = TFile::Open("AjResults/Groom_HT64_AuAu.root");
+    // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Groom_HT64_ppInAuAuAj.root");
+    // TFile *fSyst         = TFile::Open("AjResults/Systematics_Groom_HT64_ppInAuAuAj.root");
+
   } else if ( R.Contains("0.2") ){
     TFile *fAuAu         = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root");
     TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
@@ -189,6 +199,8 @@ int Fig1and3( TString R = "" ) {
   
   
   //  ppInAuAuAJ_hi->GetYaxis()->SetTitleOffset(1.14);
+  if (TString(fAuAu->GetName()).Contains("HT54") ) ppInAuAuAJ_hi->SetTitle( "Offline HT 5.4");
+  if (TString(fAuAu->GetName()).Contains("HT64") ) ppInAuAuAJ_hi->SetTitle( "Offline HT 6.4");    
   ppInAuAuAJ_hi->Draw("9");
   
   TH1D* AJ_hi_minmax=0;
@@ -404,30 +416,30 @@ int Fig1and3( TString R = "" ) {
 
   // latex.SetTextColor(kBlack);
   // if ( nofabs ) {
-  //   latex.DrawLatex( 0.57, 0.84, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  //   latex.DrawLatex( 0.57, 0.78, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  //   latex.DrawLatex( 0.57, 0.84, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  //   latex.DrawLatex( 0.57, 0.78, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
   // } else {
-  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
   // }
 
   latex.SetTextColor(kBlack);
   latex.SetTextSize( 0.04);
-  // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
 
   latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
 
-  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 Gev/c");
-  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 Gev/c");
+  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
+  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
 
 
   // if (TString(fAuAu->GetName()).Contains("R0.2") ){
-  // latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>16 Gev/c");
-  // latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>8 Gev/c");
+  // latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>16 GeV/c");
+  // latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>8 GeV/c");
   // } else {
-  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
   // }
   
   latex.SetTextSize( 0.04);
@@ -458,9 +470,11 @@ int Fig1and3( TString R = "" ) {
   AuAuAJ_lo->Draw("9same");
 
   TLegend* leghi = new TLegend( 0.15, 0.7, 0.48, 0.88, "p_{T}^{Cut}>2 GeV/c:" );
+  if ( !nofabs )leghi = new TLegend( 0.35, 0.75, 0.68, 0.88, "p_{T}^{Cut}>2 GeV/c:" );
   leghi->SetBorderSize(0);
   leghi->SetTextColor( kRed);
   leghi->SetTextSize(legs);
+  if ( !nofabs )  leghi->SetTextSize(.6*legs);
   // leghi->SetLineWidth(10);
   leghi->SetFillStyle(0);
   // leghi->SetMargin(0.1);
@@ -470,8 +484,10 @@ int Fig1and3( TString R = "" ) {
   leghi->Draw();
 
   TLegend* leglo = new TLegend( 0.55, 0.7, 0.88, 0.88, "p_{T}^{Cut}>0.2 GeV/c, Matched:" );
+  if ( !nofabs )  leglo = new TLegend( 0.65, 0.75, 0.88, 0.88, "p_{T}^{Cut}>0.2 GeV/c, Matched:" );
   leglo->SetBorderSize(0);
   leglo->SetTextSize(legs);
+  if ( !nofabs )  leglo->SetTextSize(.6*legs);
   // leglo->SetLineWidth(10);
   leglo->SetFillStyle(0);
   // leglo->SetMargin(0.1);
@@ -520,10 +536,13 @@ int Fig1and3( TString R = "" ) {
     else latex.DrawLatex( .6,.45, plabel);
   }
 
-  if (TString(fAuAu->GetName()).Contains("R0.2") ){
-    // sprintf ( plabel, "p-value = %0.2g", ppInAuAuAJ_lo->KolmogorovTest(AuAuAJ_lo, "") );
-    // latex.SetTextColor( AuAuAJ_lo->GetLineColor() );
-    // latex.DrawLatex( .6,.45, plabel);
+  if (TString(fAuAu->GetName()).Contains("HT54") ){
+    gPad->SaveAs("plots/HT54_R0.4_Fig1.png");
+    gPad->SaveAs("plots/HT54_R0.4_Fig1.pdf");
+  } else   if (TString(fAuAu->GetName()).Contains("HT64") ){
+    gPad->SaveAs("plots/HT64_R0.4_Fig1.png");
+    gPad->SaveAs("plots/HT64_R0.4_Fig1.pdf");
+  } else if (TString(fAuAu->GetName()).Contains("R0.2") ){
     gPad->SaveAs("plots/R0.2_Fig.png");
     gPad->SaveAs("plots/R0.2_Fig.pdf");
   } else if (TString(fAuAu->GetName()).Contains("Pt1") ){

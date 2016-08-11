@@ -209,20 +209,20 @@ void BkgFigure() {
 
   latex.SetTextColor(kBlack);
   latex.SetTextSize( 0.04);
-  // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
 
   latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
 
-  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 Gev/c");
-  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 Gev/c");
+  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
+  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
 
   // if ( nofabs ) {
-  //   latex.DrawLatex( 0.57, 0.84, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  //   latex.DrawLatex( 0.57, 0.78, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  //   latex.DrawLatex( 0.57, 0.84, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  //   latex.DrawLatex( 0.57, 0.78, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
   // } else {
-  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 Gev/c");
-  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 Gev/c");
+  //   latex.DrawLatex( 0.14, 0.26, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  //   latex.DrawLatex( 0.14, 0.19, "p_{T,2}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
   //}
 
   

@@ -27,22 +27,22 @@ foreach Tow ( -1 0 1 )
 	set TowMod = Tow${Tow}
 	set EffMod = Eff${Eff}
 	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}ppAj.root
-	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.root
-	set PpName = AjResults/${TowMod}_${EffMod}_${RMod}${RMod}Groom_HT64_ppAj.root
+	set PpName = AjResults/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.root
+	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}${RMod}Groom_HT64_ppAj.root
 	# set PpName = AjResults/${TowMod}_${EffMod}_${RMod}OldList_HC100_ppAj.root
 
 	foreach input ( ${base}* )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
-	    # set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
-	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Groom_HT64_ppInAuAuAj_${OutBase}.root
+	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
+	    # set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Groom_HT64_ppInAuAuAj_${OutBase}.root
 	    set TriggerName = MB
 	    set Files      = ${input}
 	    
-	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_HT64_ppInAuAuAj_${OutBase}.out
-	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_HT64_ppInAuAuAj_${OutBase}.err
-	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
-	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
+	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_HT64_ppInAuAuAj_${OutBase}.out
+	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_HT64_ppInAuAuAj_${OutBase}.err
+	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
+	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
 
 	    echo "Logging output to " $LogFile
 	    echo "Logging errors to " $ErrFile

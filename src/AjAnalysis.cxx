@@ -18,7 +18,7 @@ AjAnalysis::AjAnalysis ( double R,
 			 double jet_ptmin, double jet_ptmax,
 			 double LeadPtMin, double SubLeadPtMin, 
 			 double max_track_rap, double PtConsLo, double PtConsHi,
-			 double dPhiCut
+			 double dPhiCut, bool SubtractSoftBg
 			 )
   : R(R),
     jet_ptmin(jet_ptmin), jet_ptmax(jet_ptmax),
@@ -186,23 +186,30 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
       
   // find corresponding jets with soft constituents
   // ----------------------------------------------
-  pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
+  if ( SubtractSoftBg )
+    pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
+  else
+    pJAlo = new JetAnalyzer( pLo, jet_def ); // WITH background subtraction
   JetAnalyzer& JAlo = *pJAlo;
 
   // Standard:
-  fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
-  if ( ForceRho >=0 ) BackgroundSubtractor = new fastjet::Subtractor( ForceRho );
-  JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
-  if ( ForceRho >=0 ) {
-    delete BackgroundSubtractor;
-    BackgroundSubtractor=0;
+  if ( SubtractSoftBg ) {
+    fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
+    if ( ForceRho >=0 ) BackgroundSubtractor = new fastjet::Subtractor( ForceRho );
+    JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
+    if ( ForceRho >=0 ) {
+      delete BackgroundSubtractor;
+      BackgroundSubtractor=0;
+    }
+    if ( ForceRho >=0 ) {
+      delete BackgroundSubtractor;
+      BackgroundSubtractor=0;
+    }
+    JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
+  } else {
+    JAloResult = fastjet::sorted_by_pt( JAlo.inclusive_jets() );
   }
-  if ( ForceRho >=0 ) {
-    delete BackgroundSubtractor;
-    BackgroundSubtractor=0;
-  }
-  JAloResult = fastjet::sorted_by_pt( (*BackgroundSubtractor)( JAlo.inclusive_jets() ) );
-
+    
   // // Let's try something new:
   // fastjet::contrib::ConstituentSubtractor* BackgroundSubtractor =  pJAlo->GetConstituentBackgroundSubtractor();
   // if ( ForceRho >=0 ) {
@@ -298,11 +305,19 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
     other_jet_def = fastjet::JetDefinition( fastjet::antikt_algorithm, OtherR);
       
     // find jets and subtract background
-    pOtherJAlo = new JetAnalyzer( pLo, other_jet_def, area_def, selector_bkgd );
+    if (SubtractSoftBg)
+      pOtherJAlo = new JetAnalyzer( pLo, other_jet_def, area_def, selector_bkgd );
+    else 
+      pOtherJAlo = new JetAnalyzer( pLo, other_jet_def );
     JetAnalyzer& OtherJAlo = *pOtherJAlo;
 
-    fastjet::Subtractor* OtherBackgroundSubtractor =  OtherJAlo.GetBackgroundSubtractor();
-    OtherJAloResult = fastjet::sorted_by_pt( (*OtherBackgroundSubtractor)( OtherJAlo.inclusive_jets() ) );
+    if (SubtractSoftBg){
+      fastjet::Subtractor* OtherBackgroundSubtractor =  OtherJAlo.GetBackgroundSubtractor();
+      OtherJAloResult = fastjet::sorted_by_pt( (*OtherBackgroundSubtractor)( OtherJAlo.inclusive_jets() ) );
+    } else {
+      OtherJAloResult = fastjet::sorted_by_pt( OtherJAlo.inclusive_jets() );
+    }
+
 
     // Unclear whether to match in R or OtherR. Using R for now.
     fastjet::Selector SelectClose = fastjet::SelectorCircle( R );
@@ -476,17 +491,17 @@ double LookupXsec( TString filename ){
   //   1.20E-05
   // };
     
-  if ( filename.Contains("3_4") ) return w[1];
-  if ( filename.Contains("4_5") ) return w[2];
-  if ( filename.Contains("5_7") ) return w[3];
-  if ( filename.Contains("7_9") ) return w[4];
-  if ( filename.Contains("9_11") ) return w[5];
-  if ( filename.Contains("11_15") ) return w[6];
-  if ( filename.Contains("15_25") ) return w[7];
-  if ( filename.Contains("25_35") ) return w[8];
-  if ( filename.Contains("35_45") ) return w[9];
-  if ( filename.Contains("45_55") ) return w[10];
-  if ( filename.Contains("55_65") ) return w[11];
+  if ( filename.Contains("picoDst_3_4") ) return w[1];
+  if ( filename.Contains("picoDst_4_5") ) return w[2];
+  if ( filename.Contains("picoDst_5_7") ) return w[3];
+  if ( filename.Contains("picoDst_7_9") ) return w[4];
+  if ( filename.Contains("picoDst_9_11") ) return w[5];
+  if ( filename.Contains("picoDst_11_15") ) return w[6];
+  if ( filename.Contains("picoDst_15_25") ) return w[7];
+  if ( filename.Contains("picoDst_25_35") ) return w[8];
+  if ( filename.Contains("picoDst_35_45") ) return w[9];
+  if ( filename.Contains("picoDst_45_55") ) return w[10];
+  if ( filename.Contains("picoDst_55_65") ) return w[11];
 
   return 1;
 

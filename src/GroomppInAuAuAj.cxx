@@ -280,6 +280,10 @@ int main ( int argc, const char** argv ) {
   // Quick debug
   TH1D* hLeadPtInTop20 = new TH1D( "hLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
   TH1D* hSubLeadPtInTop20 = new TH1D( "hSubLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
+
+  TH1D* HT54InTop20 = new TH1D( "HT54InTop20","", 2, -0.5, 1.5 );
+  TH1D* HT64InTop20 = new TH1D( "HT64InTop20","", 2, -0.5, 1.5 );
+
   
   // For Elke...
   // -----------
@@ -529,6 +533,7 @@ int main ( int argc, const char** argv ) {
       // 	particles.push_back( FullPpEvent.at(*jit).at(i) );
       // }
 
+      
       // Two steps for cross check - sort by pT first and remove some soft stuff
       vector<PseudoJet> tmp;
       for ( int i=0; i < FullPpEvent.at(*jit).size() ; ++i ){
@@ -556,6 +561,16 @@ int main ( int argc, const char** argv ) {
 	particles.push_back( tmp.at(i) );
       } 	
       
+      // // DEBUG: Look for HT trigger
+      // TEST
+      bool Has54GevTower=false;
+      bool Has64GevTower=false;
+      vector<PseudoJet> Neutrals = OnlyNeutral( particles );
+      for ( int i=0; i < Neutrals.size() ; ++i ){
+	if ( Neutrals.at(i).pt() > 5.4 ) Has54GevTower=true;
+	if ( Neutrals.at(i).pt() > 6.4 ) Has64GevTower=true;	
+      }
+
       // Run analysis
       // ------------
       int ret;
@@ -702,6 +717,12 @@ int main ( int argc, const char** argv ) {
       // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
       // cout << " going in"  << endl;      
       if ( DiJetsLo.size()==2 ){
+
+	// quick debug
+	if ( refmult >= 269 ){
+	  HT54InTop20->Fill( Has54GevTower );
+	  HT64InTop20->Fill( Has64GevTower );
+	}
 
 	// ---------------
 	// Subjet analysis

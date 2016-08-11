@@ -50,9 +50,9 @@ if ( $randomoff > 0 ) then
     mkdir -pv logs/${rndname}
 endif
 
-# set NameBase=Groom_Fresh_NicksList_HC100
-set NameBase=Groom_HT64
-#set NameBase=Groom_ConstSub
+set NameBase=Groom_Fresh_NicksList_HC100
+# set NameBase=Groom_HT64
+# set NameBase=Groom_ConstSub
 
 set submitted=0
 foreach input ( ${base}* )

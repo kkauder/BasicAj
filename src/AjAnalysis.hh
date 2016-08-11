@@ -62,6 +62,7 @@ private :
   double PtConsHi;       ///< constituent maximum p<SUB>T</SUB>
 
   double dPhiCut;        ///< opening angle for dijet requirement. Accept only  |&phi;1 - &phi;2 - &pi;| < &Delta;&phi;.
+  bool SubtractSoftBg;   ///< Can be used to turn off background subtraction for the soft matched jets
 
   fastjet::JetDefinition jet_def;       ///< jet definition
   fastjet::JetDefinition other_jet_def; ///< jet definition with a different radius
@@ -110,12 +111,14 @@ public:
       \param PtConsLo: constituent minimum p<SUB>T</SUB>
       \param PtConsHi: constituent maximum p<SUB>T</SUB>
       \param dPhiCut: opening angle for dijet requirement. Accept only  |&phi;1 - &phi;2 - &pi;| < dPhiCut.
+      \param SubtractSoftBg: For some data, it may be unnecessary to subtract background
    */
   AjAnalysis ( double R = 0.4,
 	       double jet_ptmin = 10.0, double jet_ptmax = 100.0,
 	       double LeadPtMin = 20.0, double SubLeadPtMin = 10, 
 	       double max_track_rap = 1.0, double PtConsLo=0.2, double PtConsHi=2.0,
-	       double dPhiCut = 0.4
+	       double dPhiCut = 0.4,
+	       bool SubtractSoftBg=true
 	       );
 
     

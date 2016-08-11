@@ -139,30 +139,31 @@ int main ( int argc, const char** argv ) {
   cout << "Low pT cut =" << PtConsLo << endl;
   cout << " ################################################### " << endl;
 
-  TString TriggerName = arguments.at(1);
 
+  TString TriggerName = arguments.at(1);
   TString InPattern=arguments.at(2);
-  // DEBUG
-  if ( InPattern.Contains("Geant") ){
+
+  // Au+Au?
+  // ------
+  bool isAuAu=false;
+  string INPATTERN=InPattern.Data();
+  std::transform(INPATTERN.begin(), INPATTERN.end(),INPATTERN.begin(), ::toupper);
+  if (INPATTERN.find("AUAU") != std::string::npos ) isAuAu=true;
+
+  bool SubtractSoftBg = true;
+  if ( OutFileName.Contains("Geant") ) SubtractSoftBg = false;
+  bool DoEfficiencyCorrection=!isAuAu;
+  if ( OutFileName.Contains("Geant") ) DoEfficiencyCorrection = false;
+	
+  if ( OutFileName.Contains("GeantMc") ){
     ChainName = "JetTreeMc";
   }
+
   TChain* chain = new TChain( ChainName );
   chain->Add( InPattern );
   cout << "Running over " << chain->GetEntries() << " events." << endl;
 
   
-  // Au+Au?
-  // ------
-  bool isAuAu=false;
-  if (arguments.at(2).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  if (arguments.at(2).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  
-  // OLD: With some tweaks, this can be used to explicitly hand over multiple files
-  // for (int i=2; i<arguments.size() ; ++i ) {
-  //   chain->Add( arguments.at(i).data() );
-  //   if (arguments.at(i).find("AuAu") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  //   if (arguments.at(i).find("auau") != std::string::npos ) isAuAu=true; // Quick and dirty...
-  // }  
   
   // for systematics
   // ---------------
@@ -170,24 +171,26 @@ int main ( int argc, const char** argv ) {
   Float_t fTowScale = 1.0 + IntTowScale*0.02;
   Int_t mEffUn=atoi( arguments.at(4).data() ) ;
   
-  switch ( mEffUn ){
-  case 0 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff0_")+ gSystem->BaseName(OutFileName));
-    break;
-  case 1 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff1_")+ gSystem->BaseName(OutFileName));
-    break;
-  case -1 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff-1_")+ gSystem->BaseName(OutFileName));
-    break;
-  default :
-    cerr << "mEffUn = " << mEffUn << " not supported." <<endl;
-    return -1;
+  if ( DoEfficiencyCorrection ){
+    switch ( mEffUn ){
+    case 0 :
+      if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff0_")+ gSystem->BaseName(OutFileName));
+      break;
+    case 1 :
+      if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff1_")+ gSystem->BaseName(OutFileName));
+      break;
+    case -1 :
+      if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Eff-1_")+ gSystem->BaseName(OutFileName));
+      break;
+    default :
+      cerr << "mEffUn = " << mEffUn << " not supported." <<endl;
+      return -1;
+    }
   }
-
+  
   switch ( IntTowScale ){
   case 0 :
-    if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow0_")+ gSystem->BaseName(OutFileName));
+    if ( !isAuAu && DoEfficiencyCorrection ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow0_")+ gSystem->BaseName(OutFileName));
     break;
   case 1 :
     if ( !isAuAu ) OutFileName.ReplaceAll ( gSystem->BaseName(OutFileName), TString ("Tow1_")+ gSystem->BaseName(OutFileName));
@@ -212,11 +215,19 @@ int main ( int argc, const char** argv ) {
   reader.SetRejectTowerElectrons( kFALSE );
   // reader.SetApplyFractionHadronicCorrection(kFALSE);
 
+  if ( InPattern.Contains( "picoDst_4_5" ) ) reader.SetUseRejectAnyway( true );
+
+  
   TStarJetPicoEventCuts* evCuts = reader.GetEventCuts();
 
-  // DEBUG: Add High Tower cuts:
-  // evCuts->SetMinEventEtCut ( 6.4 );
+  // // DEBUG: Add High Tower cuts:
+  // evCuts->SetMinEventEtCut ( 5.4 );
   // evCuts->SetUseRawForMinEventEtCut ( true );
+
+  // This method does NOT WORK for GEANT MC trees because everything is in the tracks...
+  // Do it by hand then...
+  // float ManualHtCut = 5.4;
+  float ManualHtCut = 0;
   
   // Run 11: Use centrality cut
   if ( InPattern.Contains("NPE18") ){
@@ -303,8 +314,10 @@ int main ( int argc, const char** argv ) {
   // ------------
   TH3D* Chargedptphieta = new TH3D("Chargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
   TH3D* Neutralptphieta = new TH3D("Neutralptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
-  TH3D* totChargedptphieta = new TH3D("totChargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
   TH3D* totNeutralptphieta = new TH3D("totNeutralptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  //TH3D* totChargedptphieta = new TH3D("totChargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  TH3D* totChargedptphieta = new TH3D("totChargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
+  TH3D* totptphieta = new TH3D("totptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
 
   TH1D* csize = new TH1D("csize","",5000, -0.5, 4999.5 );
   // Find some info on the background
@@ -321,6 +334,10 @@ int main ( int argc, const char** argv ) {
   TH1D* hLeadPtInTop20 = new TH1D( "hLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
   TH1D* hSubLeadPtInTop20 = new TH1D( "hSubLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
     
+  TH1D* HT54InTop20 = new TH1D( "HT54InTop20","", 2, -0.5, 1.5 );
+  TH1D* HT64InTop20 = new TH1D( "HT64InTop20","", 2, -0.5, 1.5 );
+
+
   // For Elke...
   // -----------
   TH2D* hNConstChHiLead = new TH2D( "hNConstChHiLead","p_{T}^{C} > 2 GeV/c, Leading;Charged Constituents;Refmult", 100, -0.5, 99, 800, -0.5, 799.5 );
@@ -481,7 +498,7 @@ int main ( int argc, const char** argv ) {
   // Initialize tracking efficiency
   // ------------------------------
   ktTrackEff* tEff=0;
-  if ( !isAuAu ) {
+  if ( DoEfficiencyCorrection) {
     tEff = new ktTrackEff();
     tEff->SetSysUncertainty(mEffUn);
     cout<<endl;
@@ -491,14 +508,59 @@ int main ( int argc, const char** argv ) {
   
   // Initialize analysis class
   // -------------------------
+  double max_track_rap = AjParameters::max_track_rap;
+
+
+  // Special settings for GEANT data
+  // -------------------------------
+  if ( OutFileName.Contains("GeantMc") ){
+    max_track_rap = 7;
+
+    reader.SetProcessTowers ( false );
+  // evCuts->SetTriggerSelection( "All" ); //All, MB, HT, pp, ppHT, ppJP
+    // No Additional cuts 
+    // evCuts->SetVertexZCut ( 30 );
+    evCuts->SetVertexZCut (99999);
+    evCuts->SetRefMultCut (0);
+    evCuts->SetVertexZDiffCut(999999);
+
+    //test
+    evCuts->SetMaxEventPtCut (99999);
+    // evCuts->SetMaxEventPtCut ( AjParameters::MaxEventPtCut );	//test 
+    evCuts->SetMaxEventEtCut (99999);
+
+    evCuts->SetPVRankingCutOff();		//  Use SetPVRankingCutOff() to turn off vertex ranking cut.  default is OFF
+
+    // Tracks cuts
+    TStarJetPicoTrackCuts* trackCuts = reader.GetTrackCuts();
+    trackCuts->SetDCACut(99999);
+    trackCuts->SetMinNFitPointsCut(-1);
+    trackCuts->SetFitOverMaxPointsCut(-1);
+    trackCuts->SetMaxPtCut (99999);
+
+    // Towers: should be no tower in MC. All (charged or neutral) are handled in track
+    TStarJetPicoTowerCuts* towerCuts = reader.GetTowerCuts();
+    towerCuts->SetMaxEtCut(99999);
+
+    std::cout << "Using these track cuts:" << std::endl;
+    std::cout << " dca : " << trackCuts->GetDCACut(  ) << std::endl;
+    std::cout << " nfit : " <<   trackCuts->GetMinNFitPointsCut( ) << std::endl;
+    std::cout << " nfitratio : " <<   trackCuts->GetFitOverMaxPointsCut( ) << std::endl;
+    std::cout << " maxpt : " << trackCuts->GetMaxPtCut (  ) << std::endl;
+
+  // /DEBUG
+
+  }
+
   AjAnalysis AjA( R,
 		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  // 3, AjParameters::jet_ptmax, // DEBUG
 		  LeadPtMin, SubLeadPtMin, 
-		  AjParameters::max_track_rap,
+		  max_track_rap,
 		  PtConsLo,
 		  AjParameters::PtConsHi,
-		  AjParameters::dPhiCut
+		  AjParameters::dPhiCut,
+		  SubtractSoftBg
 		  );  
   
   // // DEBUG: KK: Reject jets near bad phi strip  
@@ -604,17 +666,29 @@ int main ( int argc, const char** argv ) {
 
       // // DEBUG: Look for HT trigger
       // bool Has4GevTower=false;
-      // TEST
-      bool Has55GevTower=false;
+      bool Has54GevTower=false;
+      bool Has64GevTower=false;
 
+      // MANUAL HT cut for Geant MC data
+      // -------------------------------
+      bool HasManualHighTower=false;
       for (int ip = 0; ip<container->GetEntries() ; ++ip ){
       	sv = container->Get(ip);  // Note that TStarJetVector  contains more info, such as charge;
 
-      	// // DEBUG
-      	// if (sv->GetCharge()==0 && sv->Pt() > 4 ) Has4GevTower=true;
-	if (sv->GetCharge()==0 && sv->Pt() > 5.5 ) Has55GevTower=true;
+	// DEBUG
+	if (sv->GetCharge()==0 && sv->Pt() > 5.4 ) Has54GevTower=true;
+	if (sv->GetCharge()==0 && sv->Pt() > 6.4 ) Has64GevTower=true;
 
-      	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
+	
+	// MANUAL HT cut for Geant MC data
+	// -------------------------------
+	if ( OutFileName.Contains("GeantMc")
+	     && sv->GetCharge()==0
+	     && fabs(sv->Eta())<1.0
+	     && sv->Pt()>ManualHtCut
+	     ) HasManualHighTower=true;	
+
+	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
       	pj=MakePseudoJet( sv );
       	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
 
@@ -629,19 +703,7 @@ int main ( int argc, const char** argv ) {
       	  particles.push_back ( pj );
       	}	      
       }
-
-      // // DEBUG
-      // if ( !Has4GevTower ) {
-      // 	cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
-      // 	No4Gev++;
-      // }
-      // if ( !Has55GevTower ) {
-      // 	//cerr << " EVENT DOESN'T HAVE A 4 GeV TOWER???" << endl;
-      // 	// No4Gev++;
-      // 	continue;
-      // } else {
-      // 	cerr << "Found a 5.5 GeV tower" << endl;
-      // }
+      if ( !HasManualHighTower) continue;
 
       // Run analysis
       // ------------
@@ -686,12 +748,14 @@ int main ( int argc, const char** argv ) {
       
       // save event info
       vector<PseudoJet> chargedconsts = OnlyCharged (AjA.GetLoConstituents());
-      for (int i =0; i< chargedconsts.size(); ++i ){	  
-	totChargedptphieta->Fill( chargedconsts.at(i).pt(), chargedconsts.at(i).phi(), chargedconsts.at(i).eta() );
+      for (int i =0; i< chargedconsts.size(); ++i ){
+       	totChargedptphieta->Fill( chargedconsts.at(i).pt(), chargedconsts.at(i).phi(), chargedconsts.at(i).eta() );
+	totptphieta->Fill( chargedconsts.at(i).pt(), chargedconsts.at(i).phi(), chargedconsts.at(i).eta() );
       }
       vector<PseudoJet> neutralconsts = OnlyNeutral (AjA.GetLoConstituents());
       for (int i =0; i< neutralconsts.size(); ++i ){	  
 	totNeutralptphieta->Fill( neutralconsts.at(i).pt(), neutralconsts.at(i).phi(), neutralconsts.at(i).eta() );
+	totptphieta->Fill( neutralconsts.at(i).pt(), neutralconsts.at(i).phi(), neutralconsts.at(i).eta() );
       }
 
 	  // if ( ret>0 && refmult>268 ) {
@@ -702,6 +766,9 @@ int main ( int argc, const char** argv ) {
 	     ( InPattern.Contains("AuAu14") && GRefCent>5 ) ||
 	     !isAuAu
 	     ) {
+	  HT54InTop20->Fill( Has54GevTower );
+	  HT64InTop20->Fill( Has64GevTower );
+	  
 	  csize->Fill(AjA.GetLoConstituents().size());
 	  // DEBUG CONSTSUB: Can't remember user info :-/
 	  vector<PseudoJet> chargedconsts = OnlyCharged (AjA.GetLoConstituents());
@@ -744,8 +811,10 @@ int main ( int argc, const char** argv ) {
 	rho=rhoerr=j1area=j2area=0;
 	nRestJ=0;
 	fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
-	rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
+	if ( AjA.GetJAhi()->GetBackgroundSubtractor() ){
+	  rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	  rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
+	}
 	
 	// // More Debug
 	// rhoHi=0;
@@ -1091,8 +1160,13 @@ int main ( int argc, const char** argv ) {
 	    
 	    mixed++;
 	    if ( mixed>=nMix ) break;
-	    pt1 = pJ1->Pt() + RC1.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
-	    pt2 = pJ2->Pt() + RC2.pt() - TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	    pt1 = pJ1->Pt() + RC1.pt();
+	    pt2 = pJ2->Pt() + RC2.pt();
+	    
+	    if ( AjA.GetJAhi()->GetBackgroundSubtractor() ){
+	      pt1 -= TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	      pt2 -= TMath::Pi()*R*R * AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	    }
 	    EtaShiftAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
 	    NoFabsEtaShiftAJ_lo->Fill( (pt1 - pt2) / (pt1 + pt2), refmult );
 	  }
