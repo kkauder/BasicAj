@@ -7,8 +7,8 @@ set Exec = "./bin/PythiaAj"
 make $Exec || exit
 
 # choose R or Pt options
-#set RMod = ""
-set RMod = R0.2_
+set RMod = ""
+# set RMod = R0.2_
 # set RMod = Pt1_
 
 # Input files
@@ -51,7 +51,7 @@ echo "getenv = true" >>CondorFile
 # echo "Notification = Complete" >> CondorFile
 # echo "Notify_user  = kkauder@gmail.com"  >> CondorFile
 
-set NameBase=Pythia
+set NameBase=LargeEtaPythia
 
 foreach input ( ${base}* )
     # arguments

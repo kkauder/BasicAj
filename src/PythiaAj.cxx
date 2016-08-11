@@ -207,6 +207,8 @@ int main ( int argc, const char** argv ) {
   // DEBUG histos
   // ------------
   TH3D* ptphieta = new TH3D("ptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  TH3D* totptphieta = new TH3D("totptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  
   TH1D* csize = new TH1D("csize","",5000, -0.5, 4999.5 );
   // Find some info on the background
   TH1D* hrho = new TH1D( "hrho","#rho", 240, 0, 120 );
@@ -291,7 +293,9 @@ int main ( int argc, const char** argv ) {
   AjAnalysis AjA( R,
 		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  LeadPtMin, SubLeadPtMin, 
-		  AjParameters::max_track_rap,
+		  // DEBUG
+		  // AjParameters::max_track_rap,
+		  3.0,
 		  PtConsLo,
 		  AjParameters::PtConsHi,
 		  AjParameters::dPhiCut
@@ -407,19 +411,10 @@ int main ( int argc, const char** argv ) {
       
 
       // save event info
-      if ( ret>0 && refmult>268 ) {
-	// Selector slo = AjA.GetLoConsSelector();
-	// vector<PseudoJet> accepted, notaccepted;
-	// slo.sift(particles, accepted, notaccepted);
-	// for (int i =0; i< notaccepted.size(); ++i ){
-	//   cout << notaccepted.at(i).pt() << "  " << notaccepted.at(i).phi() << "  " << notaccepted.at(i).eta() << "  " << endl;
-	// }
-	// return 0;	
-	csize->Fill(AjA.GetLoConstituents().size());
-	for (int i =0; i< AjA.GetLoConstituents().size(); ++i ){
-	  ptphieta->Fill( AjA.GetLoConstituents().at(i).pt(), AjA.GetLoConstituents().at(i).phi(), AjA.GetLoConstituents().at(i).eta() );
-	}
-
+      if ( ret>0 ) csize->Fill(AjA.GetLoConstituents().size());
+      for (int i =0; i< AjA.GetLoConstituents().size(); ++i ){
+	if ( ret>0 ) ptphieta->Fill( AjA.GetLoConstituents().at(i).pt(), AjA.GetLoConstituents().at(i).phi(), AjA.GetLoConstituents().at(i).eta() );
+	totptphieta->Fill( AjA.GetLoConstituents().at(i).pt(), AjA.GetLoConstituents().at(i).phi(), AjA.GetLoConstituents().at(i).eta() );
       }
       
       // Save the full event for embedding if there's at least one 10 GeV jet

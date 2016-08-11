@@ -201,9 +201,15 @@ int Fig1and3( TString R = "" ) {
   //  ppInAuAuAJ_hi->GetYaxis()->SetTitleOffset(1.14);
   if (TString(fAuAu->GetName()).Contains("HT54") ) ppInAuAuAJ_hi->SetTitle( "Offline HT 5.4");
   if (TString(fAuAu->GetName()).Contains("HT64") ) ppInAuAuAJ_hi->SetTitle( "Offline HT 6.4");    
-  TH1D* dummy = ppInAuAuAJ_hi->Clone("dummy");
+  TH1D* dummy = ppInAuAuAJ_lo->Clone("dummy");
   dummy->Reset();
+  dummy->SetLineWidth(0);
+  dummy->SetAxisRange(  0.0, 0.23, "y");
+  dummy->SetAxisRange(  0.0, 0.72, "x");
+  if ( nofabs ) dummy->SetAxisRange(   0.0, 0.25, "y");
+  if ( nofabs ) dummy->SetAxisRange(  -0.3, 0.8, "x");
   dummy->Draw("9");
+  
   ppInAuAuAJ_hi->SetAxisRange(0, 1, "x");
   AuAuAJ_hi->SetAxisRange(0, 1, "x");
 
@@ -332,7 +338,7 @@ int Fig1and3( TString R = "" ) {
   AJ_lo_minmax->SetMarkerColor( kGray );
   AJ_lo_minmax->SetMarkerSize(0);
 
-  ppInAuAuAJ_hi->Draw("9");
+  ppInAuAuAJ_hi->Draw("9same");
   AJ_hi_minmax->Draw("9E2same");
 
   ppInAuAuAJ_hi->Draw("9same");
@@ -485,8 +491,8 @@ int Fig1and3( TString R = "" ) {
   leghi->SetFillStyle(0);
   // leghi->SetMargin(0.1);
 
-  leghi->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB", "p");
-  leghi->AddEntry ( AuAuAJ_hi,     "AuAu HT", "p");
+  leghi->AddEntry ( ppInAuAuAJ_hi, "p+p HT #oplus Au+Au MB", "p");
+  leghi->AddEntry ( AuAuAJ_hi,     "Au+Au HT", "p");
   leghi->Draw();
 
   TLegend* leglo = new TLegend( 0.55, 0.7, 0.88, 0.88, "p_{T}^{Cut}>0.2 GeV/c, Matched:" );
@@ -497,34 +503,10 @@ int Fig1and3( TString R = "" ) {
   // leglo->SetLineWidth(10);
   leglo->SetFillStyle(0);
   // leglo->SetMargin(0.1);
-  leglo->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB", "p");
-  leglo->AddEntry ( AuAuAJ_lo,     "AuAu HT", "p");
+  leglo->AddEntry ( ppInAuAuAJ_lo, "p+p HT #oplus Au+Au MB", "p");
+  leglo->AddEntry ( AuAuAJ_lo,     "Au+Au HT", "p");
   leglo->Draw();
 
-  // if ( nofabs ) {
-  //   leg = new TLegend( 0.12, 0.7, 0.53, 0.9, "" );
-  // }
-  // leg->SetBorderSize(0);
-  // leg->SetLineWidth(10);
-  // leg->SetFillStyle(0);
-  // leg->SetMargin(0.1);
-
-  // leg->Clear();
-  // leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
-  // leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
-  // leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  // leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  // leg->Draw();
-
-  // leg->AddEntry ( ppInAuAuAJ_hi, "pp HT #oplus AuAu MB, p_{T}^{Cut}>2 GeV/c", "p");
-  // leg->AddEntry ( AuAuAJ_hi,     "AuAu HT, p_{T}^{Cut}>2 GeV/c", "p");
-  // leg->AddEntry ( ppInAuAuAJ_lo,          "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  // leg->AddEntry ( AuAuAJ_lo,              "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-
-  // TLegend* leg = new TLegend( 0.48, 0.7, 0.89, 0.9, "" );
-  // if ( nofabs ) {
-  //   leg = new TLegend( 0.12, 0.7, 0.53, 0.9, "" );
-  // }
 
   // Line to guide the eye
   TLine line;

@@ -145,7 +145,7 @@ void BkgFigure() {
   // ECAJ_lo->SetFillColor( kGray+1 );  
 
   RCAJ_lo->SetFillColor( kPink+6 );
-  ECAJ_lo->SetFillColor( kAzure-4 );
+  ECAJ_lo->SetFillColor( kAzure-6 );
 
   // ppInAuAuAJ_lo->GetYaxis()->SetTitleSize(0.04);
   // ppInAuAuAJ_lo->GetYaxis()->SetLabelSize(0.04);
@@ -184,8 +184,8 @@ void BkgFigure() {
   ppInAuAuAJ_lo->Draw("9same");
   AuAuAJ_lo->Draw("9same");
   
-  leglo->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB", "p");
-  leglo->AddEntry ( AuAuAJ_lo,     "AuAu HT", "p");
+  leglo->AddEntry ( ppInAuAuAJ_lo, "p+p HT #oplus Au+Au MB", "p");
+  leglo->AddEntry ( AuAuAJ_lo,     "Au+Au HT", "p");
   leglo->Draw();
 
   legem->AddEntry ( RCAJ_lo,       "Random Cone Bkg (RC)", "f");
@@ -235,12 +235,6 @@ void BkgFigure() {
 
   gPad->SaveAs("plots/BkgFigure.png");
   gPad->SaveAs("plots/BkgFigure.pdf");
-
-
-  // leg->AddEntry ( ppInAuAuAJ_lo, "pp HT #oplus AuAu MB Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  // leg->AddEntry ( AuAuAJ_lo,     "AuAu HT Matched, p_{T}^{Cut}>0.2 GeV/c", "p");
-  // leg->AddEntry ( RCAJ_lo,       "Random Cone Bkg (RC)", "f");
-  // leg->AddEntry ( ECAJ_lo,       "Eta Cone Bkg (EC)", "f");
 
   cout << "chi^2 between RC and AuAu: " << RCAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
   cout << "chi^2 between EC and AuAu: " << ECAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;

@@ -107,6 +107,7 @@
   TFile* fNN = new TFile("AjResults/NicksList_HC100_AuAu.root");
   // TFile* fNN = new TFile("AjResults/Soft6_NicksList_HC100_AuAu.root");
   int RefmultCut = 269;  // 269 for 0-20%, 399 for 0-10%
+  //int RefmultCut = 1;  // 269 for 0-20%, 399 for 0-10%
   h2 = (TH2D*) fNN->Get( "AJ_lo");
   int NNMultBinL = h2->GetYaxis()->FindBin( RefmultCut );
   int NNMultBinR = h2->GetNbinsY();
@@ -269,6 +270,12 @@
   gPad->SaveAs("y11_Lo_Overlay.png");
   // ==============================================================================================
 
+  cout << AAtitle << "    --> " << AAhi->GetEntries() << endl;
+  cout << BBtitle << "    --> " << BBhi->GetEntries() << endl;
+  cout << CCtitle << "    --> " << CChi->GetEntries() << endl;
+  cout << DDtitle << "    --> " << DDhi->GetEntries() << endl;
+  cout << EEtitle << "    --> " << EEhi->GetEntries() << endl;
+  cout << NNtitle << "    --> " << NNhi->GetEntries() << endl;
 
 
   // TPaveText* msglo = new TPaveText( 0.59, 0.38, 0.89, 0.63, "brNDC" );
