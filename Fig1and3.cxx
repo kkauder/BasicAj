@@ -201,7 +201,13 @@ int Fig1and3( TString R = "" ) {
   //  ppInAuAuAJ_hi->GetYaxis()->SetTitleOffset(1.14);
   if (TString(fAuAu->GetName()).Contains("HT54") ) ppInAuAuAJ_hi->SetTitle( "Offline HT 5.4");
   if (TString(fAuAu->GetName()).Contains("HT64") ) ppInAuAuAJ_hi->SetTitle( "Offline HT 6.4");    
-  ppInAuAuAJ_hi->Draw("9");
+  TH1D* dummy = ppInAuAuAJ_hi->Clone("dummy");
+  dummy->Reset();
+  dummy->Draw("9");
+  ppInAuAuAJ_hi->SetAxisRange(0, 1, "x");
+  AuAuAJ_hi->SetAxisRange(0, 1, "x");
+
+  ppInAuAuAJ_hi->Draw("9same");
   
   TH1D* AJ_hi_minmax=0;
   TH1D* AJ_lo_minmax=0;
@@ -317,7 +323,7 @@ int Fig1and3( TString R = "" ) {
   //   // AJ_lo_minmax->SetBinContent(i, y);    
   //   AJ_lo_minmax->SetBinError(i, ey);    
   // }
-
+  AJ_hi_minmax->SetAxisRange(0,1,"x");
   AJ_hi_minmax->SetFillColor( kRed-10 );
   AJ_hi_minmax->SetMarkerColor(kRed-10);
   AJ_hi_minmax->SetMarkerSize(0);
