@@ -36,8 +36,10 @@ set TriggerName = All
 set submitted=0
 
 foreach File ( Data/AddedGeantPythia/pico*root )
-    foreach Tow ( -1 0 1 )
-	foreach Eff ( -1 0 1 )
+    foreach Tow ( 0 -1 1 )
+	foreach Eff ( 0 -1 1 )
+    # foreach Tow ( -1 0 1 )
+    # 	foreach Eff ( -1 0 1 )
 	    @ TowEff = $Tow * $Eff
 
 	    # Only perpendicluar combinations
@@ -65,7 +67,8 @@ foreach File ( Data/AddedGeantPythia/pico*root )
 	    # echo qsub -V -p 10 -q  erhiq -l mem=6gb -W umask=0022 -N SystGeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
 	    echo
 	    
-	    qsub -V -q  erhiq -l mem=6gb -W umask=0022 -N SystGeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+	    # qsub -V -q  erhiq -l mem=6gb -W umask=0022 -N SystGeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+	    qsub -V -q  mwsuq -l mem=2gb -W umask=0022 -N SystGeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
 	    @ submitted = $submitted + 1
 	end
     end

@@ -43,8 +43,11 @@ int MatchGeantToPythia ( ) {
     
   // Input
   // -----
-  TString DetLevelFile = "AjResults/Tow0_Eff0_Groom_Aj_HT54_Geant.root"; // pp-like events
-  TString McLevelFile  = "AjResults/Groom_Aj_TrueMB_NoEff_GeantMc.root"; // Reference (particle level) jets
+  TString PpLevelFile = "HThistos/Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root"; // pp-like events
+  // TString McLevelFile  = "HThistos/Groom_Aj_HT54_HTled_TrueMB_NoEff_GeantMc.root"; // Reference (particle level) jets
+  TString McLevelFile  = "HThistos/Groom_Aj_TrueMB_NoEff_GeantMc.root"; // Reference (particle level) jets
+  // TString DetLevelFile = "AjResults/Tow0_Eff0_Groom_Aj_HT54_Geant.root"; // pp-like events
+  // TString McLevelFile  = "AjResults/Groom_Aj_TrueMB_NoEff_GeantMc.root"; // Reference (particle level) jets
 
   // Refmult Cut
   // -----------
@@ -57,28 +60,25 @@ int MatchGeantToPythia ( ) {
   McJets->BuildIndex("runid","eventid");
 
   // The leading jet above 10 GeV that caused
+  // When appropriate, it has the HT!
   // this event to be recorded
   TClonesArray* McTrigger = new TClonesArray("TLorentzVector");
   McJets->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
   McJets->SetBranchAddress("TriggerJet", &McTrigger);
 
+  TClonesArray* McTriggerLo = new TClonesArray("TLorentzVector");
+  McJets->GetBranch("TriggerJetLo")->SetAutoDelete(kFALSE);
+  McJets->SetBranchAddress("TriggerJetLo", &McTriggerLo);
+
+  // On the other side
   TClonesArray* McAwayJet = new TClonesArray("TLorentzVector");
   McJets->GetBranch("AwayJet")->SetAutoDelete(kFALSE);
   McJets->SetBranchAddress("AwayJet", &McAwayJet);
 
-  // Only filled when AJ pair is found
-  TLorentzVector* Mcj1;
-  McJets->SetBranchAddress("j1", &Mcj1);
+  TClonesArray* McAwayLo = new TClonesArray("TLorentzVector");
+  McJets->GetBranch("AwayJetLo")->SetAutoDelete(kFALSE);
+  McJets->SetBranchAddress("AwayJetLo", &McAwayLo);
 
-  TLorentzVector* Mcj2;
-  McJets->SetBranchAddress("j2", &Mcj2);
-  
-  // TLorentzVector* Mcjm1;
-  // McJets->SetBranchAddress("jm1", &Mcjm1);
-
-  // TLorentzVector* Mcjm2;
-  // McJets->SetBranchAddress("jm2", &Mcjm2);
-  
   int mceventid;
   int mcrunid;
   double mcweight;     // Double-check, should be the same as below
@@ -86,64 +86,51 @@ int MatchGeantToPythia ( ) {
   McJets->SetBranchAddress("runid", &mcrunid);
   McJets->SetBranchAddress("weight",&mcweight );
 
-  float mczg1, mczg2, mczgm1, mczgm2;
-  float mcaj_hi, mcaj_lo;
-  McJets->SetBranchAddress("zg1",&mczg1 );
-  McJets->SetBranchAddress("zg2",&mczg2 );
-  McJets->SetBranchAddress("zgm1",&mczgm1 );
-  McJets->SetBranchAddress("zgm2",&mczgm2 );
-  McJets->SetBranchAddress("aj_lo",&mcaj_lo );
-  McJets->SetBranchAddress("aj_hi",&mcaj_hi );
+  float mczgtrighi, mczgtriglo, mczgawayhi, mczgawaylo;
+  McJets->SetBranchAddress("zgtrighi",&mczgtrighi );
+  McJets->SetBranchAddress("zgtriglo",&mczgtriglo );
+  McJets->SetBranchAddress("zgawayhi",&mczgawayhi );
+  McJets->SetBranchAddress("zgawaylo",&mczgawaylo );
+
   
   // Set up pp events
   // ----------------
-  TChain* ppJets = new TChain("TriggeredTree");
-  ppJets->Add( DetLevelFile );
-  assert ( ppJets->GetEntries()>0 && "Something went wrong loading the pp jets.");
-  
-  TClonesArray* pFullEvent = new TClonesArray("TStarJetVector");
-  ppJets->GetBranch("FullEvent")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("FullEvent", &pFullEvent);
+  TChain* PpJets = new TChain("TriggeredTree");
+  PpJets->Add ( PpLevelFile );
+  PpJets->BuildIndex("runid","eventid");
 
-  TClonesArray* pTriggerJet = new TClonesArray("TLorentzVector");
-  ppJets->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("TriggerJet", &pTriggerJet);
+  // The leading jet above 10 GeV that caused
+  // When appropriate, it has the HT!
+  // this event to be recorded
+  TClonesArray* PpTrigger = new TClonesArray("TLorentzVector");
+  PpJets->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
+  PpJets->SetBranchAddress("TriggerJet", &PpTrigger);
 
-  TClonesArray* pAwayJet = new TClonesArray("TLorentzVector");
-  ppJets->GetBranch("AwayJet")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("AwayJet", &pAwayJet);
+  TClonesArray* PpTriggerLo = new TClonesArray("TLorentzVector");
+  PpJets->GetBranch("TriggerJetLo")->SetAutoDelete(kFALSE);
+  PpJets->SetBranchAddress("TriggerJetLo", &PpTriggerLo);
 
-  TLorentzVector* pOrigJ1 = new TLorentzVector();
-  ppJets->GetBranch("j1")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("j1", &pOrigJ1);
+  // On the other side
+  TClonesArray* PpAwayJet = new TClonesArray("TLorentzVector");
+  PpJets->GetBranch("AwayJet")->SetAutoDelete(kFALSE);
+  PpJets->SetBranchAddress("AwayJet", &PpAwayJet);
 
-  TLorentzVector* pOrigJ2 = new TLorentzVector();
-  ppJets->GetBranch("j2")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("j2", &pOrigJ2);
+  TClonesArray* PpAwayLo = new TClonesArray("TLorentzVector");
+  PpJets->GetBranch("AwayJetLo")->SetAutoDelete(kFALSE);
+  PpJets->SetBranchAddress("AwayJetLo", &PpAwayLo);
 
-  TLorentzVector* pOrigJM1 = new TLorentzVector();
-  ppJets->GetBranch("jm1")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("jm1", &pOrigJM1);
+  int ppeventid;
+  int pprunid;
+  double ppweight;     // Double-check, should be the same as below
+  PpJets->SetBranchAddress("eventid", &ppeventid);
+  PpJets->SetBranchAddress("runid", &pprunid);
+  PpJets->SetBranchAddress("weight",&ppweight );
 
-  TLorentzVector* pOrigJM2 = new TLorentzVector();
-  ppJets->GetBranch("jm2")->SetAutoDelete(kFALSE);
-  ppJets->SetBranchAddress("jm2", &pOrigJM2);
-
-  int deteventid;
-  int detrunid;
-  double weight;     // Primarily to stitch together MC data
-  ppJets->SetBranchAddress("eventid", &deteventid);
-  ppJets->SetBranchAddress("runid", &detrunid);
-  ppJets->SetBranchAddress("weight",&weight );
-
-  float detzg1, detzg2, detzgm1, detzgm2;
-  float detaj_hi, detaj_lo;
-  ppJets->SetBranchAddress("zg1",&detzg1 );
-  ppJets->SetBranchAddress("zg2",&detzg2 );
-  ppJets->SetBranchAddress("zgm1",&detzgm1 );
-  ppJets->SetBranchAddress("zgm2",&detzgm2 );
-  ppJets->SetBranchAddress("aj_lo",&detaj_lo );
-  ppJets->SetBranchAddress("aj_hi",&detaj_hi );
+  float ppzgtrighi, ppzgtriglo, ppzgawayhi, ppzgawaylo;
+  PpJets->SetBranchAddress("zgtrighi",&ppzgtrighi );
+  PpJets->SetBranchAddress("zgtriglo",&ppzgtriglo );
+  PpJets->SetBranchAddress("zgawayhi",&ppzgawayhi );
+  PpJets->SetBranchAddress("zgawaylo",&ppzgawaylo );
 
   // Output and histograms
   // ----------------------
@@ -152,47 +139,54 @@ int MatchGeantToPythia ( ) {
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
 
-  // Trigger jet info
+  // // Trigger jet info
+  // Old
   TH1D* McTrigPt = new TH1D( "McTrigPt",";Trigger p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
   TH1D* McTrigPtMatched = new TH1D( "McTrigPtMatched",";Trigger p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
   TH1D* DetTrigPt = new TH1D( "DetTrigPt",";Trigger p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
   TH2D* TriggerJetForLostMc = new TH2D( "TriggerJetForLostMc", ";p_{T};#eta", 120, 10, 70, 100,-1,1 );
 
-  // Dijets
-  TH1D* McJ1Pt = new TH1D( "McJ1Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* McJ1PtMatched = new TH1D( "McJ1PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* DetJ1Pt = new TH1D( "DetJ1Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* McJM1PtMatched = new TH1D( "McJM1PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* DetJM1Pt = new TH1D( "DetJM1Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // New
+  TH1D* McTriggerPt = new TH1D( "McTriggerPt",";Trigger p_{T}^{Part} [GeV/c]", 140, 10 , 80 );
+  TH1D* PpTriggerPt = new TH1D( "PpTriggerPt",";Trigger p_{T}^{Det} [GeV/c]", 140, 10 , 80 );
+  TH2D* DeltaTriggerPt = new TH2D( "DeltaTriggerPt",";p_{T}^{Part};Trigger p_{T}^{Det}-p_{T}^{Part} [GeV/c]", 140, 10, 80, 100, -25, 25 );
+  
 
-  TH1D* McJ2Pt = new TH1D( "McJ2Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* McJ2PtMatched = new TH1D( "McJ2PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* DetJ2Pt = new TH1D( "DetJ2Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* McJM2PtMatched = new TH1D( "McJM2PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
-  TH1D* DetJM2Pt = new TH1D( "DetJM2Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // // Dijets
+  // TH1D* McJ1Pt = new TH1D( "McJ1Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* McJ1PtMatched = new TH1D( "McJ1PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* DetJ1Pt = new TH1D( "DetJ1Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* McJM1PtMatched = new TH1D( "McJM1PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* DetJM1Pt = new TH1D( "DetJM1Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
 
-  // AJ
-  TH1D* McAJ = new TH1D( "McAJ",";A_{J};fraction", 50, -0.6, 0.9 );
-  TH1D* McAJMatched = new TH1D( "McAJMatched",";A_{J};fraction", 50, -0.6, 0.9 );
-  TH1D* DetAJ_hi = new TH1D( "DetAJ_hi",";A_{J};fraction", 50, -0.6, 0.9 );
-  TH1D* DetAJ_lo = new TH1D( "DetAJ_lo",";A_{J};fraction", 50, -0.6, 0.9 );
+  // TH1D* McJ2Pt = new TH1D( "McJ2Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* McJ2PtMatched = new TH1D( "McJ2PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* DetJ2Pt = new TH1D( "DetJ2Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* McJM2PtMatched = new TH1D( "McJM2PtMatched",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
+  // TH1D* DetJM2Pt = new TH1D( "DetJM2Pt",";p_{T}^{Jet} [GeV/c]", 140, 10 , 80 );
 
-  // zg Lead
-  int nzgBins=40;
-  TH1D* MczgLead2030Lo = new TH1D("MczgLead2030Lo","Leading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* MczgLead3040Lo = new TH1D("MczgLead3040Lo","Leading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* MczgLead2030LoMatched = new TH1D("MczgLead2030LoMatched","Leading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* MczgLead3040LoMatched = new TH1D("MczgLead3040LoMatched","Leading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* DetzgLead2030Lo = new TH1D("DetzgLead2030Lo","Leading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* DetzgLead3040Lo = new TH1D("DetzgLead3040Lo","Leading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+  // // AJ
+  // TH1D* McAJ = new TH1D( "McAJ",";A_{J};fraction", 50, -0.6, 0.9 );
+  // TH1D* McAJMatched = new TH1D( "McAJMatched",";A_{J};fraction", 50, -0.6, 0.9 );
+  // TH1D* DetAJ_hi = new TH1D( "DetAJ_hi",";A_{J};fraction", 50, -0.6, 0.9 );
+  // TH1D* DetAJ_lo = new TH1D( "DetAJ_lo",";A_{J};fraction", 50, -0.6, 0.9 );
 
-  // zg SubLead
-  TH1D* MczgSubLead1020Lo = new TH1D("MczgSubLead1020Lo","SubLeading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* MczgSubLead2030Lo = new TH1D("MczgSubLead2030Lo","SubLeading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* MczgSubLead1020LoMatched = new TH1D("MczgSubLead1020LoMatched","SubLeading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* MczgSubLead2030LoMatched = new TH1D("MczgSubLead2030LoMatched","SubLeading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* DetzgSubLead1020Lo = new TH1D("DetzgSubLead1020Lo","SubLeading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
-  TH1D* DetzgSubLead2030Lo = new TH1D("DetzgSubLead2030Lo","SubLeading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
+  // // zg Lead
+  // int nzgBins=40;
+  // TH1D* MczgLead2030Lo = new TH1D("MczgLead2030Lo","Leading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* MczgLead3040Lo = new TH1D("MczgLead3040Lo","Leading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* MczgLead2030LoMatched = new TH1D("MczgLead2030LoMatched","Leading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* MczgLead3040LoMatched = new TH1D("MczgLead3040LoMatched","Leading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* DetzgLead2030Lo = new TH1D("DetzgLead2030Lo","Leading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* DetzgLead3040Lo = new TH1D("DetzgLead3040Lo","Leading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+
+  // // zg SubLead
+  // TH1D* MczgSubLead1020Lo = new TH1D("MczgSubLead1020Lo","SubLeading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* MczgSubLead2030Lo = new TH1D("MczgSubLead2030Lo","SubLeading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* MczgSubLead1020LoMatched = new TH1D("MczgSubLead1020LoMatched","SubLeading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* MczgSubLead2030LoMatched = new TH1D("MczgSubLead2030LoMatched","SubLeading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* DetzgSubLead1020Lo = new TH1D("DetzgSubLead1020Lo","SubLeading Lo jet with 30<p_{T}<40;z_{g}", nzgBins, 0.05, 0.55);
+  // TH1D* DetzgSubLead2030Lo = new TH1D("DetzgSubLead2030Lo","SubLeading Lo jet with 20<p_{T}<30;z_{g}", nzgBins, 0.05, 0.55);
 
   // ------------------------
   // Loop over particle level
@@ -205,40 +199,62 @@ int MatchGeantToPythia ( ) {
     if ( !(mcEvi%10000) ) cout << "Working on " << mcEvi << " / " << McJets->GetEntries() << endl;
     McJets->GetEntry(mcEvi);
 
+
+    // Require truth in acceptance
+    // ---------------------------
     TLorentzVector *McTriggerJet = (TLorentzVector*) McTrigger->At(0);
     if ( fabs ( McTriggerJet->Eta() ) > EtaCut ) continue;
 
     McTrigPt->Fill( McTriggerJet->Pt(), mcweight );
 
-    // Dijets:
-    if ( Mcj1->Pt() < 1e-1 ) continue;
-    if ( Mcj2->Pt() < 1e-1 ) {
-      cerr << "This should never happen!" << endl;
+    // Get corresponding pp event
+    // --------------------------
+    Long64_t ppevi=-1;
+    ppevi = McJets->GetEntryNumberWithIndex( mcrunid, mceventid );
+    if ( ppevi < 0 ){
+      TriggerJetForLostMc->Fill( tdet->Pt(),tdet->Eta() );
+      lostpp++;
+
+      // Here is where we for the first time could file for loss
+      // Instead, just skip this event
+      continue;
+    }
+    PpJets->GetEntry(ppevi);
+    
+    // Get the det level jet
+    // ---------------------
+    if ( PpTrigger->GetEntries()!=1 ){
+      cout << " No trigger jet in data?!" << endl;
       return -1;
-    }
-
-    McJ1Pt->Fill( Mcj1->Pt(), mcweight );
-    McJ2Pt->Fill( Mcj2->Pt(), mcweight );
-
-    McAJ->Fill( mcaj_lo ); 
-
-    float Mcpt1 = Mcj1->Pt();
-    if ( Mcpt1 >= 20 && Mcpt1 < 30 ){
-      MczgLead2030Lo->Fill ( mczgm1, mcweight );
-    }
-    if ( Mcpt1 >= 30 && Mcpt1 < 40 ){
-      MczgLead3040Lo->Fill ( mczgm1, mcweight );
-    }
-
-    float Mcpt2 = Mcj2->Pt();
-    if ( Mcpt2 >= 10 && Mcpt2 < 20 ){
-      MczgSubLead1020Lo->Fill ( mczgm2, mcweight );
-    }
-    if ( Mcpt2 >= 20 && Mcpt2 < 30 ){
-      MczgSubLead2030Lo->Fill ( mczgm2, mcweight );
-    }
+    } 
+    TLorentzVector* PpT = (TLorentzVector*) PpTrigger->At(0);
+    TLorentzVector* McT = (TLorentzVector*) McTrigger->At(0);
+    
+    // Fill truth, smeared, and delta pT
+    McTriggerPt->Fill( McT->Pt(), mcweight);
+    PpTriggerPt->Fill( PpT->Pt(), mcweight);
+    DeltaTriggerPt->Fill( McT->Pt(), McT->Pt() - PpT->Pt(), mcweight);
 
   }
+
+  new TCanvas;
+  gPad->SetGridx(0);  gPad->SetGridy(0);
+  gPad->SetLogy();
+  // leg = new TLegend( 0.55, 0.55, 0.89, 0.9, "Trigger Jet (leading, above 10 GeV)" );
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
+  McTriggerPt->Draw();
+  PpTriggerPt->Draw("same");
+
+  new TCanvas;
+  DeltaTriggerPt->Draw("colz");
+
+  // new TCanvas;
+  // DeltaTriggerPt->Draw("colz");
+
+  return 0;
 
   // ------------------------
   // Loop over detector level
@@ -259,20 +275,20 @@ int MatchGeantToPythia ( ) {
   int softmatchlost=0;
   int accepteddijets=0;
   int acceptedevents=0;
-  for ( Long64_t ppEv = 0; ppEv< ppJets->GetEntries() ; ++ppEv ){
-    if ( !(ppEv%10000) ) cout << "Working on " << ppEv << " / " << ppJets->GetEntries() << endl;
-    ppJets->GetEntry(ppEv);
+  for ( Long64_t ppEv = 0; ppEv< PpJets->GetEntries() ; ++ppEv ){
+    if ( !(ppEv%10000) ) cout << "Working on " << ppEv << " / " << PpJets->GetEntries() << endl;
+    PpJets->GetEntry(ppEv);
 
-    if (pTriggerJet->GetEntries()!=1 ){
+    if ( PpTrigger->GetEntries()!=1 ){
       cout << " No trigger jet in data?!" << endl;
       return -1;
     } 
-    TLorentzVector* tdet = (TLorentzVector*) pTriggerJet->At(0);
+    TLorentzVector* tdet = (TLorentzVector*) PpTrigger->At(0);
 
     // Get corresponding MC event
     // --------------------------
     Long64_t mcevi=-1;
-    mcevi = McJets->GetEntryNumberWithIndex( detrunid, deteventid );
+    mcevi = McJets->GetEntryNumberWithIndex( pprunid, ppeventid );
     if ( mcevi < 0 ){
       TriggerJetForLostMc->Fill( tdet->Pt(),tdet->Eta() );
       lostmc++;
@@ -290,13 +306,13 @@ int MatchGeantToPythia ( ) {
     }
 
     McJets->GetEntry( mcevi );
-    if ( fabs(mcweight / weight - 1) > 1e-4 ) {
+    if ( fabs(mcweight / ppweight - 1) > 1e-4 ) {
       // Sanity check
-      cerr << "mcweight / weight = " << mcweight / weight  << endl;
-      cerr << "mcweight = " <<  mcweight  << "    weight = " <<  weight << endl;
+      cerr << "mcweight / ppweight = " << mcweight / ppweight  << endl;
+      cerr << "mcweight = " <<  mcweight  << "    ppweight = " <<  ppweight << endl;
       cout << "Mc: runid = " << mcrunid << "  eventid = " << mceventid << endl;
       cout << "Mc: evi = " << mcevi << endl;
-      cout << "Det: runid = " << detrunid << "  eventid = " << deteventid << endl;
+      cout << "Det: runid = " << pprunid << "  eventid = " << ppeventid << endl;
       // cout << "Signal: evi = " << evi << endl;
 
       return -1;
@@ -312,7 +328,7 @@ int MatchGeantToPythia ( ) {
 
     // This is mostly useless.
     TLorentzVector* adet = 0;
-    if (pAwayJet->GetEntries()!=1 ) adet = (TLorentzVector*) pAwayJet->At(0);
+    if (PpAwayJet->GetEntries()!=1 ) adet = (TLorentzVector*) PpAwayJet->At(0);
 
     bool triggermatched=false;
     bool awaymatched=false;
@@ -350,86 +366,85 @@ int MatchGeantToPythia ( ) {
     McTrigPtMatched->Fill( McTriggerJet->Pt(), mcweight );
     DetTrigPt->Fill ( tdet->Pt(), mcweight );
 
-    // Now let's look at dijets
-    bool mcdijet=false;
-    bool detdijet=false;
-    if ( Mcj1->Pt() > 1e-1 ) {
-      if( fabs(Mcj1->Eta())> EtaCut || fabs(Mcj2->Eta())> EtaCut ){ 
-	largeetamcdijets++;
-	continue;
-      }
-      mcdijet=true;
-    }
-    if ( pOrigJ1->Pt() > 1e-1 ) detdijet=true;
+    // // Now let's look at dijets
+    // bool mcdijet=false;
+    // bool detdijet=false;
+    // if ( Mcj1->Pt() > 1e-1 ) {
+    //   if( fabs(Mcj1->Eta())> EtaCut || fabs(Mcj2->Eta())> EtaCut ){ 
+    // 	largeetamcdijets++;
+    // 	continue;
+    //   }
+    //   mcdijet=true;
+    // }
+    // if ( pOrigJ1->Pt() > 1e-1 ) detdijet=true;
 
-    if ( !mcdijet && !detdijet ){ nodijet++; continue; }
-    if ( mcdijet && !detdijet ){ lostmcdijet++; continue; }
-    if ( !mcdijet && detdijet ){ newdetdijet++; continue; }
+    // if ( !mcdijet && !detdijet ){ nodijet++; continue; }
+    // if ( mcdijet && !detdijet ){ lostmcdijet++; continue; }
+    // if ( !mcdijet && detdijet ){ newdetdijet++; continue; }
 
 
-    accepteddijets++;
-    McJ1PtMatched->Fill( Mcj1->Pt(), mcweight );
-    McJ2PtMatched->Fill( Mcj2->Pt(), mcweight );
-    McAJMatched->Fill( mcaj_lo, mcweight );
+    // accepteddijets++;
+    // McJ1PtMatched->Fill( Mcj1->Pt(), mcweight );
+    // McJ2PtMatched->Fill( Mcj2->Pt(), mcweight );
+    // McAJMatched->Fill( mcaj_lo, mcweight );
     
-    DetJ1Pt->Fill( pOrigJ1->Pt(), mcweight );
-    DetJ2Pt->Fill( pOrigJ2->Pt(), mcweight );
-    DetAJ_hi->Fill( detaj_hi, mcweight );
+    // DetJ1Pt->Fill( pOrigJ1->Pt(), mcweight );
+    // DetJ2Pt->Fill( pOrigJ2->Pt(), mcweight );
+    // DetAJ_hi->Fill( detaj_hi, mcweight );
 
 
-    // soft-matched?
-    if ( pOrigJM1->Pt()<1e-1 || pOrigJM2->Pt()<1e-1 ){
-      softmatchlost++;
-      continue;
-    }
-    DetJM1Pt->Fill( pOrigJM1->Pt(), mcweight );
-    DetJM2Pt->Fill( pOrigJM2->Pt(), mcweight );
-    DetAJ_lo->Fill( detaj_lo, mcweight );
+    // // soft-matched?
+    // if ( pOrigJM1->Pt()<1e-1 || pOrigJM2->Pt()<1e-1 ){
+    //   softmatchlost++;
+    //   continue;
+    // }
+    // DetJM1Pt->Fill( pOrigJM1->Pt(), mcweight );
+    // DetJM2Pt->Fill( pOrigJM2->Pt(), mcweight );
+    // DetAJ_lo->Fill( detaj_lo, mcweight );
 
-    // zg Lead
-    // -------
-    // Question: What pT to use here? Start with Mc
-    // float Mcpt1 = Mcj1->Pt();
-    // That seems kinda bad. Let's try det level (true match)
-    float Mcpt1 = pOrigJ1->Pt();
-    if ( Mcpt1 >= 20 && Mcpt1 < 30 ){
-      MczgLead2030LoMatched->Fill ( mczgm1, mcweight );
-    }
-    if ( Mcpt1 >= 30 && Mcpt1 < 40 ){
-      MczgLead3040LoMatched->Fill ( mczgm1, mcweight );
-    }
+    // // zg Lead
+    // // -------
+    // // Question: What pT to use here? Start with Mc
+    // // float Mcpt1 = Mcj1->Pt();
+    // // That seems kinda bad. Let's try det level (true match)
+    // float Mcpt1 = pOrigJ1->Pt();
+    // if ( Mcpt1 >= 20 && Mcpt1 < 30 ){
+    //   MczgLead2030LoMatched->Fill ( mczgm1, mcweight );
+    // }
+    // if ( Mcpt1 >= 30 && Mcpt1 < 40 ){
+    //   MczgLead3040LoMatched->Fill ( mczgm1, mcweight );
+    // }
 
-    float Detpt1 = pOrigJ1->Pt();
-    if ( Detpt1 >= 20 && Detpt1 < 30 ){
-      DetzgLead2030Lo->Fill ( detzgm1, mcweight );
-    }
-    if ( Detpt1 >= 30 && Detpt1 < 40 ){
-      DetzgLead3040Lo->Fill ( detzgm1, mcweight );
-    }
+    // float Detpt1 = pOrigJ1->Pt();
+    // if ( Detpt1 >= 20 && Detpt1 < 30 ){
+    //   DetzgLead2030Lo->Fill ( detzgm1, mcweight );
+    // }
+    // if ( Detpt1 >= 30 && Detpt1 < 40 ){
+    //   DetzgLead3040Lo->Fill ( detzgm1, mcweight );
+    // }
 
-    // zg SubLead
-    // ----------
-    // Question: What pT to use here? Start with Mc
-    // float Mcpt2 = Mcj2->Pt();
-    // That seems kinda bad. Let's try det level (true match)
-    float Mcpt2 = pOrigJ2->Pt();
-    if ( Mcpt2 >= 10 && Mcpt2 < 20 ){
-      MczgSubLead1020LoMatched->Fill ( mczgm2, mcweight );
-    }
-    if ( Mcpt2 >= 20 && Mcpt2 < 30 ){
-      MczgSubLead2030LoMatched->Fill ( mczgm2, mcweight );
-    }
+    // // zg SubLead
+    // // ----------
+    // // Question: What pT to use here? Start with Mc
+    // // float Mcpt2 = Mcj2->Pt();
+    // // That seems kinda bad. Let's try det level (true match)
+    // float Mcpt2 = pOrigJ2->Pt();
+    // if ( Mcpt2 >= 10 && Mcpt2 < 20 ){
+    //   MczgSubLead1020LoMatched->Fill ( mczgm2, mcweight );
+    // }
+    // if ( Mcpt2 >= 20 && Mcpt2 < 30 ){
+    //   MczgSubLead2030LoMatched->Fill ( mczgm2, mcweight );
+    // }
 
-    float Detpt2 = pOrigJ2->Pt();
-    if ( Detpt2 >= 10 && Detpt2 < 20 ){
-      DetzgSubLead1020Lo->Fill ( detzgm2, mcweight );
-    }
-    if ( Detpt2 >= 20 && Detpt2 < 30 ){
-      DetzgSubLead2030Lo->Fill ( detzgm2, mcweight );
-    }
-
-	  
+    // float Detpt2 = pOrigJ2->Pt();
+    // if ( Detpt2 >= 10 && Detpt2 < 20 ){
+    //   DetzgSubLead1020Lo->Fill ( detzgm2, mcweight );
+    // }
+    // if ( Detpt2 >= 20 && Detpt2 < 30 ){
+    //   DetzgSubLead2030Lo->Fill ( detzgm2, mcweight );
+    // }	  
   }
+
   // Plot trigger spectra
   // --------------------
   new TCanvas;
@@ -454,250 +469,251 @@ int MatchGeantToPythia ( ) {
   leg->Draw();
   gPad->SaveAs( "GeantDiagnosis/TriggerJetSpectra.png");
 
-  // Draw dijet spectra
-  // ------------------
-  new TCanvas;
-  gPad->SetGridx(0);  gPad->SetGridy(0);
-  gPad->SetLogy();
-  leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "Dijets:" );
-  leg->SetBorderSize(0);
-  leg->SetLineWidth(10);
-  leg->SetFillStyle(0);
-  leg->SetMargin(0.1);
 
-  McJ1Pt->SetLineColor(kGreen+1);
-  McJ1Pt->Draw();
-  leg->AddEntry( McJ1Pt, "Leading MC truth, no bias", "l");
+  // // Draw dijet spectra
+  // // ------------------
+  // new TCanvas;
+  // gPad->SetGridx(0);  gPad->SetGridy(0);
+  // gPad->SetLogy();
+  // leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "Dijets:" );
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
 
-  McJ1PtMatched->SetLineColor(kBlue);
-  McJ1PtMatched->Draw("same");
-  leg->AddEntry( McJ1PtMatched, "Leading MC truth, matched", "l");
+  // McJ1Pt->SetLineColor(kGreen+1);
+  // McJ1Pt->Draw();
+  // leg->AddEntry( McJ1Pt, "Leading MC truth, no bias", "l");
 
-  DetJ1Pt->SetLineColor(kRed+1);
-  DetJ1Pt->Draw("same");
-  leg->AddEntry( DetJ1Pt, "Leading Detector level Hard-Core", "l");
+  // McJ1PtMatched->SetLineColor(kBlue);
+  // McJ1PtMatched->Draw("same");
+  // leg->AddEntry( McJ1PtMatched, "Leading MC truth, matched", "l");
 
-  DetJM1Pt->SetLineColor(kGray+2);
-  DetJM1Pt->Draw("same");
-  leg->AddEntry( DetJM1Pt, "Leading Detector level Soft-Match", "l");
+  // DetJ1Pt->SetLineColor(kRed+1);
+  // DetJ1Pt->Draw("same");
+  // leg->AddEntry( DetJ1Pt, "Leading Detector level Hard-Core", "l");
 
-  leg->Draw();
-  gPad->SaveAs( "GeantDiagnosis/LeadJetSpectra.png");
+  // DetJM1Pt->SetLineColor(kGray+2);
+  // DetJM1Pt->Draw("same");
+  // leg->AddEntry( DetJM1Pt, "Leading Detector level Soft-Match", "l");
 
-  new TCanvas;
-  gPad->SetGridx(0);  gPad->SetGridy(0);
-  gPad->SetLogy();
-  leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "Dijets:" );
-  leg->SetBorderSize(0);
-  leg->SetLineWidth(10);
-  leg->SetFillStyle(0);
-  leg->SetMargin(0.1);
+  // leg->Draw();
+  // gPad->SaveAs( "GeantDiagnosis/LeadJetSpectra.png");
 
-  McJ2Pt->SetLineColor(kGreen+1);
-  McJ2Pt->Draw("");
-  leg->AddEntry( McJ2Pt, "Sub-Leading MC truth, no bias", "l");
+  // new TCanvas;
+  // gPad->SetGridx(0);  gPad->SetGridy(0);
+  // gPad->SetLogy();
+  // leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "Dijets:" );
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
 
-  McJ2PtMatched->SetLineColor(kBlue);
-  McJ2PtMatched->Draw("same");
-  leg->AddEntry( McJ2PtMatched, "Sub-Leading MC truth, matched", "l");
+  // McJ2Pt->SetLineColor(kGreen+1);
+  // McJ2Pt->Draw("");
+  // leg->AddEntry( McJ2Pt, "Sub-Leading MC truth, no bias", "l");
 
-  DetJ2Pt->SetLineColor(kRed+1);
-  DetJ2Pt->Draw("same");
-  leg->AddEntry( DetJ2Pt, "Sub-Leading Detector level Hard-Core", "l");
+  // McJ2PtMatched->SetLineColor(kBlue);
+  // McJ2PtMatched->Draw("same");
+  // leg->AddEntry( McJ2PtMatched, "Sub-Leading MC truth, matched", "l");
 
-  DetJM2Pt->SetLineColor(kGray+2);
-  DetJM2Pt->Draw("same");
-  leg->AddEntry( DetJM2Pt, "Sub-Leading Detector level Soft-Match", "l");
+  // DetJ2Pt->SetLineColor(kRed+1);
+  // DetJ2Pt->Draw("same");
+  // leg->AddEntry( DetJ2Pt, "Sub-Leading Detector level Hard-Core", "l");
 
-  leg->Draw();
-  gPad->SaveAs( "GeantDiagnosis/SubLeadJetSpectra.png");
+  // DetJM2Pt->SetLineColor(kGray+2);
+  // DetJM2Pt->Draw("same");
+  // leg->AddEntry( DetJM2Pt, "Sub-Leading Detector level Soft-Match", "l");
+
+  // leg->Draw();
+  // gPad->SaveAs( "GeantDiagnosis/SubLeadJetSpectra.png");
   
-  // Draw AJ
-  // -------
-  new TCanvas;
-  gPad->SetGridx(0);  gPad->SetGridy(0);
-  leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "A_{J}" );
-  leg->SetBorderSize(0);
-  leg->SetLineWidth(10);
-  leg->SetFillStyle(0);
-  leg->SetMargin(0.1);
+  // // Draw AJ
+  // // -------
+  // new TCanvas;
+  // gPad->SetGridx(0);  gPad->SetGridy(0);
+  // leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "A_{J}" );
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
 
-  McAJ->Scale (1./McAJ->Integral(1,McAJ->GetNbinsX()) );
-  McAJMatched->Scale (1./McAJMatched->Integral(1,McAJMatched->GetNbinsX()) );
-  DetAJ_hi->Scale (1./DetAJ_hi->Integral(1,DetAJ_hi->GetNbinsX()) );
-  DetAJ_lo->Scale (1./DetAJ_lo->Integral(1,DetAJ_lo->GetNbinsX()) );
+  // McAJ->Scale (1./McAJ->Integral(1,McAJ->GetNbinsX()) );
+  // McAJMatched->Scale (1./McAJMatched->Integral(1,McAJMatched->GetNbinsX()) );
+  // DetAJ_hi->Scale (1./DetAJ_hi->Integral(1,DetAJ_hi->GetNbinsX()) );
+  // DetAJ_lo->Scale (1./DetAJ_lo->Integral(1,DetAJ_lo->GetNbinsX()) );
 
-  //McAJ->SetAxisRange(  0.0, 0.25, "y");
-  McAJ->SetAxisRange(  -0.3, 0.8, "x");
-  McAJMatched->SetAxisRange(  -0.3, 0.8, "x");
-  DetAJ_hi->SetAxisRange(  -0.3, 0.8, "x");
-  DetAJ_lo->SetAxisRange(  -0.3, 0.8, "x");
+  // //McAJ->SetAxisRange(  0.0, 0.25, "y");
+  // McAJ->SetAxisRange(  -0.3, 0.8, "x");
+  // McAJMatched->SetAxisRange(  -0.3, 0.8, "x");
+  // DetAJ_hi->SetAxisRange(  -0.3, 0.8, "x");
+  // DetAJ_lo->SetAxisRange(  -0.3, 0.8, "x");
   
 
 	       
-  McAJ->SetLineColor(kGreen+1);
-  McAJ->Draw();
-  leg->AddEntry( McAJ, "Leading MC truth, no bias", "l");
+  // McAJ->SetLineColor(kGreen+1);
+  // McAJ->Draw();
+  // leg->AddEntry( McAJ, "Leading MC truth, no bias", "l");
 
-  McAJMatched->SetLineColor(kBlue);
-  McAJMatched->Draw("same");
-  leg->AddEntry( McAJMatched, "Leading MC truth, matched", "l");
+  // McAJMatched->SetLineColor(kBlue);
+  // McAJMatched->Draw("same");
+  // leg->AddEntry( McAJMatched, "Leading MC truth, matched", "l");
 
-  DetAJ_hi->SetLineColor(kRed+1);
-  DetAJ_hi->Draw("same");
-  leg->AddEntry( DetAJ_hi, "Leading Detector level Hard-Core", "l");
+  // DetAJ_hi->SetLineColor(kRed+1);
+  // DetAJ_hi->Draw("same");
+  // leg->AddEntry( DetAJ_hi, "Leading Detector level Hard-Core", "l");
 
-  DetAJ_lo->SetLineColor(kGray+2);
-  DetAJ_lo->Draw("same");
-  leg->AddEntry( DetAJ_lo, "Leading Detector level Soft-Match", "l");
+  // DetAJ_lo->SetLineColor(kGray+2);
+  // DetAJ_lo->Draw("same");
+  // leg->AddEntry( DetAJ_lo, "Leading Detector level Soft-Match", "l");
 
-  leg->Draw();
-  gPad->SaveAs( "GeantDiagnosis/AJ.png");
+  // leg->Draw();
+  // gPad->SaveAs( "GeantDiagnosis/AJ.png");
 
-  // TObjArray toa;
-  TH1D** toa = new TH1D*[6];
-  TH1D* h;
-  int RebinZg=4;
+  // // TObjArray toa;
+  // TH1D** toa = new TH1D*[6];
+  // TH1D* h;
+  // int RebinZg=4;
 
-  // Prep Theory curve
-  TF1* PbarQjet = new TF1("PbarQjet","1./[0] * 4./3. * ( (1+pow(x,2))/(1-x) + (1 + pow(1-x,2))/x )", 0.1, 0.5);
-  PbarQjet->SetParameter( 0,4.2593);
-  PbarQjet->SetLineColor(kGreen);
+  // // Prep Theory curve
+  // TF1* PbarQjet = new TF1("PbarQjet","1./[0] * 4./3. * ( (1+pow(x,2))/(1-x) + (1 + pow(1-x,2))/x )", 0.1, 0.5);
+  // PbarQjet->SetParameter( 0,4.2593);
+  // PbarQjet->SetLineColor(kGreen);
 
-  TF1* FUVQjet = new TF1("FUVQjet", "[0]*(PbarQjet)", 0.1,0.5);
-  FUVQjet->SetParameter( 0,1);
+  // TF1* FUVQjet = new TF1("FUVQjet", "[0]*(PbarQjet)", 0.1,0.5);
+  // FUVQjet->SetParameter( 0,1);
 
-  FUVQjet->SetLineColor(kGray+2);
-  FUVQjet->SetLineWidth(1);
-  FUVQjet->SetLineStyle(2);
-  FUVQjet->SetParameter( 0,1);
+  // FUVQjet->SetLineColor(kGray+2);
+  // FUVQjet->SetLineWidth(1);
+  // FUVQjet->SetLineStyle(2);
+  // FUVQjet->SetParameter( 0,1);
 
-  // Draw Lead zg
-  // ------------
-  new TCanvas;
-  gPad->SetGridx(0);  gPad->SetGridy(0);
-  leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "Lead z_{g}, 20<p_{T}^{(Truth | Detector)}<30 GeV/c" );
-  leg->SetBorderSize(0);
-  leg->SetLineWidth(10);
-  leg->SetFillStyle(0);
-  leg->SetMargin(0.1);
+  // // Draw Lead zg
+  // // ------------
+  // new TCanvas;
+  // gPad->SetGridx(0);  gPad->SetGridy(0);
+  // leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "Lead z_{g}, 20<p_{T}^{(Truth | Detector)}<30 GeV/c" );
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
   
-  toa[0]=MczgLead2030Lo;
-  toa[1]=MczgLead3040Lo;
-  toa[2]=MczgLead2030LoMatched;
-  toa[3]=MczgLead3040LoMatched;
-  toa[4]=DetzgLead2030Lo;
-  toa[5]=DetzgLead3040Lo;
+  // toa[0]=MczgLead2030Lo;
+  // toa[1]=MczgLead3040Lo;
+  // toa[2]=MczgLead2030LoMatched;
+  // toa[3]=MczgLead3040LoMatched;
+  // toa[4]=DetzgLead2030Lo;
+  // toa[5]=DetzgLead3040Lo;
 
-  for (int i=0 ; i<6 ; ++i ){
-    h=toa[i];
+  // for (int i=0 ; i<6 ; ++i ){
+  //   h=toa[i];
 
-    h->Scale ( 1./ h->Integral() / h->GetXaxis()->GetBinWidth(1));
+  //   h->Scale ( 1./ h->Integral() / h->GetXaxis()->GetBinWidth(1));
 
-    h->Rebin( RebinZg );
-    h->Scale(1./RebinZg );
+  //   h->Rebin( RebinZg );
+  //   h->Scale(1./RebinZg );
 
-    h->SetAxisRange( 0,10, "y" );
-    h->SetLineWidth( 2 );
+  //   h->SetAxisRange( 0,10, "y" );
+  //   h->SetLineWidth( 2 );
 
-    h->SetTitle(";z_{g};arb.");
-    h->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
-    h->GetXaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
-    h->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
-    h->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->SetTitle(";z_{g};arb.");
+  //   h->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->GetXaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
 
-    // if ( TString(h->GetName()).Contains("AuAu") ){
-    //   h->SetMarkerStyle( 21 );
-    // } else if ( TString(h->GetName()).Contains("pp") ){
-    //   h->SetMarkerStyle( 25 );
-    // }
+  //   // if ( TString(h->GetName()).Contains("AuAu") ){
+  //   //   h->SetMarkerStyle( 21 );
+  //   // } else if ( TString(h->GetName()).Contains("pp") ){
+  //   //   h->SetMarkerStyle( 25 );
+  //   // }
 
-    // if ( TString(h->GetName()).Contains("Hi") ){
-    //   h->SetLineColor( kRed );
-    //   h->SetMarkerColor( kRed );
-    // } else if ( TString(h->GetName()).Contains("Lo") ){
-    //   h->SetLineColor( kBlack );
-    //   h->SetMarkerColor( kBlack );
-    // }
+  //   // if ( TString(h->GetName()).Contains("Hi") ){
+  //   //   h->SetLineColor( kRed );
+  //   //   h->SetMarkerColor( kRed );
+  //   // } else if ( TString(h->GetName()).Contains("Lo") ){
+  //   //   h->SetLineColor( kBlack );
+  //   //   h->SetMarkerColor( kBlack );
+  //   // }
     
-  }
+  // }
 	       
-  MczgLead2030Lo->SetLineColor(kGreen+1);
-  MczgLead2030Lo->Draw();
-  leg->AddEntry( MczgLead2030Lo, "Leading MC truth, no bias", "l");
+  // MczgLead2030Lo->SetLineColor(kGreen+1);
+  // MczgLead2030Lo->Draw();
+  // leg->AddEntry( MczgLead2030Lo, "Leading MC truth, no bias", "l");
 
-  MczgLead2030LoMatched->SetLineColor(kBlue);
-  MczgLead2030LoMatched->Draw("same");
-  leg->AddEntry( MczgLead2030LoMatched, "Leading MC truth, matched", "l");
+  // MczgLead2030LoMatched->SetLineColor(kBlue);
+  // MczgLead2030LoMatched->Draw("same");
+  // leg->AddEntry( MczgLead2030LoMatched, "Leading MC truth, matched", "l");
 
-  DetzgLead2030Lo->SetLineColor(kRed+1);
-  DetzgLead2030Lo->Draw("same");
-  leg->AddEntry( DetzgLead2030Lo, "Leading Detector level Soft-Matched", "l");
+  // DetzgLead2030Lo->SetLineColor(kRed+1);
+  // DetzgLead2030Lo->Draw("same");
+  // leg->AddEntry( DetzgLead2030Lo, "Leading Detector level Soft-Matched", "l");
 
-  FUVQjet->Draw("same");
-  leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
-  leg->Draw();
-  gPad->SaveAs( "GeantDiagnosis/zgLead.png");
+  // FUVQjet->Draw("same");
+  // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+  // leg->Draw();
+  // gPad->SaveAs( "GeantDiagnosis/zgLead.png");
 
-  // Draw SubLead zg
-  // ------------
-  new TCanvas;
-  gPad->SetGridx(0);  gPad->SetGridy(0);
-  leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "SubLead z_{g}, 10<p_{T}^{(Truth | Detector)}<20 GeV/c" );
-  leg->SetBorderSize(0);
-  leg->SetLineWidth(10);
-  leg->SetFillStyle(0);
-  leg->SetMargin(0.1);
+  // // Draw SubLead zg
+  // // ------------
+  // new TCanvas;
+  // gPad->SetGridx(0);  gPad->SetGridy(0);
+  // leg = new TLegend( 0.5, 0.55, 0.89, 0.9, "SubLead z_{g}, 10<p_{T}^{(Truth | Detector)}<20 GeV/c" );
+  // leg->SetBorderSize(0);
+  // leg->SetLineWidth(10);
+  // leg->SetFillStyle(0);
+  // leg->SetMargin(0.1);
   
-  toa[0]=MczgSubLead1020Lo;
-  toa[1]=MczgSubLead2030Lo;
-  toa[2]=MczgSubLead1020LoMatched;
-  toa[3]=MczgSubLead2030LoMatched;
-  toa[4]=DetzgSubLead1020Lo;
-  toa[5]=DetzgSubLead2030Lo;
+  // toa[0]=MczgSubLead1020Lo;
+  // toa[1]=MczgSubLead2030Lo;
+  // toa[2]=MczgSubLead1020LoMatched;
+  // toa[3]=MczgSubLead2030LoMatched;
+  // toa[4]=DetzgSubLead1020Lo;
+  // toa[5]=DetzgSubLead2030Lo;
 
-  for (int i=0 ; i<6 ; ++i ){
-    h=toa[i];
+  // for (int i=0 ; i<6 ; ++i ){
+  //   h=toa[i];
 
-    h->Scale ( 1./ h->Integral() / h->GetXaxis()->GetBinWidth(1));
+  //   h->Scale ( 1./ h->Integral() / h->GetXaxis()->GetBinWidth(1));
 
-    h->Rebin( RebinZg );
-    h->Scale(1./RebinZg );
+  //   h->Rebin( RebinZg );
+  //   h->Scale(1./RebinZg );
 
-    h->SetAxisRange( 0,10, "y" );
-    h->SetLineWidth( 2 );
+  //   h->SetAxisRange( 0,10, "y" );
+  //   h->SetLineWidth( 2 );
 
-    h->SetTitle(";z_{g};arb.");
-    h->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
-    h->GetXaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
-    h->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
-    h->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold    
-  }
-  h=0;
+  //   h->SetTitle(";z_{g};arb.");
+  //   h->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->GetXaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
+  //   h->GetYaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold    
+  // }
+  // h=0;
 	       
-  MczgSubLead1020Lo->SetLineColor(kGreen+1);
-  MczgSubLead1020Lo->Draw();
-  leg->AddEntry( MczgSubLead1020Lo, "SubLeading MC truth, no bias", "l");
+  // MczgSubLead1020Lo->SetLineColor(kGreen+1);
+  // MczgSubLead1020Lo->Draw();
+  // leg->AddEntry( MczgSubLead1020Lo, "SubLeading MC truth, no bias", "l");
 
-  MczgSubLead1020LoMatched->SetLineColor(kBlue);
-  MczgSubLead1020LoMatched->Draw("same");
-  leg->AddEntry( MczgSubLead1020LoMatched, "SubLeading MC truth, matched", "l");
+  // MczgSubLead1020LoMatched->SetLineColor(kBlue);
+  // MczgSubLead1020LoMatched->Draw("same");
+  // leg->AddEntry( MczgSubLead1020LoMatched, "SubLeading MC truth, matched", "l");
 
-  DetzgSubLead1020Lo->SetLineColor(kRed+1);
-  DetzgSubLead1020Lo->Draw("same");
-  leg->AddEntry( DetzgSubLead1020Lo, "SubLeading Detector level Soft-Matched", "l");
+  // DetzgSubLead1020Lo->SetLineColor(kRed+1);
+  // DetzgSubLead1020Lo->Draw("same");
+  // leg->AddEntry( DetzgSubLead1020Lo, "SubLeading Detector level Soft-Matched", "l");
 
-  FUVQjet->Draw("same");
-  leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
-  leg->Draw();
-  gPad->SaveAs( "GeantDiagnosis/zgSubLead.png");
+  // FUVQjet->Draw("same");
+  // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+  // leg->Draw();
+  // gPad->SaveAs( "GeantDiagnosis/zgSubLead.png");
 
 
   // Done.
-  cout << "Started with " << ppJets->GetEntries() << " GEANT events." << endl;
+  cout << "Started with " << PpJets->GetEntries() << " GEANT events." << endl;
   cout << "Dropped " << lostmc << " \"new\" events that didn't make the cut in MC." << endl;
   cout << "Dropped " << leadinglost << " events where the leading MC jet was outside |eta|<"<<EtaCut << endl;
-  cout << "Total loss =  " << float(lostmc+leadinglost)/ppJets->GetEntries()*100.0 << "%." << endl;
+  cout << "Total loss =  " << float(lostmc+leadinglost)/PpJets->GetEntries()*100.0 << "%." << endl;
   cout << " -->  Accepted " << acceptedevents << " GEANT events" << endl;
   cout << endl;
   cout << "In those, accepted " << accepteddijets << " dijets." << endl;
@@ -710,7 +726,7 @@ int MatchGeantToPythia ( ) {
 
 
   cout << "Dropped " << triggermismatch << " events where the leading MC jet didn't match the detector one or was back-to-back with it" << endl;
-  cout << "Total loss =  " << float(lostmc+leadinglost + triggermismatch)/ppJets->GetEntries()*100.0 << "%." << endl;
+  cout << "Total loss =  " << float(lostmc+leadinglost + triggermismatch)/PpJets->GetEntries()*100.0 << "%." << endl;
   
   return 0;
 }

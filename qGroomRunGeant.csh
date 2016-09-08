@@ -22,8 +22,8 @@ set ResultDir   = AjResults/Pieces
 
 # "Data", not MC!
 # No efficiency correction
-set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_Geant
-#set OutBase     = ${RMod}Groom_Aj_HT54_HTled_NoEff_Geant
+#set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_Geant
+set OutBase     = ${RMod}Groom_Aj_HT54_HTled_NoEff_Geant
 #set OutBase     = ${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant
 
 # Normal (pp to Run7 AuAu) efficiency correction
@@ -34,7 +34,7 @@ set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_Geant
 # No efficiency correction
 # set OutBase     = ${RMod}Groom_Aj_HT54_NoEff_GeantMc
 # set OutBase     = ${RMod}Groom_Aj_MB_NoEff_GeantMc
-#set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_GeantMc
+set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_GeantMc
 # set OutBase     = ${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_GeantMc
 
 set TriggerName = All
@@ -68,7 +68,7 @@ foreach File ( Data/AddedGeantPythia/pico*root )
     echo "Logging output to " $LogFile
     echo "Logging errors to " $ErrFile
     echo to resubmit:
-    echo qsub -V -q  erhiq -l mem=6gb -W umask=0022 -N GeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
+    echo qsub -V -q  mwsuq -l mem=6gb -W umask=0022 -N GeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args
     echo
 
     qsub -V -p 10 -q  erhiq -l mem=6gb -W umask=0022 -N GeantGroom -o $LogFile -e $ErrFile -- ${ExecPath}/qwrap.sh ${ExecPath} $Exec $Args

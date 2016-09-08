@@ -687,7 +687,8 @@ int main ( int argc, const char** argv ) {
       if ( OutFileName.Contains("Geant") ) {
 	cname = reader.GetInputChain()->GetCurrentFile()->GetName();
 	filehash = cname.Hash();
-	while ( filehash > INT_MAX - 100000 ) filehash /= 10;
+	// while ( filehash > INT_MAX - 100000 ) filehash /= 10; // CRAPCRAPCRAP - Good job destroying significant digits
+	while ( filehash > INT_MAX - 100000 ) filehash -= INT_MAX / 4; // some random large number
 	if ( filehash < 1000000 ) filehash += 1000001;
 	runid = filehash;
 	// Sigh. Apparently also need to uniquefy the event id
