@@ -62,7 +62,6 @@ private :
   double PtConsHi;       ///< constituent maximum p<SUB>T</SUB>
 
   double dPhiCut;        ///< opening angle for dijet requirement. Accept only  |&phi;1 - &phi;2 - &pi;| < &Delta;&phi;.
-  bool SubtractSoftBg;   ///< Can be used to turn off background subtraction for the soft matched jets
 
   fastjet::JetDefinition jet_def;       ///< jet definition
   fastjet::JetDefinition other_jet_def; ///< jet definition with a different radius
@@ -86,6 +85,8 @@ private :
   JetAnalyzer* pJAhi;                      ///< JetAnalyzer object for high pT
   JetAnalyzer* pJAlo;                      ///< JetAnalyzer object for low pT
   JetAnalyzer* pOtherJAlo;                 ///< JetAnalyzer object for low pT with different R
+
+  bool SubtractSoftBg;   ///< Can be used to turn off background subtraction for the soft matched jets
   
   std::vector<fastjet::PseudoJet> pHi;     ///< High pT constituents
   std::vector<fastjet::PseudoJet> pLo;     ///< Low pT constituents
@@ -178,7 +179,8 @@ public:
 		       TH2D* hdPtLead=0, TH2D* hdPtSubLead=0,
 		       TH2D* SpecialhdPtLead=0, TH2D* SpecialhdPtSubLead=0,
 		       std::vector<fastjet::PseudoJet>* ToReject=0,
-		       double ForceRho=-1
+		       double ForceRho=-1,
+		       TLorentzVector* SnapToHt=0
 		       );
   /** This little helper is true if there's at least one 10 GeV jet
    **/

@@ -87,6 +87,7 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 lib/libMyJetlib.so \
 	 $(BDIR)/GroomPicoAj \
 	 $(BDIR)/GroomppInAuAuAj \
+	 $(BDIR)/EmbedAndMatch \
 	 $(BDIR)/Y14analyzer
 #	 doxy
 
@@ -141,6 +142,8 @@ $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetli
 
 $(BDIR)/GroomPicoAj	: $(ODIR)/GroomPicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/GroomppInAuAuAj	: $(ODIR)/GroomppInAuAuAj.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/GroomPythiaAj	: $(ODIR)/GroomPythiaAj.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/EmbedAndMatch	: $(ODIR)/EmbedAndMatch.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 #$(BDIR)/AlternateEmbedding 	: $(ODIR)/AlternateEmbedding.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 

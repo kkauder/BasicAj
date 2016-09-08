@@ -14,15 +14,27 @@ set RMod = ""
 # standard arguments
 # note that outname will be modified by the binary!
 #set OutName     = AjResults/${RMod}Groom_Fresh_NicksList_HC100_ppAj.root
-set OutName     = AjResults/${RMod}Groom_HT64_ppAj.root
+#set OutName     = AjResults/${RMod}Groom_HT64_ppAj.root
+#set OutName     = AjResults/${RMod}Groom_Aj_HT54_NoEff_ppAj.root
+
+set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_NoEff_ppAj.root
+#set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_ppAj.root
+# set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_ppAj.root
+
+set logbase = `basename $OutName | sed 's/.root//g'`
+
 set TriggerName = ppHT
 
 set noglob
 set Files       = Data/ppHT/*.root
 
+
+
+
 foreach Tow ( -1 0 1 )
-    foreach Eff ( -1 0 1 )
-	@ TowEff = $Tow * $Eff
+    foreach Eff ( 0 )
+#    foreach Eff ( -1 0 1 )
+ 	@ TowEff = $Tow * $Eff
 
 	# Only perpendicluar combinations
 	if ( $TowEff != 0 ) continue;
@@ -31,14 +43,9 @@ foreach Tow ( -1 0 1 )
 	# if ( $Tow == 0 && $Eff == 0 ) continue;
 	
 	# Logfiles.
-	set LogFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_HT64_ppAj.out
-	set ErrFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_HT64_ppAj.err	
-	# set LogFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.out
-	# set ErrFile     = logs/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppAj.err	
-
-	echo "Logging output to " $LogFile
-	echo "Logging errors to " $ErrFile
-
+	set LogFile     = logs/Tow${Tow}_Eff${Eff}_${logbase}.out
+	set ErrFile     = logs/Tow${Tow}_Eff${Eff}_${logbase}.err
+	
 	set OrigResultName = NONE 
 	set Args = ( $OutName $TriggerName $Files $Tow $Eff $OrigResultName )
 

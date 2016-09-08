@@ -33,8 +33,11 @@ Int_t main(int argc, char **argv) {
     
   // Pull seed and adjust outfilename
   // TString OutFileName = "Data/PythiaAndMc.root";
-  TString OutFileName = "Data/RhicPythia/RhicPythiaOnly.root";
+  // TString OutFileName = "Data/RhicPythia/RhicPythiaOnly.root";
   // TString OutFileName = "Data/LhcPythiaOnly.root";
+
+  TString OutFileName = "Data/AlternateRhicPythia/LargeEtaPythiaOnly.root";
+
   bool AddMc=true;
   if ( OutFileName.Contains("PythiaOnly") ) AddMc=false;
 
@@ -131,13 +134,19 @@ Int_t main(int argc, char **argv) {
     pythia.readString("Beams:eCM = 200.0");
   }
 
+  // Optionally keep particles with things like
+  // pythia.readString("3122:mayDecay = false ");
+  // See also Tai Sakuma's thesis
+  // and http://home.thep.lu.se/~torbjorn/pythia8/pythia8100.pdf
+  
   pythia.init();
 
   // gRandom->SetSeed(1);
   gRandom->SetSeed(pseed);
 
   // Eta cut
-  Float_t maxeta = 1.0;  // STAR
+  Float_t maxeta = 7.0;  // Test
+  // Float_t maxeta = 1.0;  // STAR
   if ( UpOutFileName.Contains("LHC") ){ 
     maxeta = 3.0;
   }

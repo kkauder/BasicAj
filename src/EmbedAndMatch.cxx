@@ -1,7 +1,7 @@
-/** @file ppInAuAuAj.cxx
+/** @file EmbedAndMatch.cxx
     @author Kolja Kauder
-    @version Revision 0.2
-    @brief Aj analysis on pp jets embedded into AuAu.
+    @version Revision 0.3
+    @brief Aj and zg analysis on pp-like jets embedded into AuAu, matched to mc level truth
     @date Mar 04, 2015
 */
 
@@ -40,6 +40,8 @@ using namespace fastjet::contrib;
 ostream & operator<<(ostream &, const PseudoJet &);
 
 /** 
+    - Only difference to GroomppInAuAuAj.cxx is matching to an original event
+
     - Set up vector of pp jets
     - Set up Au+Au input tree
     - Set up output histos and tree
@@ -53,12 +55,20 @@ ostream & operator<<(ostream &, const PseudoJet &);
 */
 int main ( int argc, const char** argv ) {
   
-  // const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
-  // const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
-  const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  const char *defaults[7] =
+    {"EmbedAndMatch", // executable name
+     "EmbedAndMatchTest.root", // output
+     "AjResults/Tow0_Eff0_Groom_Aj_HT54_Geant.root", // pp-like events
+     "All", // trigger name for the following
+     "Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root",
+     "1",
+     "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root" // Reference (particle level) jets
+     // "AjResults/Groom_Aj_MB_NoEff_GeantMc.root" // Reference (particle level) jets
+    };
+
   if ( argc==1 ) {
     argv=defaults;
-    argc=5;
+    argc=7;
   }
 
   // float RemoveSoftFromAway = 0.75;
@@ -72,20 +82,13 @@ int main ( int argc, const char** argv ) {
   // ------
   TString OutFileName = arguments.at(0);
 
-  // Load pp Jets
-  // ------------
+  // pp Jets
+  // -------
   TString ppAjName = arguments.at(1);
 
-  // High tower matching
-  // -------------------
-  bool HTled=false;
-  if ( ppAjName.Contains ("HTled") ){
-    HTled=true;
-    if ( !OutFileName.Contains ("HTled") ){
-      cerr << "Inconsistent naming scheme." << endl;
-      return -1;
-    }
-  }
+  // mc Jets
+  // -------
+  TString McName = arguments.at(5);
 
   // jet resolution parameter
   // ------------------------
@@ -134,24 +137,61 @@ int main ( int argc, const char** argv ) {
   int RefMultCut=0;
 
   // How many times to use every pp jet
-  // THIS SHOULD MAYBE BE ONE IN THE FINAL VERSION
   // ----------------------------------------------
-  Int_t nMix=6;
-  if ( OutFileName.Contains ("MixTest") ){
-    nMix=1;
-    RefMultCut=269;
-  }
-  if ( arguments.size() > 4 ) nMix = atoi (  arguments.at(4).c_str() );
+  Int_t nMix = atoi (  arguments.at(4).c_str() );
 
   if ( nMix !=1 ){
     cerr << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
     cout << " CAREFUL: FAKING BETTER PP STATISTICS " << endl;
   }
+
+  // Load MC level tree
+  // ------------------
+  TChain* McJets = new TChain("TriggeredTree");
+  McJets->Add ( McName );
+  McJets->BuildIndex("runid","eventid");
+
+  // The leading jet above 10 GeV that caused
+  // this event to be recorded
+  TClonesArray* McTrigger = new TClonesArray("TLorentzVector");
+  McJets->GetBranch("TriggerJet")->SetAutoDelete(kFALSE);
+  McJets->SetBranchAddress("TriggerJet", &McTrigger);
+
+  // Only filled when AJ pair is found
+  TLorentzVector* Mcj1;
+  McJets->SetBranchAddress("j1", &Mcj1);
+
+  TLorentzVector* Mcj2;
+  McJets->SetBranchAddress("j2", &Mcj2);
   
+  // TLorentzVector* Mcjm1;
+  // McJets->SetBranchAddress("jm1", &Mcjm1);
+
+  // TLorentzVector* Mcjm2;
+  // McJets->SetBranchAddress("jm2", &Mcjm2);
+  
+  int mceventid;
+  int mcrunid;
+  double mcweight;     // Double-check, should be the same as below
+  McJets->SetBranchAddress("eventid", &mceventid);
+  McJets->SetBranchAddress("runid", &mcrunid);
+  McJets->SetBranchAddress("weight",&mcweight );
+
+  float mczg1, mczg2, mczgm1, mczgm2;
+  float mcaj_hi, mcaj_lo;
+  McJets->SetBranchAddress("zg1",&mczg1 );
+  McJets->SetBranchAddress("zg2",&mczg2 );
+  McJets->SetBranchAddress("zgm1",&mczgm1 );
+  McJets->SetBranchAddress("zgm2",&mczgm2 );
+  McJets->SetBranchAddress("aj_lo",&mcaj_lo );
+  McJets->SetBranchAddress("aj_hi",&mcaj_hi );
+  
+  // Set up pp events
+  // ----------------
   TChain* ppJets = new TChain("TriggeredTree");
   ppJets->Add(ppAjName);
   assert ( ppJets->GetEntries()>0 && "Something went wrong loading the pp jets.");
-
+  
   TClonesArray* pFullEvent = new TClonesArray("TStarJetVector");
   ppJets->GetBranch("FullEvent")->SetAutoDelete(kFALSE);
   ppJets->SetBranchAddress("FullEvent", &pFullEvent);
@@ -201,8 +241,78 @@ int main ( int argc, const char** argv ) {
   vector<int> vOrigRunid;
   vector<int> vOrigEventid;
   vector<double> vOrigWeight;
+  // count how many events were found after geant that
+  // missed the cut in MC
+  int lostmc=0;
+  int leadinglost=0;
+  // DEBUG for losing MC
+  TH2D* TriggerJetForLostMc = new TH2D( "TriggerJetForLostMc", ";p_{T};#eta", 120, 10, 70, 100,-1,1 );
   for ( Long64_t ppEv = 0; ppEv< ppJets->GetEntries() ; ++ppEv ){
+
+    if ( !(ppEv%10000) ) cout << "Working on " << ppEv << " / " << ppJets->GetEntries() << endl;
     ppJets->GetEntry(ppEv);
+
+    // Get corresponding MC jet
+    // ------------------------
+    Long64_t mcevi=-1;
+    mcevi = McJets->GetEntryNumberWithIndex( jetrunid, jeteventid );
+    if ( mcevi < 0 ){
+      // MISSED or LOST
+      // cerr << "Missed MC event" << endl;
+      // cout << "Det: runid = " << jetrunid << "  eventid = " << jeteventid << endl;
+      if (pTriggerJet->GetEntries()!=1 ){
+	cout << " No trigger jet in data." << endl;
+      } else {
+	TLorentzVector* tdet = (TLorentzVector*) pTriggerJet->At(0);
+	TriggerJetForLostMc->Fill( tdet->Pt(),tdet->Eta() );
+	// if (tpt>20) {
+	//   cerr << "Missed MC event" << endl;
+	//   cout << "Det: runid = " << jetrunid << "  eventid = " << jeteventid << endl;
+	//   cout << " But large Trigger jet pT! " << tpt<< endl;
+	// }
+      }
+
+      lostmc++;
+      // Most losses are due to the high tower cut allowing
+      // raw hadronic towers that didn't pass at the MC level
+      // (because they were charged and thus not tested)
+      // But there's also a small fraction where GEANT seems to "harden" the jet
+      // such that there's a sizable trigger jet with constituents above 2 in GEANT
+      // but at the truth level it was too soft to trigger recording.
+      // In any case, this is currently a "ghost", and I cannot connect it to truth
+      // So... disregard it
+      // I don't even know how to deal with cross-section weights like this...
+      continue;
+    }
+
+    McJets->GetEntry( mcevi );
+    if ( fabs(mcweight / weight - 1) > 1e-4 ) {
+      // Sanity check
+      cerr << "mcweight / weight = " << mcweight / weight  << endl;
+      cerr << "mcweight = " <<  mcweight  << "    weight = " <<  weight << endl;
+      cout << "Mc: runid = " << mcrunid << "  eventid = " << mceventid << endl;
+      cout << "Mc: evi = " << mcevi << endl;
+      cout << "Det: runid = " << jetrunid << "  eventid = " << jeteventid << endl;
+      // cout << "Signal: evi = " << evi << endl;
+
+      return -1;
+    }
+
+    // Now we do have at least _a_ jet.
+    // That only counts if it's in the acceptance though
+    TLorentzVector* mctrig = (TLorentzVector*) McTrigger->At(0);
+    if ( fabs ( mctrig->Eta()) > 1.0 ) {
+
+      if (pTriggerJet->GetEntries()!=1 ){
+	cout << " No trigger jet in data." << endl;
+      } else {
+	TLorentzVector* tdet = (TLorentzVector*) pTriggerJet->At(0);
+	TriggerJetForLostMc->Fill( tdet->Pt(),tdet->Eta() );
+      }
+      leadinglost++;
+      continue;
+    }
+    
     CurrentPpEvent.clear();
     for ( int i=0 ; i<pFullEvent->GetEntries() ; ++i ){
       TStarJetVector* tsjv = (TStarJetVector*) pFullEvent->At(i);
@@ -222,7 +332,13 @@ int main ( int argc, const char** argv ) {
     vOrigEventid.push_back( jeteventid );
     vOrigWeight.push_back( weight );
   }
-
+  cout << "Started with " << ppJets->GetEntries() << " events." << endl;
+  cout << "Accepted " << vOrigJ1.size() << " events." << endl;
+  cout << "Dropped " << lostmc << " \"new\" events that didn't make the cut in MC." << endl;
+  cout << "Dropped " << leadinglost << " events where the leading MC jet was outside |eta|<1." << endl;
+  cout << "Total loss =  " << float(lostmc+leadinglost)/ppJets->GetEntries()*100.0 << "%." << endl;
+  TriggerJetForLostMc->SaveAs("TriggerJetForLostMc.root");
+  return 0;
   // Load and set up AuAu tree
   // --------------------
   TString ChainName  = "JetTree";
@@ -330,8 +446,7 @@ int main ( int argc, const char** argv ) {
   TH1D* hSubLeadPtInTop20 = new TH1D( "hSubLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
 
   TH1D* HT54InTop20 = new TH1D( "HT54InTop20","", 2, -0.5, 1.5 );
-  TH1D* HT64InTop20 = new TH1D( "HT64InTop20","", 2, -0.5, 1.5 );
-
+  TH1D* HT64InTop20 = new TH1D( "HT64InTop20","", 2, -0.5, 1.5 );  
   
   // For Elke...
   // -----------
@@ -374,7 +489,14 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("aj_lo",&aj_lo, "aj_lo/F");
   ResultTree->Branch("aj_hi",&aj_hi, "aj_hi/F");
   ResultTree->Branch("weight",&weight, "weight/D");
-  
+
+  // From MC events
+  ResultTree->Branch("mczg1",&mczg1,"mczg1/F");
+  ResultTree->Branch("mczg2",&mczg2,"mczg2/F");
+  ResultTree->Branch("mczgm1",&mczgm1,"mczgm1/F");
+  ResultTree->Branch("mczgm2",&mczgm2,"mczgm2/F");
+  ResultTree->Branch("mcaj_lo",&mcaj_lo, "mcaj_lo/F");
+  ResultTree->Branch("mcaj_hi",&mcaj_hi, "mcaj_hi/F");
 
   int eventid;
   int runid;
@@ -537,7 +659,7 @@ int main ( int argc, const char** argv ) {
 
     eventid = header->GetEventId();
     runid   = header->GetRunId();
-
+    
     // NEW 05/07/15: For repeatability across different picoDSTs, set random seed
     // Static member, so we can set it here
     // Annoyingly, the getter and setter isn't static, so we need to instantiate
@@ -631,7 +753,7 @@ int main ( int argc, const char** argv ) {
       
       // For GEANT data
       // --------------
-      // weight=1;
+      weight=1;
       // if ( InPattern.Contains("Geant") ){
       // 	TString currentfile = reader.GetInputChain()->GetCurrentFile()->GetName();
       // 	weight=LookupXsec ( currentfile );
@@ -647,39 +769,19 @@ int main ( int argc, const char** argv ) {
       // ------------
       int ret;
       // ret =AjA.AnalyzeAndFill( particles, 0,refmult,
-      if ( HTled ) { 
-	TLorentzVector lOrigTrig = MakeTLorentzVector (vTriggerJet.at(*jit));
-	ret=AjA.AnalyzeAndFill( particles, 0, refmult,
-				UnmatchedAJ_hi, AJ_hi, AJ_lo,
-				UnmatchedNoFabsAJ_hi, NoFabsAJ_hi, NoFabsAJ_lo,
-				
-				UnmatchedhPtHi,  hPtHi, hPtLo,
-				UnmatchedhdPtHi, hdPtHi, hdPtLo,
-				hdphiHi, hdphiLo,
-				
-				OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
-				
-				hdPtLead, hdPtSubLead,
-				SpecialhdPtLead, SpecialhdPtSubLead,
-				0,
-				-1,
-				&lOrigTrig // Force orientation to original trigger
-				);
-      } else {
-	ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
-				UnmatchedAJ_hi, AJ_hi, AJ_lo,
-				UnmatchedNoFabsAJ_hi, NoFabsAJ_hi, NoFabsAJ_lo,
-				
-				UnmatchedhPtHi,  hPtHi, hPtLo,
-				UnmatchedhdPtHi, hdPtHi, hdPtLo,
-				hdphiHi, hdphiLo,
-				
-				OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
-				
-				hdPtLead, hdPtSubLead,
-				SpecialhdPtLead, SpecialhdPtSubLead
-				);
-      }
+      ret=AjA.AnalyzeAndFill( particles, &(vTriggerJet.at(*jit)), refmult, // Force matching to original trigger
+			      UnmatchedAJ_hi, AJ_hi, AJ_lo,
+			      UnmatchedNoFabsAJ_hi, NoFabsAJ_hi, NoFabsAJ_lo,
+			      
+			      UnmatchedhPtHi,  hPtHi, hPtLo,
+			      UnmatchedhdPtHi, hdPtHi, hdPtLo,
+			      hdphiHi, hdphiLo,
+			      
+			      OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
+			      
+			      hdPtLead, hdPtSubLead,
+			      SpecialhdPtLead, SpecialhdPtSubLead
+			      );
       
       switch ( ret ){
       case 3 : nMatchedDijets++;

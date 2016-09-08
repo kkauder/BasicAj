@@ -25,7 +25,7 @@ AjAnalysis::AjAnalysis ( double R,
     LeadPtMin(LeadPtMin), SubLeadPtMin(SubLeadPtMin),
     max_track_rap (max_track_rap), PtConsLo (PtConsLo), PtConsHi (PtConsHi),
     dPhiCut (dPhiCut),
-    pJAhi (0), pJAlo(0), pOtherJAlo(0)
+    pJAhi (0), pJAlo(0), pOtherJAlo(0), SubtractSoftBg(SubtractSoftBg)
 {
   // derived rapidity cuts
   // ---------------------
@@ -101,7 +101,8 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
 				 TH2D* hdPtLead, TH2D* hdPtSubLead,
 				 TH2D* SpecialhdPtLead, TH2D* SpecialhdPtSubLead,
 				 std::vector<fastjet::PseudoJet>* ToReject,
-				 double ForceRho
+				 double ForceRho,
+				 TLorentzVector* SnapToHt
 				 ){
 
   // We want to hold onto the jetanalyzer objects, so they're created dynamically
@@ -155,43 +156,37 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
     if ( origsize - ToReject->size() != JAhiResult.size() )
       std::cout << origsize << " - " << ToReject->size() << " != " << JAhiResult.size() << std::endl;
   }  
-    
-  if ( JAhiResult.size() < 1 )                 {     return 0; }
-  if ( JAhiResult.at(0).pt() > 10 )            { Has10Gev=true; }
-
-  if ( JAhiResult.size() < 2 )                 {     return 0; }
-  if ( JAhiResult.at(0).pt() < LeadPtMin )     {     return 0; }
-  if ( JAhiResult.at(1).pt() < SubLeadPtMin )  {     return 0; }
-      
-  // back to back? Answer this question with a selector
-  // ---------------------------------------------------
-  DiJetsHi = SelectorDijets( dPhiCut ) ( JAhiResult );
-  if ( DiJetsHi.size() == 0 ) {
-    // std::cout << " NO dijet found" << std::endl;
-    return 0;
-  }
-  assert ( DiJetsHi.size() == 2 && "SelectorDijets returned impossible number of Dijets." );  
   
-  // FOR EMBEDDING: At least one matched to the reference jet?
-  // ---------------------------------------------------------
-  if ( ToMatch ){
-    if ( !IsMatched( DiJetsHi, *ToMatch, R ) ) return 0;
-  }
+  if ( JAhiResult.size() < 1 )                 {     return 0; }
 
-  // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
-  UnmatchedAJ_hi->Fill ( fabs(CalcAj( DiJetsHi )), EventClassifier );
-  UnmatchedNoFabsAJ_hi->Fill ( CalcAj( DiJetsHi ), EventClassifier );
-  UnmatchedhPtHi->Fill ( DiJetsHi.at(0).pt() , DiJetsHi.at(1).pt());  
-  UnmatchedhdPtHi->Fill ( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());  
-      
+  // Force the trigger jet (for preselected events) to a high tower as well?
+  bool HTmatched=true;
+  if ( SnapToHt ){
+    HTmatched=false;
+    for (int i=0; i<JAhiResult.size(); ++i ){
+      if ( IsMatched( JAhiResult.at(i), *SnapToHt, R ) ){
+	std::iter_swap(JAhiResult.begin(),JAhiResult.begin()+i);
+	HTmatched=true;
+	break;
+      }
+    }
+  }
+  if ( JAhiResult.at(0).pt() > 10 && HTmatched )            { Has10Gev=true; }
+ 
+  // New logic: Want to learn more about the trigger jet.
+  // So, get the low jets now, regardless of whether or not this event qualifies. 
+  // This is sadly expensive, let's hope not too bad  
+  if ( !Has10Gev )                             {     return 0; }
+  
   // find corresponding jets with soft constituents
   // ----------------------------------------------
   if ( SubtractSoftBg )
     pJAlo = new JetAnalyzer( pLo, jet_def, area_def, selector_bkgd ); // WITH background subtraction
   else
-    pJAlo = new JetAnalyzer( pLo, jet_def ); // WITH background subtraction
+    pJAlo = new JetAnalyzer( pLo, jet_def ); // WITHOUT background subtraction
+  
   JetAnalyzer& JAlo = *pJAlo;
-
+  
   // Standard:
   if ( SubtractSoftBg ) {
     fastjet::Subtractor* BackgroundSubtractor =  JAlo.GetBackgroundSubtractor();
@@ -209,7 +204,7 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   } else {
     JAloResult = fastjet::sorted_by_pt( JAlo.inclusive_jets() );
   }
-    
+  
   // // Let's try something new:
   // fastjet::contrib::ConstituentSubtractor* BackgroundSubtractor =  pJAlo->GetConstituentBackgroundSubtractor();
   // if ( ForceRho >=0 ) {
@@ -217,13 +212,13 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   //   throw(-1);
   //   // BackgroundSubtractor = new fastjet::contrib::ConstituentSubtractor( ForceRho );
   // }
-
+  
   //   //  Introducing a finite standardDeltaR may improve the performance of the correction and the speed of the algorithm when running over the full event.
   // BackgroundSubtractor->set_max_standardDeltaR(1); // free parameter for the maximal allowed distance sqrt((y_i-y_k)^2+(phi_i-phi_k)^2) between particle i and ghost k
   // BackgroundSubtractor->set_alpha(0);  // free parameter for the distance measure (the exponent of particle pt). The larger the parameter alpha, the more are favoured the lower pt particles in the subtraction process
   // // BackgroundSubtractor->set_ghost_area(0.01); // free parameter for the density of ghosts. The smaller, the better - but also the computation is slower.
-
-
+  
+  
   // // for ( int i=0; i<JAlo.inclusive_jets().size() ; ++i ){
   // //   fastjet::PseudoJet hhh = JAlo.inclusive_jets().at(i);
   // //   std::cout << hhh.has_associated_cluster_sequence();
@@ -236,12 +231,54 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   // std::vector<fastjet::PseudoJet> corrected_particles=BackgroundSubtractor->subtract_event( pLo, 1.0 );
   // // Remember the old estimator
   // fastjet::JetMedianBackgroundEstimator* bge = pJAlo->GetBackgroundEstimator();
-
+  
   // // Now create a new ClusterSequence
   // pJAlo = new JetAnalyzer( corrected_particles, jet_def ); // Now WITHOUT background subtraction
   // JetAnalyzer& JAlo = *pJAlo;
   // JAlo.SetBackgroundEstimator( bge );  // Remember the old estimator
   // JAloResult = fastjet::sorted_by_pt( JAlo.inclusive_jets() );
+  
+  // Now continue dijet analysis.
+  // ----------------------------
+  if ( JAhiResult.size() < 2 )                 {     return 0; }
+  // if ( JAhiResult.at(0).pt() < LeadPtMin )     {     return 0; }
+  // if ( JAhiResult.at(1).pt() < SubLeadPtMin )  {     return 0; }
+  
+
+  // back to back? Answer this question with a selector
+  // ---------------------------------------------------
+  DiJetsHi = SelectorDijets( dPhiCut ) ( JAhiResult );
+  if ( DiJetsHi.size() == 0 ) {
+    // std::cout << " NO dijet found" << std::endl;
+    return 0;
+  }
+  assert ( DiJetsHi.size() == 2 && "SelectorDijets returned impossible number of Dijets." );  
+
+  // If requested, check and maybe reshuffle the dijets 
+  // to redefine "leading"
+  // Doing this _before_ kinematic cuts. 
+  // -----------------------------------
+  if ( SnapToHt ){
+    if ( !IsMatched( DiJetsHi.at(0), *SnapToHt, R ) ) std::iter_swap(DiJetsHi.begin(),DiJetsHi.begin()+1);
+    if ( !IsMatched( DiJetsHi.at(0), *SnapToHt, R ) ) return 0;
+  }
+
+  if ( DiJetsHi.at(0).pt() < LeadPtMin )     {     return 0; }
+  if ( DiJetsHi.at(1).pt() < SubLeadPtMin )  {     return 0; }
+
+  
+  // FOR EMBEDDING: At least one matched to the reference jet?
+  // ---------------------------------------------------------
+  if ( ToMatch ){
+    if ( !IsMatched( DiJetsHi, *ToMatch, R ) ) return 0;
+  }
+
+  // Calculate Aj and fill histos -- for unmatched high constituent pT di-jets
+  UnmatchedAJ_hi->Fill ( fabs(CalcAj( DiJetsHi )), EventClassifier );
+  UnmatchedNoFabsAJ_hi->Fill ( CalcAj( DiJetsHi ), EventClassifier );
+  UnmatchedhPtHi->Fill ( DiJetsHi.at(0).pt() , DiJetsHi.at(1).pt());  
+  UnmatchedhdPtHi->Fill ( DiJetsHi.at(0).pt() - DiJetsHi.at(1).pt());  
+      
       
   
 

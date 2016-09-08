@@ -23,14 +23,18 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   // TString ft0eP = "AjResults/Tow0_Eff1_Fresh_NicksList_HC100_ppInAuAuAj.root";
   // TString ft0eM = "AjResults/Tow0_Eff-1_Fresh_NicksList_HC100_ppInAuAuAj.root";
 
-  // cross check
-  TString outname = "AjResults/Systematics_Groom_HT64_ppInAuAuAj.root";
-  TString refname = "AjResults/Groom_HT64_AuAu.root";
-  TString ft0e0 = "AjResults/Tow0_Eff0_Groom_HT64_ppInAuAuAj.root";
-  TString ftPe0 = "AjResults/Tow1_Eff0_Groom_HT64_ppInAuAuAj.root";
-  TString ftMe0 = "AjResults/Tow-1_Eff0_Groom_HT64_ppInAuAuAj.root";
-  TString ft0eP = "AjResults/Tow0_Eff1_Groom_HT64_ppInAuAuAj.root";
-  TString ft0eM = "AjResults/Tow0_Eff-1_Groom_HT64_ppInAuAuAj.root";
+  TString refname = "AjResults/Groom_AuAu_HT54_HTled.root";
+
+  TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj";
+  TString outname = "AjResults/Systematics_" + Base + ".root";
+  
+  TString ft0e0 = "AjResults/Tow0_Eff0_" + Base + ".root";
+  TString ftPe0 = "AjResults/Tow1_Eff0_" + Base + ".root";
+  TString ftMe0 = "AjResults/Tow-1_Eff0_" + Base + ".root";
+
+  TString ft0eP = "AjResults/Tow0_Eff1_" + Base + ".root";
+  TString ft0eM = "AjResults/Tow0_Eff-1_" + Base + ".root";
+
 
   if ( R=="0.2"  ){
     // ft0e0.ReplaceAll("ppInAuAuAj", "R0.2_ppInAuAuAj");
@@ -103,6 +107,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   vector<TH1D*> EhistosHi;
   vector<TH1D*> ThistosLo;
   vector<TH1D*> EhistosLo;
+  vector<TH1D*> NoFabsThistosHi;
+  vector<TH1D*> NoFabsEhistosHi;
   vector<TH1D*> NoFabsThistosLo;
   vector<TH1D*> NoFabsEhistosLo;
 
@@ -164,6 +170,39 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   ThistosHi=Thistos;
   EhistosHi=Ehistos;
 
+  // Matched, hi, allowing negative NoFabsAJ
+  // ----------------------------------------
+  TH1D* NoFabsAJ_hi_T = minmax (  Tfiles, "NoFabsAJ_hi", AuAuMultL, AuAuMultR, "T", Thistos, ratios, minandmax );
+  NoFabsAJ_hi_T->SetName("NoFabsAJ_hi_T");
+  if (gPad){
+    plotname = "plots/" + R + "_" + NoFabsAJ_hi_T->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }
+  
+  TH1D* NoFabsAJ_hi_E = minmax (  Efiles, "NoFabsAJ_hi", AuAuMultL, AuAuMultR, "E", Ehistos, ratios, minandmax );
+  NoFabsAJ_hi_E->SetName("NoFabsAJ_hi_E");
+  if (gPad){
+    plotname = "plots/" + R + "_" + NoFabsAJ_hi_E->GetName() + ".png";
+    gPad->SaveAs( plotname );
+  }  
+  TH1D* NoFabsAJ_hi_minmax = NoFabsAJ_hi_T->Clone("NoFabsAJ_hi_minmax");
+  TH1D* NoFabsAJ_hi_min = NoFabsAJ_hi_T->Clone("NoFabsAJ_hi_min");
+  TH1D* NoFabsAJ_hi_max = NoFabsAJ_hi_T->Clone("NoFabsAJ_hi_max");
+  for (int i=1; i<=NoFabsAJ_hi_minmax->GetNbinsX() ; ++ i ){
+    NoFabsAJ_hi_minmax->SetBinContent (i, Thistos.at(0)->GetBinContent(i) );
+    NoFabsAJ_hi_minmax->SetBinError (i, sqrt( pow( NoFabsAJ_hi_T->GetBinError(i), 2) +
+					      pow( NoFabsAJ_hi_E->GetBinError(i), 2) ) );
+
+    NoFabsAJ_hi_min->SetBinContent (i, Thistos.at(0)->GetBinContent(i) - NoFabsAJ_hi_minmax->GetBinError (i) );
+    NoFabsAJ_hi_min->SetBinError   (i, Thistos.at(0)->GetBinError(i) );
+
+    NoFabsAJ_hi_max->SetBinContent (i, Thistos.at(0)->GetBinContent(i) + NoFabsAJ_hi_minmax->GetBinError (i) );
+    NoFabsAJ_hi_max->SetBinError   (i, Thistos.at(0)->GetBinError(i) );
+  }
+
+  NoFabsThistosHi=Thistos;
+  NoFabsEhistosHi=Ehistos;
+
   // Matched, low
   // ------------
   TH1D* AJ_lo_T = minmax (  Tfiles, "AJ_lo", AuAuMultL, AuAuMultR, "T", Thistos, ratios, minandmax );
@@ -201,7 +240,7 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
 
   
   // Matched, low, allowing negative NoFabsAJ
-  // ---------------------------------
+  // ----------------------------------------
   TH1D* NoFabsAJ_lo_T = minmax (  Tfiles, "NoFabsAJ_lo", AuAuMultL, AuAuMultR, "T", Thistos, ratios, minandmax );
   NoFabsAJ_lo_T->SetName("NoFabsAJ_lo_T");
   if (gPad){
@@ -265,6 +304,12 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   refAJ_hi->Rebin( REBIN );
   refAJ_hi->Scale(1./refAJ_hi->Integral(0, refAJ_hi->GetNbinsX()+1)); // Include over/underflow
 
+  h2 = (TH2D*) reffile->Get("NoFabsAJ_hi");
+  newname= "NoFabsrefAJ_hi";
+  TH1D* NoFabsrefAJ_hi = h2->ProjectionX( newname, AuAuMultBinL, AuAuMultBinR );
+  NoFabsrefAJ_hi->Rebin( REBIN );
+  NoFabsrefAJ_hi->Scale(1./NoFabsrefAJ_hi->Integral(0, NoFabsrefAJ_hi->GetNbinsX()+1)); // Include over/underflow
+
   h2 = (TH2D*) reffile->Get("AJ_lo");
   newname= "refAJ_lo";  
   TH1D* refAJ_lo = h2->ProjectionX( newname, AuAuMultBinL, AuAuMultBinR );
@@ -300,12 +345,14 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   vector<double> RefUnbinnedAJ_lo;
   vector<double> NoFabsRefUnbinnedAJ_lo;
   vector<double> RefUnbinnedAJ_hi;
+  vector<double> NoFabsRefUnbinnedAJ_hi;
   CalcAj( reffile, AuAuMultL, AuAuMultR, RefUnbinnedAJ_lo, RefUnbinnedAJ_hi,"fabs" );
-  CalcAj( reffile, AuAuMultL, AuAuMultR, NoFabsRefUnbinnedAJ_lo, RefUnbinnedAJ_hi,"nofabs" );
+  CalcAj( reffile, AuAuMultL, AuAuMultR, NoFabsRefUnbinnedAJ_lo, NoFabsRefUnbinnedAJ_hi,"nofabs" );
   cout << "Done" << endl;
   vector<double> UnbinnedAJ_lo;
   vector<double> NoFabsUnbinnedAJ_lo;
   vector<double> UnbinnedAJ_hi;
+  vector<double> NoFabsUnbinnedAJ_hi;
 
   // Open outputfile before creating output numbers
   // ----------------------------------------------
@@ -340,6 +387,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     //  ---- Efficiency
     Pvalue.SetVal( EhistosHi.at(i)->Chi2Test(refAJ_hi, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"E_Hi");
+    Pvalue.SetVal( NoFabsEhistosHi.at(i)->Chi2Test(NoFabsrefAJ_hi, ""));
+    Pvalue.Write( "NoFabsChi2_" + PvalBase+"E_Hi");    
     Pvalue.SetVal( EhistosLo.at(i)->Chi2Test(refAJ_lo, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"E_Lo");
     Pvalue.SetVal( NoFabsEhistosLo.at(i)->Chi2Test(NoFabsrefAJ_lo, ""));
@@ -348,6 +397,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     //  ---- Tower Scale
     Pvalue.SetVal( ThistosHi.at(i)->Chi2Test(refAJ_hi, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"T_Hi");
+    Pvalue.SetVal( NoFabsThistosHi.at(i)->Chi2Test(NoFabsrefAJ_hi, ""));
+    Pvalue.Write( "NoFabsChi2_" + PvalBase+"T_Hi");    
     Pvalue.SetVal( ThistosLo.at(i)->Chi2Test(refAJ_lo, ""));
     Pvalue.Write( "Chi2_" + PvalBase+"T_Lo");
     Pvalue.SetVal( NoFabsThistosLo.at(i)->Chi2Test(NoFabsrefAJ_lo, ""));
@@ -358,6 +409,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     //  ---- Efficiency
     Pvalue.SetVal( EhistosHi.at(i)->KolmogorovTest(refAJ_hi, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"E_Hi");
+    Pvalue.SetVal( NoFabsEhistosHi.at(i)->KolmogorovTest(NoFabsrefAJ_hi, ""));
+    Pvalue.Write( "NoFabsBinKS_" + PvalBase+"E_Hi");
     Pvalue.SetVal( EhistosLo.at(i)->KolmogorovTest(refAJ_lo, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"E_Lo");
     Pvalue.SetVal( NoFabsEhistosLo.at(i)->KolmogorovTest(NoFabsrefAJ_lo, ""));
@@ -366,6 +419,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     //  ---- Tower Scale
     Pvalue.SetVal( ThistosHi.at(i)->KolmogorovTest(refAJ_hi, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"T_Hi");
+    Pvalue.SetVal( NoFabsThistosHi.at(i)->KolmogorovTest(NoFabsrefAJ_hi, ""));
+    Pvalue.Write( "NoFabsBinKS_" + PvalBase+"T_Hi");
     Pvalue.SetVal( ThistosLo.at(i)->KolmogorovTest(refAJ_lo, ""));
     Pvalue.Write( "BinKS_" + PvalBase+"T_Lo");
     Pvalue.SetVal( NoFabsThistosLo.at(i)->KolmogorovTest(NoFabsrefAJ_lo, ""));
@@ -380,6 +435,9 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     Pvalue.SetVal( TMath::KolmogorovTest( UnbinnedAJ_lo.size(), (const double*) &UnbinnedAJ_lo.at(0), RefUnbinnedAJ_lo.size(), (const double*) &RefUnbinnedAJ_lo.at(0), "") );
     Pvalue.Write( "KS_" + PvalBase+"E_Lo");
 
+    CalcAj( Efiles.at(i), AuAuMultL, AuAuMultR, NoFabsUnbinnedAJ_hi, UnbinnedAJ_hi, "nofabs" );
+    Pvalue.SetVal( TMath::KolmogorovTest( NoFabsUnbinnedAJ_hi.size(), (const double*) &NoFabsUnbinnedAJ_hi.at(0), NoFabsRefUnbinnedAJ_hi.size(), (const double*) &NoFabsRefUnbinnedAJ_hi.at(0), "") );
+    Pvalue.Write( "KS_NoFabs" + PvalBase+"E_Hi");
     CalcAj( Efiles.at(i), AuAuMultL, AuAuMultR, NoFabsUnbinnedAJ_lo, UnbinnedAJ_hi, "nofabs" );
     Pvalue.SetVal( TMath::KolmogorovTest( NoFabsUnbinnedAJ_lo.size(), (const double*) &NoFabsUnbinnedAJ_lo.at(0), NoFabsRefUnbinnedAJ_lo.size(), (const double*) &NoFabsRefUnbinnedAJ_lo.at(0), "") );
     Pvalue.Write( "KS_NoFabs" + PvalBase+"E_Lo");
@@ -398,6 +456,9 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     Pvalue.SetVal( TMath::KolmogorovTest( UnbinnedAJ_lo.size(), (const double*) &UnbinnedAJ_lo.at(0), RefUnbinnedAJ_lo.size(), (const double*) &RefUnbinnedAJ_lo.at(0), "") );
     Pvalue.Write( "KS_" + PvalBase+"T_Lo");
 
+    CalcAj( Tfiles.at(i), AuAuMultL, AuAuMultR, NoFabsUnbinnedAJ_hi, UnbinnedAJ_hi, "nofabs" );
+    Pvalue.SetVal( TMath::KolmogorovTest( NoFabsUnbinnedAJ_hi.size(), (const double*) &NoFabsUnbinnedAJ_hi.at(0), NoFabsRefUnbinnedAJ_hi.size(), (const double*) &NoFabsRefUnbinnedAJ_hi.at(0), "") );
+    Pvalue.Write( "KS_NoFabs" + PvalBase+"T_hi");
     CalcAj( Tfiles.at(i), AuAuMultL, AuAuMultR, NoFabsUnbinnedAJ_lo, UnbinnedAJ_hi, "nofabs" );
     Pvalue.SetVal( TMath::KolmogorovTest( NoFabsUnbinnedAJ_lo.size(), (const double*) &NoFabsUnbinnedAJ_lo.at(0), NoFabsRefUnbinnedAJ_lo.size(), (const double*) &NoFabsRefUnbinnedAJ_lo.at(0), "") );
     Pvalue.Write( "KS_NoFabs" + PvalBase+"T_Lo");
@@ -466,6 +527,14 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
     AJ_lo_sysstat->SetBinError( i, TMath::Sqrt( pow( AJ_lo_sysstat->GetBinError(i), 2) + pow( AJ_lo_minmax->GetBinError(i), 2) ));
   }
   
+  TH1D* NoFabsAJ_hi_sysstat = (TH1D*) NoFabsEhistosHi.at(0)->Clone( "NoFabsAJ_hi_sysstat");
+  for (int i=1; i<NoFabsAJ_hi_sysstat->GetNbinsX(); ++i ){
+    if ( fabs (NoFabsAJ_hi_sysstat->GetBinContent(i)-NoFabsAJ_hi_minmax->GetBinContent(i))> 1e-4 ){
+      cerr << "syst. and stat. histo are incompatible" << endl;
+      return -1;
+    }
+    NoFabsAJ_hi_sysstat->SetBinError( i, TMath::Sqrt( pow( NoFabsAJ_hi_sysstat->GetBinError(i), 2) + pow( NoFabsAJ_hi_minmax->GetBinError(i), 2) ));
+  }
   TH1D* NoFabsAJ_lo_sysstat = (TH1D*) NoFabsEhistosLo.at(0)->Clone( "NoFabsAJ_lo_sysstat");
   for (int i=1; i<NoFabsAJ_lo_sysstat->GetNbinsX(); ++i ){
     if ( fabs (NoFabsAJ_lo_sysstat->GetBinContent(i)-NoFabsAJ_lo_minmax->GetBinContent(i))> 1e-4 ){
@@ -479,6 +548,8 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   AJ_hi_sysstat->SetAxisRange(  xl, xr, "x");
   AJ_lo_sysstat->SetAxisRange(  yl, yr, "y");
   AJ_lo_sysstat->SetAxisRange(  xl, xr, "x");
+  NoFabsAJ_hi_sysstat->SetAxisRange(  NoFabsyl, NoFabsyr, "y");
+  NoFabsAJ_hi_sysstat->SetAxisRange(  NoFabsxl, NoFabsxr, "x");
   NoFabsAJ_lo_sysstat->SetAxisRange(  NoFabsyl, NoFabsyr, "y");
   NoFabsAJ_lo_sysstat->SetAxisRange(  NoFabsxl, NoFabsxr, "x");
 
@@ -522,6 +593,12 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   AJ_hi_minmax->Write();
   AJ_hi_min->Write();
   AJ_hi_max->Write();
+
+  NoFabsAJ_hi_E->Write();
+  NoFabsAJ_hi_T->Write();
+  NoFabsAJ_hi_minmax->Write();
+  NoFabsAJ_hi_min->Write();
+  NoFabsAJ_hi_max->Write();
 
   AJ_lo_E->Write();
   AJ_lo_T->Write();

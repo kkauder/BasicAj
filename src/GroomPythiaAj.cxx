@@ -1,7 +1,7 @@
-/** @file PicoAj.cxx
+/** @file GroomPythiaAj.cxx
     @author Kolja Kauder
     @version Revision 0.2
-    @brief Aj analysis and embedding prep in p+p.
+    @brief Aj analysis and embedding prep in p+p, added zg analysis.
     @details Perform Aj analysis in a given TStarPicoJetTree chain. Can also save events with 10 GeV jets for embedding.
     @date Mar 04, 2015
 */
@@ -29,17 +29,22 @@
 
 #include <iostream>
 #include <cmath>
+#include <climits>
 #include <exception>
 #include <cstdlib>      // std::rand, std::srand
 #include <algorithm>    // std::random_shuffle
-#include <cstdint>
-#include <limits.h>      // INT_MAX
+
+#include "fastjet/contrib/Recluster.hh"
+#include "fastjet/contrib/SoftDrop.hh"
 
 using namespace std;
 using namespace fastjet;
+using namespace fastjet::contrib;
 
 /// Used to randomly shift a jet, for Eta Cone 
 bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap );
+
+ostream & operator<<(ostream &, const PseudoJet &);
 
 /** 
     - Set up input tree
@@ -54,8 +59,6 @@ bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap );
     <BR>For cases like 
     <BR><tt>% PicoAj ~putschke/Data/&lowast;/&lowast;.root</tt>
     <BR>change this macro
-    - [4] : tower uncertainty switch ( -1/0/1 )
-    - [5] : efficiency correction uncertainty switch ( -1/0/1 )
     <BR> Note that we use a vector for argv and shift the index down by one.
 */
 
@@ -64,20 +67,21 @@ int main ( int argc, const char** argv ) {
   // Set up some convenient default
   // ------------------------------
   // const char *defaults[] = {"PythiaAj","pythiatest.root","Data/RhicPythia/RhicPythiaOnly_10_ptHat=20_23.root" };
-  const char *defaults[] = {"PythiaAj","pythiatest.root","Data/AlternateRhicPythia/LargeEtaPythiaOnly_1_ptHat=25_35.root" };
+  // const char *defaults[] = {"PythiaAj","pythiatest.root","Data/AlternateRhicPythia/LargeEtaPythiaOnly_1_ptHat=25_35.root" };
+  // const char *defaults[] = {"PythiaAj","pythiatest_HT54_HTled_TrueMB.root","Data/AlternateRhicPythia/LargeEtaPythiaOnly_1_ptHat=25_35.root" };
+  const char *defaults[] = {"PythiaAj","pythiatest_HT54_HTled.root","Data/AlternateRhicPythia/LargeEtaPythiaOnly_1_ptHat=25_35.root" };
 
   if ( argc==1 ) {
     argv=defaults;
     argc=sizeof (defaults ) / sizeof (defaults[0] );
-  }
-
-  // float ManualHtCut = 5.4;
-  float ManualHtCut = 0;
+  }  
 
   // Probably shouldn't subtract BG for pythia
   // At least not while going to large eta
   bool SubtractSoftBg = false;
   // if ( OutFileName.Contains("Geant") ) SubtractSoftBg = false;
+
+  bool DoSubjets=true;
 
   // Throw arguments in a vector
   // ---------------------------
@@ -105,6 +109,33 @@ int main ( int argc, const char** argv ) {
   if ( OutFileName.Contains ("Pt1") ){
     PtConsLo=1.0;
   }
+
+  // High constituent cut
+  // --------------------
+  float PtConsHi=AjParameters::PtConsHi;
+  if ( OutFileName.Contains ("TrueMB") ){
+    PtConsHi=0.2;
+    // if ( OutFileName.Contains ("HT54") ) {
+    //   cerr << "Incompatible Setting" << endl;
+    //   return -1;
+    // }
+  }
+  
+
+  //  "High Tower" cut
+  // -----------------
+  float ManualHtCut = 0;
+  if ( OutFileName.Contains ("HT54") ){
+    ManualHtCut = 5.4;
+  }
+
+  // High tower matching
+  // -------------------
+  bool HTled=false;
+  if ( OutFileName.Contains ("HTled") ){
+    HTled=true;
+  }
+  
 
   // Jet Pt cuts
   // -----------
@@ -169,9 +200,9 @@ int main ( int argc, const char** argv ) {
   TH2::SetDefaultSumw2(true);
   TH3::SetDefaultSumw2(true);
   
-  TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
-  TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
-  TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* UnmatchedAJ_hi = new TH2D( "UnmatchedAJ_hi","Unmatched A_{J} for hard constituent jets;|A_{J}|;Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_hi = new TH2D( "AJ_hi","A_{J} for hard constituent jets;|A_{J}|;Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* AJ_lo = new TH2D( "AJ_lo","A_{J} for soft constituent jets;|A_{J}|;Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
 
   TH2D* UnmatchedNoFabsAJ_hi = new TH2D( "UnmatchedNoFabsAJ_hi","Unmatched A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
   TH2D* NoFabsAJ_hi = new TH2D( "NoFabsAJ_hi","A_{J} for hard constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
@@ -203,21 +234,50 @@ int main ( int argc, const char** argv ) {
   TH1D* hJetHadronLoLead = new TH1D( "hJetHadronLoLead","Jet-h for leading soft constituent jets; #Delta#phi", 200, -2, 2 );
   TH1D* hJetHadronLoSubLead = new TH1D( "hJetHadronLoSubLead","Jet-h for sub-leading soft constituent jets; #Delta#phi", 200, -2, 2 );
 
+  // zg Analysis
+  // ===========
+  int nzgBins=40;
+  TH2D* zgLead1020Hi = new TH2D("zgLead1020Hi","Leading Hi jet with 10<p_{T}<20;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgLead2030Hi = new TH2D("zgLead2030Hi","Leading Hi jet with 20<p_{T}<30;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgLead3040Hi = new TH2D("zgLead3040Hi","Leading Hi jet with 30<p_{T}<40;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgLead4060Hi = new TH2D("zgLead4060Hi","Leading Hi jet with 40<p_{T}<60;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+
+  TH2D* zgLead1020Lo = new TH2D("zgLead1020Lo","Leading Lo jet with 10<p_{T}<20;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgLead2030Lo = new TH2D("zgLead2030Lo","Leading Lo jet with 20<p_{T}<30;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgLead3040Lo = new TH2D("zgLead3040Lo","Leading Lo jet with 30<p_{T}<40;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgLead4060Lo = new TH2D("zgLead4060Lo","Leading Lo jet with 40<p_{T}<60;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+
+  TH2D* zgSubLead1020Hi = new TH2D("zgSubLead1020Hi","SubLeading Hi jet with 10<p_{T}<20;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgSubLead2030Hi = new TH2D("zgSubLead2030Hi","SubLeading Hi jet with 20<p_{T}<30;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgSubLead3040Hi = new TH2D("zgSubLead3040Hi","SubLeading Hi jet with 30<p_{T}<40;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgSubLead4060Hi = new TH2D("zgSubLead4060Hi","SubLeading Hi jet with 40<p_{T}<60;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+
+  TH2D* zgSubLead1020Lo = new TH2D("zgSubLead1020Lo","SubLeading Lo jet with 10<p_{T}<20;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgSubLead2030Lo = new TH2D("zgSubLead2030Lo","SubLeading Lo jet with 20<p_{T}<30;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgSubLead3040Lo = new TH2D("zgSubLead3040Lo","SubLeading Lo jet with 30<p_{T}<40;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+  TH2D* zgSubLead4060Lo = new TH2D("zgSubLead4060Lo","SubLeading Lo jet with 40<p_{T}<60;z_{g};Refmult", nzgBins, 0.05, 0.55, 800, -0.5, 799.5 );
+
+  
   // Follow to different R
   TH2D* OtherAJ_lo = new TH2D( "OtherAJ_lo","A_{J} for soft constituent jets with other R ;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
   TH2D* OtherLeadPtLoss_lo    = new TH2D( "OtherLeadPtLoss_lo","Leading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
   TH2D* OtherSubLeadPtLoss_lo = new TH2D( "OtherSubLeadPtLoss_lo","SubLeading #Delta p_{T} for soft constituent jets with other R ;A_{J};Refmult;fraction", 120, -10, 50, 800, -0.5, 799.5 );
 
   // eta shift destroys "true" soft jet components
-  TH2D* EtaShiftAJ_lo = new TH2D( "EtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 40, -0.3, 0.9, 800, -0.5, 799.5 );
+  TH2D* EtaShiftAJ_lo = new TH2D( "EtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
+  TH2D* NoFabsEtaShiftAJ_lo = new TH2D( "NoFabsEtaShiftAJ_lo","A_{J} for soft constituent jets;A_{J};Refmult;fraction", 50, -0.6, 0.9, 800, -0.5, 799.5 );
 	
   // DEBUG histos
   // ------------
-  TH3D* ptphieta = new TH3D("ptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
+  TH3D* Chargedptphieta = new TH3D("Chargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  TH3D* Neutralptphieta = new TH3D("Neutralptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  TH3D* totNeutralptphieta = new TH3D("totNeutralptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  //TH3D* totChargedptphieta = new TH3D("totChargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 100, -1, 1);
+  TH3D* totChargedptphieta = new TH3D("totChargedptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
   TH3D* totptphieta = new TH3D("totptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
   TH3D* j1ptphieta = new TH3D("j1ptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
   TH3D* jm1ptphieta = new TH3D("jm1ptphieta","",500, 0.2, 50.2, 100, 0, TMath::TwoPi(), 300, -6, 6);
-  
+
   TH1D* csize = new TH1D("csize","",5000, -0.5, 4999.5 );
   // Find some info on the background
   TH1D* hrho = new TH1D( "hrho","#rho", 240, 0, 120 );
@@ -238,22 +298,27 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("j2",&j2);
   ResultTree->Branch("jm1",&jm1);
   ResultTree->Branch("jm2",&jm2);
+
+  float zg1, zg2, zgm1, zgm2;
+  ResultTree->Branch("zg1",&zg1,"zg1/F");
+  ResultTree->Branch("zg2",&zg2,"zg2/F");
+  ResultTree->Branch("zgm1",&zgm1,"zgm1/F");
+  ResultTree->Branch("zgm2",&zgm2,"zgm2/F");
+
   double refmult; // Really an int, but may change when using refmultcorr
   float rho;
   float rhoerr;
   float rhoHi;
   float j1area;
   float j2area;
+
   float aj_lo, aj_hi;
-
-
-  ResultTree->Branch("weight",      &weight, "weight/D" );
-
   ResultTree->Branch("eventid",&eventid, "eventid/I");
   ResultTree->Branch("runid",&runid, "runid/I");
   ResultTree->Branch("refmult",&refmult, "refmult/D");
+  ResultTree->Branch("weight",&weight, "weight/D"); 
   ResultTree->Branch("aj_lo",&aj_lo, "aj_lo/F");
-  ResultTree->Branch("aj_hi",&aj_hi, "aj_hi/F");  
+  ResultTree->Branch("aj_hi",&aj_hi, "aj_hi/F");
   ResultTree->Branch("rho",&rho, "rho/F");
   ResultTree->Branch("rhoerr",&rhoerr, "rhoerr/F");
   ResultTree->Branch("rhoHi",&rhoHi, "rhoHi/F");
@@ -265,25 +330,27 @@ int main ( int argc, const char** argv ) {
   int nRestJ=0;
   float RestArea[kmaxJ];
   float RestPt[kmaxJ];
-  ResultTree->Branch("nRestJ",&nRestJ, "nRestJ/i");
-  ResultTree->Branch("RestArea",RestArea, "RestArea[nRestJ]/f");
-  ResultTree->Branch("RestPt",  RestPt,   "RestPt[nRestJ]/f");
+  ResultTree->Branch("nRestJ",&nRestJ, "nRestJ/I");
+  ResultTree->Branch("RestArea",RestArea, "RestArea[nRestJ]/F");
+  ResultTree->Branch("RestPt",  RestPt,   "RestPt[nRestJ]/F");
   
   // For embedding: save the full event and the trigger jet
   // if this is pp and there's at least a 10 GeV jet.
   // -------------------------------------------------------------------
   // This is somewhat wasteful, we could instead read the original trees.
-  bool SaveFullEvents = false;
+  bool SaveFullEvents = true;
   TTree* TriggeredTree=0;
 
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
+  TClonesArray TriggerJetLo( "TLorentzVector",1 ); 
   TClonesArray AwayJet( "TLorentzVector",1 ); 
+  TClonesArray AwayJetLo( "TLorentzVector",1 ); 
   static const Int_t kmaxT=5000; // max # of particles
-  TClonesArray FullEvent("TLorentzVector",kmaxT);
+  // TClonesArray FullEvent("TLorentzVector",kmaxT);
+  TClonesArray FullEvent("TStarJetVector",kmaxT);
 
-  // // Split up
-  // TClonesArray Tracks("TLorentzVector",kmaxT);
-  // TClonesArray Towers("TLorentzVector",kmaxT);
+  float zgtrighi, zgtriglo;
+  float zgawayhi, zgawaylo;
 
   if (SaveFullEvents) {
     TriggeredTree = new TTree("TriggeredTree","Triggered Events");
@@ -292,12 +359,35 @@ int main ( int argc, const char** argv ) {
     // TriggeredTree->Branch("Tracks", &Tracks );
     // TriggeredTree->Branch("Towers", &Towers );
     TriggeredTree->Branch("TriggerJet", &TriggerJet);
+    TriggeredTree->Branch("TriggerJetLo", &TriggerJetLo);
     TriggeredTree->Branch("AwayJet", &AwayJet);
-    TriggeredTree->Branch("eventid",&eventid, "eventid/i");
-    TriggeredTree->Branch("runid",&runid, "runid/i");
+    TriggeredTree->Branch("AwayJetLo", &AwayJetLo);    
+    TriggeredTree->Branch("eventid",&eventid, "eventid/I");
+    TriggeredTree->Branch("runid",&runid, "runid/I");
+    TriggeredTree->Branch("weight",&weight, "weight/D"); 
 
+    TriggeredTree->Branch("refmult",&refmult, "refmult/D");
+    TriggeredTree->Branch("rho",&rho, "rho/F");
+    TriggeredTree->Branch("rhoerr",&rhoerr, "rhoerr/F");
+
+    TriggeredTree->Branch("j1",&j1);
+    TriggeredTree->Branch("j2",&j2);
+    TriggeredTree->Branch("jm1",&jm1);
+    TriggeredTree->Branch("jm2",&jm2);
+
+    TriggeredTree->Branch("aj_hi",&aj_hi, "aj_hi/F");
+    TriggeredTree->Branch("aj_lo",&aj_lo, "aj_lo/F");
+
+    TriggeredTree->Branch("zgtrighi",&zgtrighi,"zgtrighi/F");
+    TriggeredTree->Branch("zgtriglo",&zgtriglo,"zgtriglo/F");
+    TriggeredTree->Branch("zgawayhi",&zgawayhi,"zgawayhi/F");
+    TriggeredTree->Branch("zgawaylo",&zgawaylo,"zgawaylo/F");
+    TriggeredTree->Branch("zg1",&zg1,"zg1/F");
+    TriggeredTree->Branch("zg2",&zg2,"zg2/F");
+    TriggeredTree->Branch("zgm1",&zgm1,"zgm1/F");
+    TriggeredTree->Branch("zgm2",&zgm2,"zgm2/F");
   } 
-      
+
   // Initialize analysis class
   // -------------------------
   // DEBUG
@@ -308,10 +398,10 @@ int main ( int argc, const char** argv ) {
 		  LeadPtMin, SubLeadPtMin, 
 		  max_track_rap,
 		  PtConsLo,
-		  AjParameters::PtConsHi,
+		  PtConsHi,
 		  AjParameters::dPhiCut,
 		  SubtractSoftBg
-		  );  
+		  );
   
   // Cycle through events
   // --------------------
@@ -329,10 +419,15 @@ int main ( int argc, const char** argv ) {
 	
   fastjet::GhostedAreaSpec TmpArea; // for access to static random seed
   vector<int> SeedStatus;
-  
+
+  // For additional QA things
   fastjet::Selector GrabCone = fastjet::SelectorCircle( R );    
+  fastjet::Selector NotGhost = !fastjet::SelectorIsPureGhost ();    
+  fastjet::Selector OnlyCharged = NotGhost && ( SelectorChargeRange( -3, -1) || SelectorChargeRange( 1, 3) );
+  fastjet::Selector OnlyNeutral = NotGhost && SelectorChargeRange( 0, 0);
 
   Long64_t evi =0;
+  TStarJetVector* pHT = 0;
   try{
     while ( true ){    
       if ( evi>= NEvents ) {
@@ -359,8 +454,13 @@ int main ( int argc, const char** argv ) {
 	// -------------------------
 	if ( sv->GetCharge()==0
 	     && fabs(sv->Eta())<1.0
-	     && sv->Pt()>ManualHtCut
-	     ) HasManualHighTower=true;	
+	     && sv->Pt()>ManualHtCut) {
+	  HasManualHighTower=true;	
+	  if ( HTled ) {
+	    if ( !pHT ) pHT=sv;
+	    if ( sv->Pt() > pHT->Pt() ) pHT=sv;
+	  }
+	}
 	
 	pj=MakePseudoJet( sv );
       	pj.set_user_info ( new JetAnalysisUserInfo( 3*sv->GetCharge() ) );
@@ -400,8 +500,13 @@ int main ( int argc, const char** argv ) {
       // Run analysis
       // ------------
       int ret;      
+      j1 = TLorentzVector();
+      j2 = TLorentzVector();
+      jm1 = TLorentzVector();
+      jm2 = TLorentzVector();
       aj_lo=-999;
       aj_hi=-999;
+      zg1=zg2=zgm1=zgm2=0;
       ret =AjA.AnalyzeAndFill( particles, 0, refmult, 
 			       dummy, dummy, dummy,
 			       dummy, dummy, dummy,
@@ -415,9 +520,12 @@ int main ( int argc, const char** argv ) {
 			       OtherAJ_lo, OtherLeadPtLoss_lo, OtherSubLeadPtLoss_lo, OtherR,
 
 			       hdPtLead, hdPtSubLead,
-			       SpecialhdPtLead, SpecialhdPtSubLead
+			       SpecialhdPtLead, SpecialhdPtSubLead,
+			       0,
+			       -1,
+			       pHT
 			       );
-      
+
       switch ( ret ){
       case 3 : nMatchedDijets++;
 	// FALLTHROUGH
@@ -434,20 +542,33 @@ int main ( int argc, const char** argv ) {
 	break;      
       }
       
-
       // save event info
-      if ( ret>0 ) csize->Fill(AjA.GetLoConstituents().size());
-      for (int i =0; i< AjA.GetLoConstituents().size(); ++i ){
-	if ( ret>0 ) ptphieta->Fill( AjA.GetLoConstituents().at(i).pt(), AjA.GetLoConstituents().at(i).phi(), AjA.GetLoConstituents().at(i).eta(), weight );
-	totptphieta->Fill( AjA.GetLoConstituents().at(i).pt(), AjA.GetLoConstituents().at(i).phi(), AjA.GetLoConstituents().at(i).eta(), weight );
+      vector<PseudoJet> chargedconsts = OnlyCharged (AjA.GetLoConstituents());
+      for (int i =0; i< chargedconsts.size(); ++i ){
+       	totChargedptphieta->Fill( chargedconsts.at(i).pt(), chargedconsts.at(i).phi(), chargedconsts.at(i).eta(), weight );
+	totptphieta->Fill( chargedconsts.at(i).pt(), chargedconsts.at(i).phi(), chargedconsts.at(i).eta(), weight );
+      }
+      vector<PseudoJet> neutralconsts = OnlyNeutral (AjA.GetLoConstituents());
+      for (int i =0; i< neutralconsts.size(); ++i ){	  
+	totNeutralptphieta->Fill( neutralconsts.at(i).pt(), neutralconsts.at(i).phi(), neutralconsts.at(i).eta(), weight );
+	totptphieta->Fill( neutralconsts.at(i).pt(), neutralconsts.at(i).phi(), neutralconsts.at(i).eta(), weight );
       }
       
+      // Save results
+      vector<PseudoJet> DiJetsHi = AjA.GetDiJetsHi();
+      vector<PseudoJet> DiJetsLo = AjA.GetDiJetsLo();
+
       // Save the full event for embedding if there's at least one 10 GeV jet
       // ------------------------------------------------------------------
       if (SaveFullEvents){
 	FullEvent.Clear();
 	TriggerJet.Clear();
+	TriggerJetLo.Clear();
 	AwayJet.Clear();
+	AwayJetLo.Clear();
+	zgtrighi = zgtriglo = 0;
+	zgawayhi = zgawaylo = 0;
+	
 	if ( AjA.Has10Gev )  { 
 	  int j=0;
 	  int k=0;
@@ -470,30 +591,139 @@ int main ( int argc, const char** argv ) {
 	    //   new (Tracks[k++])   TLorentzVector ( lv  );
 	    // }	    
 	  } // for particles
+
 	  // Save trigger jet as well
+	  // ------------------------
 	  vector<PseudoJet> JAhiResult = AjA.GetJAhiResult();
-	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( JAhiResult.at(0) )  );	  
+	  PseudoJet& TrigHi = JAhiResult.at(0);
+	  new (TriggerJet[0]) TLorentzVector ( MakeTLorentzVector( TrigHi )  );
+
+
+	  // Save away jet as well
+	  // ------------------------
+	  PseudoJet AwayHi;
 	  vector<PseudoJet> DiJetsHi = SelectorDijets( AjParameters::dPhiCut ) ( JAhiResult );
 	  if ( DiJetsHi.size()>1 ){
-	    if ( DiJetsHi.at(0).pt() < DiJetsHi.at(1).pt() ) {
-	      cerr << "Huh??" << endl;
-	      return -1;
-	    }	    
-	    new (AwayJet[0]) TLorentzVector ( MakeTLorentzVector( DiJetsHi.at(1) )  );
-	  } else {
-	    new (AwayJet[0]) TLorentzVector ();
+	    // if ( DiJetsHi.at(0).pt() < DiJetsHi.at(1).pt() ) {
+	    //   cerr << "Huh??" << endl;
+	    //   return -1;
+	    // }
+	    // new (AwayJet[0]) TLorentzVector ( MakeTLorentzVector( DiJetsHi.at(1) )  );
+	    AwayHi = DiJetsHi.at(1);
 	  }
+	  new ( AwayJet[0] ) TLorentzVector ( MakeTLorentzVector( AwayHi )  );
+
+	  // get soft match and do zg analysis on this jet as well
+	  // -----------------------------------------------------
+	  // Trigger
+	  vector<PseudoJet> JAloResult = AjA.GetJAloResult();	 
+	  fastjet::Selector SelectClose = fastjet::SelectorCircle( R );
+	  SelectClose.set_reference( TrigHi );
+	  vector<PseudoJet> MatchedToTrig = sorted_by_pt(SelectClose( JAloResult ));
+	  if ( MatchedToTrig.size() == 0 ) {
+	    std::cerr << "PROBLEM: SelectorClose returned no match to Trigger jet." << std::endl;
+	    return -1;
+	  }
+	  PseudoJet& TrigLo = MatchedToTrig.at(0);
+	  new (TriggerJetLo[0]) TLorentzVector ( MakeTLorentzVector( TrigLo )  );
+
+	  // Away
+	  PseudoJet AwayLo;
+	  if ( AwayHi.pt()>1e-4 ){
+	    SelectClose.set_reference( AwayHi );
+	    vector<PseudoJet> MatchedToAway = sorted_by_pt(SelectClose( JAloResult ));
+	    if ( MatchedToAway.size() == 0 ) {
+	      std::cerr << "PROBLEM: SelectorClose returned no match to Away jet." << std::endl;
+	      return -1;
+	    }
+	    AwayLo = MatchedToAway.at(0);
+	  }
+	  new (AwayJetLo[0]) TLorentzVector ( MakeTLorentzVector( AwayLo )  );
+
+
+	  if ( DoSubjets ){
+	    // ---------------
+	    // Subjet analysis
+	    // ---------------
+	    double z_cut = 0.10;
+	    double beta  = 0.0;
+	    
+	    bool CustomRecluster=false;
+	    JetAlgorithm ReclusterJetAlgorithm;
+	    JetDefinition ReclusterJetDef;
+	    Recluster * recluster = 0; 	  
+	    
+	    contrib::SoftDrop sd(beta, z_cut);
+	    if ( CustomRecluster ) {
+	      sd.set_reclustering(true, recluster);
+	    }
+	  
+	    // Hi cut jets
+	    Subtractor* BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
+	    if ( BackgroundSubtractorHi ){
+	      sd.set_subtractor( BackgroundSubtractorHi );
+	      sd.set_input_jet_is_subtracted( true );
+	    }
+	    
+	    // near-side
+	    PseudoJet sd_jet = sd( TrigHi );
+	    if ( sd_jet == 0){
+	      cout <<  " TriggerJet:   " << TrigHi << endl;
+	      cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	    } else {
+	      zgtrighi=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    }
+	    
+	    // away-side
+	    if ( AwayHi.pt()>1e-4 ){
+	      sd_jet = sd( AwayHi );
+	      if ( sd_jet == 0){
+		cout <<  "AwayJet:   " << AwayHi << endl;
+		cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	      } else {
+		zgawayhi=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	      }
+	    }
+
+	    // Lo cut jets
+	    Subtractor* BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
+	    if ( BackgroundSubtractorLo ){
+	      sd.set_subtractor( BackgroundSubtractorLo );
+	      sd.set_input_jet_is_subtracted( true );
+	    }
+	    
+	    // near-side
+	    sd_jet = sd( TrigLo );
+	    if ( sd_jet == 0){
+	      cout <<  " Trigger Jet, soft match:   " << TrigLo << endl;
+	      cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	    } else {
+	      zgtriglo=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	      // cout << zgtriglo << endl;
+	    }
+
+	    // away-side
+	    if ( AwayLo.pt()>1e-4 ){
+	      sd_jet = sd( AwayLo );
+	      if ( sd_jet == 0){
+		cout <<  "AwayJet, soft match:   " << AwayLo << endl;
+		cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	      } else {
+		zgawaylo=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	      }
+	    }
+	  	    
+	  } // DoSubjets
+
+
 	  TriggeredTree->Fill();
 	} // has Trigger
       } // SaveFullEvents
 
       // Save results
-      vector<PseudoJet> DiJetsHi = AjA.GetDiJetsHi();
-      vector<PseudoJet> DiJetsLo = AjA.GetDiJetsLo();
 
       // Check for matching? yes, for now.
       // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
-      // cout << " going in"  << endl;      
       if ( DiJetsLo.size()==2 ){
 	
 	j1 = MakeTLorentzVector( DiJetsHi.at(0) );
@@ -546,13 +776,13 @@ int main ( int argc, const char** argv ) {
 
 	  // cout << DiJetsLo.at(0).pt()<< "  "  << jm1.Pt() << "  " << lojets.at(0).pt() << endl;
 	  nRestJ=0;
-	  for ( int i=0; i<int ( lojets.size() )-2 ; ++i ){
+	  for ( int i=0; i< int ( lojets.size() ) -2 ; ++i ){
 	    if ( lojets.at(i+2).pt() < 1e-4 ) continue;
 	    RestArea[i] = lojets.at(i+2).area();
 	    RestPt[i] = lojets.at(i+2).pt();
 	    nRestJ++;
 	  }
-
+	  
 	  // save q&d jet-hadron correlation
 	  for (int i=0; i<particles.size() ; ++i ){
 	    PseudoJet& p = particles.at(i);
@@ -568,9 +798,117 @@ int main ( int argc, const char** argv ) {
 	      hJetHadronHiLead->Fill( j1.DeltaPhi( lv ) );
 	      hJetHadronHiSubLead->Fill( j2.DeltaPhi( lv ) );
 	    }
-
-	  }
+	    
+	  }	
 	}
+	// 	continue;
+      
+	if ( DoSubjets ){
+	  // ---------------
+	  // Subjet analysis
+	  // ---------------
+	  double z_cut = 0.10;
+	  double beta  = 0.0;
+	  
+	  bool CustomRecluster=false;
+	  JetAlgorithm ReclusterJetAlgorithm;
+	  JetDefinition ReclusterJetDef;
+	  Recluster * recluster = 0; 	  
+	  
+	  contrib::SoftDrop sd(beta, z_cut);
+	  if ( CustomRecluster ) {
+	    sd.set_reclustering(true, recluster);
+	  }
+	  
+	  // Hi cut jets
+	  Subtractor* BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
+	  if ( BackgroundSubtractorHi ){
+	    sd.set_subtractor( BackgroundSubtractorHi );
+	    sd.set_input_jet_is_subtracted( true );
+	  }
+	  
+	  PseudoJet sd_jet = sd( DiJetsHi.at(0) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original Jet, HI:   " << DiJetsHi.at(0) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    zg1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    // cout << "Hi, lead: " << sd_jet.pt() << endl;
+	    // cout << zg1 << endl;
+	  }
+	  
+	  sd_jet = sd( DiJetsHi.at(1) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original sub-leading Jet, HI:   " << DiJetsHi.at(1) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    zg2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    // cout << "Hi, sublead: " << sd_jet.pt() << endl;
+	    // cout << zg2 << endl;
+	  }
+	  
+	  // Lo cut jets
+	  Subtractor* BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
+	  if ( BackgroundSubtractorLo ){
+	    sd.set_subtractor( BackgroundSubtractorLo );
+	    sd.set_input_jet_is_subtracted( true );
+	  }
+	  
+	  sd_jet = sd( DiJetsLo.at(0) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original Jet, LO:   " << DiJetsLo.at(0) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    // cout << "Lo, lead: " << sd_jet.pt() << endl;
+	    zgm1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	  }
+
+	  sd_jet = sd( DiJetsLo.at(1) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original sub-leading Jet, LO:   " << DiJetsLo.at(1) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    // cout << "Lo, sublead: " << sd_jet.pt() << endl;
+	    zgm2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	  }
+
+	  float ptHi = DiJetsHi.at(0).pt();
+	  if ( ptHi >= 10 && ptHi < 20 ){
+	    zgLead1020Hi->Fill ( zg1, refmult, weight );
+	    zgLead1020Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  if ( ptHi >= 20 && ptHi < 30 ){
+	    zgLead2030Hi->Fill ( zg1, refmult, weight );
+	    zgLead2030Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  if ( ptHi >= 30 && ptHi < 40 ){
+	    zgLead3040Hi->Fill ( zg1, refmult, weight );
+	    zgLead3040Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  if ( ptHi >= 40 && ptHi < 60 ){
+	    zgLead4060Hi->Fill ( zg1, refmult, weight );
+	    zgLead4060Lo->Fill ( zgm1, refmult, weight );
+	  }
+
+	  float SubLeadingptHi = DiJetsHi.at(1).pt();
+	  if ( SubLeadingptHi >= 10 && SubLeadingptHi < 20 ){
+	    zgSubLead1020Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead1020Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  if ( SubLeadingptHi >= 20 && SubLeadingptHi < 30 ){
+	    zgSubLead2030Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead2030Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  if ( SubLeadingptHi >= 30 && SubLeadingptHi < 40 ){
+	    zgSubLead3040Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead3040Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  if ( SubLeadingptHi >= 40 && SubLeadingptHi < 60 ){
+	    zgSubLead4060Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead4060Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  
+	} // DoSubjets
 
 	// Fill here instead b/c of the weight
 	AJ_hi->Fill( fabs( AjA.CalcAj( DiJetsHi ) ), refmult, weight );
@@ -650,4 +988,22 @@ bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap ){
   return true; 
   
 }
+
+//----------------------------------------------------------------------
+/// overloaded jet info output
+ostream & operator<<(ostream & ostr, const PseudoJet & jet) {
+  if (jet == 0) {
+    ostr << " 0 ";
+  } else {
+    ostr << " pt = " << jet.pt()
+         << " m = " << jet.m()
+         << " y = " << jet.rap()
+         << " phi = " << jet.phi()
+         << " ClusSeq = " << (jet.has_associated_cs() ? "yes" : "no");
+  }
+  return ostr;
+}
+//----------------------------------------------------------------------
+
+
 
