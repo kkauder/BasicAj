@@ -46,12 +46,10 @@
     "libEG.so",
     "libTree.so",    
     "$STARPICOPATH/libTStarJetPico.so",
-    // "~putschke/STAR/QM_Aj/AjLib/libMuAj.so",
-#ifdef ROOUNFOLD
-    "$ROOUNFOLD/libRooUnfold.so",
-#endif
     0
   };
+
+
 
   Int_t i = 0;
   while ( clibs[i++] ) {
@@ -60,5 +58,13 @@
       cerr <<  "Unable to load " << clibs[i-1] << endl;
     }
   }
+
+  TString __ROOUNFOLD=gSystem->Getenv("ROOUNFOLD");
+  if (__ROOUNFOLD!=""){
+    gSystem->AddIncludePath(" -I" + __ROOUNFOLD + "/src");
+    gInterpreter->AddIncludePath(__ROOUNFOLD + "/src");
+    gSystem->Load("$ROOUNFOLD/libRooUnfold.so");
+  }
+
 
 }

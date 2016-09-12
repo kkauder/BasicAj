@@ -23,7 +23,7 @@ int uniquetester(){
 
   TChain *Tree = new TChain("TriggeredTree");
   // Tree->Add("AjResults/Pieces/BetterIdGroom_Aj_TrueMB_NoEff_GeantMc_picoDst_9_11*");
-  Tree->Add("AjResults/Groom_Aj_TrueMB_NoEff_GeantMc.root");
+  Tree->Add("HThistos/Groom_Aj_HT54_HTled_TrueMB_NoEff_GeantMc.root");
 
   int runid;
   Tree->SetBranchAddress("runid", &runid );
@@ -50,7 +50,7 @@ int uniquetester(){
   //     cout << "ALARUM WITHIN! " << it->first << "  " << it->second << endl;
   //   }
   // }
-  
+  cout << "Testing " << m2.size() << " entries." << endl;
   for ( mpi::iterator it=m2.begin(); it!=m2.end(); it++ ){
     if ( it->second != 1 ){
       cout << "ALARUM WITHIN! " << it->first.first << "  " << it->first.second << "  " << it->second << endl;
