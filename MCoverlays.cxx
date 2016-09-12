@@ -48,7 +48,7 @@ int MCoverlays(){
   // gROOT->ForceStyle();
   gStyle->SetOptStat(0);
   gStyle->SetHistLineWidth(2);
-  gStyle->SetMarkerSize(2);
+  // gStyle->SetHistMarkerSize(2);
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
   
