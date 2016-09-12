@@ -16,8 +16,11 @@ foreach Tow ( -1 0 1 )
 	# set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_*.root
 	# set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_ppInAuAuAj.root
 
-	set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_GeantInAuAuAj_*.root
-	set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_GeantInAuAuAj.root
+	# set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_GeantInAuAuAj_*.root
+	# set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_GeantInAuAuAj.root
+
+	set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3_*.root
+	set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3.root
 
 	hadd -f ${Out} ${In}
     end

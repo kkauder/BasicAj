@@ -24,7 +24,10 @@ int GroomPrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  
 
   TString refname = "AjResults/Groom_AuAu_HT54_HTled.root";
 
-  TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj";
+  // TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj";
+  TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3";
+  // TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3";
+
   TString outname = "AjResults/zgSystematics_" + Base + ".root";
   
   TString ft0e0 = "AjResults/Tow0_Eff0_" + Base + ".root";

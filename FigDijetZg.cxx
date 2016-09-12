@@ -24,9 +24,8 @@
 #include <cmath>
 #include <exception>
 
-
 using namespace std;
-{
+int FigDijetZg() {
   bool ShowHi=false;
   gStyle->SetOptStat(0);
   gStyle->SetHistLineWidth(2);
@@ -35,15 +34,21 @@ using namespace std;
 
   int RebinZg=2;  // Gotta stick to 1 until Systematics can deal with it
 
-  TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
-  TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
-  TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+  // TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
+  // TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+  // TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+  // TString sAuAu       = "AjResults/Groom_AuAu_AjGt3_HT54_HTled.root";
+  // TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3.root";
+  // TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3.root";
+  TString sAuAu       = "AjResults/Groom_AuAu_AjLt3_HT54_HTled.root";
+  TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3.root";
+  TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3.root";
 
   TString outbase = gSystem->BaseName(sAuAu);
-  outbase->ReplaceAll (".root","");
+  outbase.ReplaceAll (".root","");
   outbase+="_";
   outbase+=gSystem->BaseName(sppInAuAu);
-  outbase->ReplaceAll (".root","");
+  outbase.ReplaceAll (".root","");
 
   int RefmultCut = 269;  // 269 for 0-20%, 399 for 0-10%
 

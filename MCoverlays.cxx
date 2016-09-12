@@ -16,6 +16,7 @@
 #include <TMath.h>
 #include <TRandom.h>
 #include <TSystem.h>
+#include <TROOT.h>
 
 #include <iostream>
 #include <vector>
@@ -44,8 +45,10 @@ TObjArray* ChopNormPrettify ( TH2D* h2, TString titlebase="p_{T}=",
 
 int MCoverlays(){
 
+  // gROOT->ForceStyle();
   gStyle->SetOptStat(0);
   gStyle->SetHistLineWidth(2);
+  gStyle->SetMarkerSize(2);
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
   
@@ -61,10 +64,10 @@ int MCoverlays(){
   // bool Do_NS_SoftJets_HT54=false;
   // bool Do_AS_SoftJets_HT54=false;
 
-  bool Do_NS_HardJets_HT54=true;
-  bool Do_AS_HardJets_HT54=true;
-  // bool Do_NS_HardJets_HT54=false;
-  // bool Do_AS_HardJets_HT54=false;
+  // bool Do_NS_HardJets_HT54=true;
+  // bool Do_AS_HardJets_HT54=true;
+  bool Do_NS_HardJets_HT54=false;
+  bool Do_AS_HardJets_HT54=false;
 
 
   TString plotpath = "./HPplots/";
@@ -342,40 +345,60 @@ int MCoverlays(){
   // -------------------------
 
   //    -------- MB Soft Jets  --------
-  if ( Do_NS_SoftJets_MB && Do_AS_SoftJets_MB ){
-    for (int i=0; i<AS_P6_SoftJets_MB->GetEntries(); ++i ){
+  // if ( Do_NS_SoftJets_MB && Do_AS_SoftJets_MB ){
+  if ( Do_NS_SoftJets_MB ){
+    for (int i=0; i<NS_P6_SoftJets_MB->GetEntries(); ++i ){
       new TCanvas;
       TH1D* h6NS = (TH1D*)NS_P6_SoftJets_MB->At(i);
       TH1D* h8NS = (TH1D*)NS_P8_SoftJets_MB->At(i);
-
-      TH1D* h6AS = (TH1D*)AS_P6_SoftJets_MB->At(i);
-      TH1D* h8AS = (TH1D*)AS_P8_SoftJets_MB->At(i);
+      
+      TH1D* h6AS=0;
+      TH1D* h8AS=0;
+      if ( Do_AS_SoftJets_MB ){
+	h6AS = (TH1D*)AS_P6_SoftJets_MB->At(i);
+	h8AS = (TH1D*)AS_P8_SoftJets_MB->At(i);
+      }
       
       TH1D* dummy = (TH1D*)h6NS->Clone("dummy");
       dummy->Reset();    dummy->SetTitle("");
       dummy->SetAxisRange(zgmin, zgmax, "y");
       dummy->Draw();
             
-      leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
+      if ( Do_AS_SoftJets_MB )  leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
+      else                      leg = new TLegend( 0.5 , 0.5, 0.89, 0.9, h6NS->GetTitle() );
       leg->SetBorderSize(0);    leg->SetLineWidth(10);
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
       h6NS->SetLineColor(kBlack);
-      h6NS->DrawCopy("same");
+      h6NS->SetMarkerColor(kBlack);
+      h6NS->SetMarkerStyle(21);
+      h6NS->DrawCopy("9same");
       h8NS->SetLineColor(kRed);
-      h8NS->DrawCopy("same");
+      h8NS->SetMarkerColor(kRed);
+      h8NS->SetMarkerStyle(22);
+      h8NS->DrawCopy("9same");
 
-      h6AS->SetLineColor(kGray+1);
-      h6AS->DrawCopy("same");
-      h8AS->SetLineColor(kMagenta+1);
-      h8AS->DrawCopy("same");
-      h8AS->SetLineColor(kMagenta+1);
-      h8AS->DrawCopy("same");
+      if ( Do_AS_SoftJets_MB ){
+	h6AS->SetLineColor(kGray+1);
+	h6AS->SetMarkerColor(kGray+1);
+	h6AS->SetMarkerStyle(23);
+	h6AS->DrawCopy("9same");
+
+	h8AS->SetLineColor(kMagenta+1);
+	h8AS->SetMarkerColor(kMagenta+1);
+	h8AS->SetMarkerStyle(24);
+	h8AS->DrawCopy("9same");
+      }
       
-      leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
-      leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
-      leg->AddEntry(h8NS,"Pythia8, TriggerJet", "lp");
-      leg->AddEntry(h8AS,"Pythia8, AwayJet", "lp");
+      if ( Do_AS_SoftJets_MB ) {
+	leg->AddEntry(h6NS,"Pythia6, Trigger Jet", "lp");
+	leg->AddEntry(h6AS,"Pythia6, Away Jet", "lp");
+	leg->AddEntry(h8NS,"Pythia8, Trigger Jet", "lp");
+	leg->AddEntry(h8AS,"Pythia8, Away Jet", "lp");
+      } else {
+	leg->AddEntry(h6NS,"Pythia6, Leading Jet", "lp");       
+	leg->AddEntry(h8NS,"Pythia8, Leading Jet", "lp");
+      }
 
       FUVQjet->Draw("9same");
       leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
@@ -406,30 +429,67 @@ int MCoverlays(){
       dummy->SetAxisRange(zgmin, zgmax, "y");
       dummy->Draw();
             
-      leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
+      // leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
+      leg = new TLegend( 0.5 , 0.5, 0.89, 0.9, h6NS->GetTitle() );
       leg->SetBorderSize(0);    leg->SetLineWidth(10);
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
-      h6NS->SetLineColor(kBlack);
-      h6NS->DrawCopy("same");
+      // h6NS->SetLineColor(kBlack);
+      // h6NS->SetMarkerColor(kBlack);
+      // h6NS->SetMarkerStyle(21);
+      // h6NS->DrawCopy("9same");
       h8NS->SetLineColor(kRed);
-      h8NS->DrawCopy("same");
-      hPNS->SetLineColor(kGreen+1);
-      hPNS->DrawCopy("same");
+      h8NS->SetMarkerColor(kRed);
+      h8NS->SetMarkerStyle(22);
+      h8NS->DrawCopy("9same");
+
+      // h6AS->SetLineColor(kGray+1);
+      // h6AS->SetMarkerColor(kGray+1);
+      // h6AS->SetMarkerStyle(23);
+      // h6AS->DrawCopy("9same");
       
-      h6AS->SetLineColor(kGray+1);
-      h6AS->DrawCopy("same");
       h8AS->SetLineColor(kMagenta+1);
-      h8AS->DrawCopy("same");
-      hPAS->SetLineColor(kTeal);
-      hPAS->DrawCopy("same");
+      h8AS->SetMarkerColor(kMagenta+1);
+      h8AS->SetMarkerStyle(26);
+      h8AS->DrawCopy("9same");
       
-      leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
-      leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
-      leg->AddEntry(h8NS,"Pythia8, TriggerJet", "lp");
-      leg->AddEntry(h8AS,"Pythia8, AwayJet", "lp");
-      leg->AddEntry(hPNS,"p+p HT, TriggerJet", "lp");
-      leg->AddEntry(hPAS,"p+p HT, AwayJet", "lp");
+      hPNS->SetLineColor(kGreen+1);
+      hPNS->SetMarkerColor(kGreen+1);
+      hPNS->SetMarkerStyle(29);
+      hPNS->DrawCopy("9same");
+
+      hPAS->SetLineColor(kBlue);
+      hPAS->SetMarkerColor(kBlue);
+      hPAS->SetMarkerStyle(29);
+      hPAS->DrawCopy("9same");
+
+      leg->AddEntry(h8NS,"Pythia8, Trigger Jet", "lp");
+      leg->AddEntry(h8NS,"p+p HT, Trigger Jet", "lp");
+      leg->AddEntry(h8AS,"Pythia8, Away Jet", "lp");
+      leg->AddEntry(h8AS,"p+p HT, Away Jet", "lp");
+
+
+
+      // h6NS->SetLineColor(kBlack);
+      // h6NS->DrawCopy("9same");
+      // h8NS->SetLineColor(kRed);
+      // h8NS->DrawCopy("9same");
+      // hPNS->SetLineColor(kGreen+1);
+      // hPNS->DrawCopy("9same");
+      
+      // h6AS->SetLineColor(kGray+1);
+      // h6AS->DrawCopy("9same");
+      // h8AS->SetLineColor(kMagenta+1);
+      // h8AS->DrawCopy("9same");
+      // hPAS->SetLineColor(kTeal);
+      // hPAS->DrawCopy("9same");
+      
+      // leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
+      // leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
+      // leg->AddEntry(h8NS,"Pythia8, TriggerJet", "lp");
+      // leg->AddEntry(h8AS,"Pythia8, AwayJet", "lp");
+      // leg->AddEntry(hPNS,"p+p HT, TriggerJet", "lp");
+      // leg->AddEntry(hPAS,"p+p HT, AwayJet", "lp");
 
       FUVQjet->Draw("9same");
       leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
@@ -439,6 +499,87 @@ int MCoverlays(){
       TString plotname = h6NS->GetName();
       plotname = plotname(plotname.Length()-5, plotname.Length());
       plotname = plotpath+"Geant_SoftJets_HT54_"+plotname;
+      gPad->SaveAs(plotname+".png");
+      
+    }
+  } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
+
+  //    -------- Soft Jets HT54 v MB  --------
+  if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54  && 
+       Do_NS_SoftJets_MB && Do_AS_SoftJets_MB  ){
+
+    for (int i=0; i<AS_P8_SoftJets_HT54->GetEntries(); ++i ){
+      new TCanvas;
+      TH1D* h8NS_MB = (TH1D*)NS_P8_SoftJets_MB->At(i);
+      TH1D* h8AS_MB = (TH1D*)AS_P8_SoftJets_MB->At(i);
+      TH1D* h8NS_HT = (TH1D*)NS_P8_SoftJets_HT54->At(i);
+      TH1D* h8AS_HT = (TH1D*)AS_P8_SoftJets_HT54->At(i);
+      
+      TH1D* dummy = (TH1D*)h8NS_MB->Clone("dummy");
+      dummy->Reset();    dummy->SetTitle("");
+      dummy->SetAxisRange(zgmin, zgmax, "y");
+      dummy->Draw();
+            
+      leg = new TLegend( 0.5 , 0.5, 0.89, 0.9, TString("Pythia8")+h8AS_MB->GetTitle() );
+      leg->SetBorderSize(0);    leg->SetLineWidth(10);
+      leg->SetFillStyle(0);     leg->SetMargin(0.1);
+      
+      h8NS_MB->SetLineColor(kRed);
+      h8NS_MB->SetMarkerColor(kRed);
+      h8NS_MB->SetMarkerStyle(22);
+      h8NS_MB->DrawCopy("9same");
+
+      h8AS_MB->SetLineColor(kMagenta+1);
+      h8AS_MB->SetMarkerColor(kMagenta+1);
+      h8AS_MB->SetMarkerStyle(26);
+      h8AS_MB->DrawCopy("9same");
+      
+      h8NS_HT->SetLineColor(kGreen+1);
+      h8NS_HT->SetMarkerColor(kGreen+1);
+      h8NS_HT->SetMarkerStyle(29);
+      h8NS_HT->DrawCopy("9same");
+
+      h8AS_HT->SetLineColor(kBlue);
+      h8AS_HT->SetMarkerColor(kBlue);
+      h8AS_HT->SetMarkerStyle(29);
+      h8AS_HT->DrawCopy("9same");
+
+      leg->AddEntry(h8NS_MB,"No trigger, Leading Jet", "lp");
+      leg->AddEntry(h8NS_HT,"HT        , Trigger Jet", "lp");
+      leg->AddEntry(h8AS_MB,"No trigger, Away Jet", "lp");
+      leg->AddEntry(h8NS_HT,"HT        , Away Jet", "lp");
+
+
+
+      // h6NS->SetLineColor(kBlack);
+      // h6NS->DrawCopy("9same");
+      // h8NS->SetLineColor(kRed);
+      // h8NS->DrawCopy("9same");
+      // hPNS->SetLineColor(kGreen+1);
+      // hPNS->DrawCopy("9same");
+      
+      // h6AS->SetLineColor(kGray+1);
+      // h6AS->DrawCopy("9same");
+      // h8AS->SetLineColor(kMagenta+1);
+      // h8AS->DrawCopy("9same");
+      // hPAS->SetLineColor(kTeal);
+      // hPAS->DrawCopy("9same");
+      
+      // leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
+      // leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
+      // leg->AddEntry(h8NS,"Pythia8, TriggerJet", "lp");
+      // leg->AddEntry(h8AS,"Pythia8, AwayJet", "lp");
+      // leg->AddEntry(hPNS,"p+p HT, TriggerJet", "lp");
+      // leg->AddEntry(hPAS,"p+p HT, AwayJet", "lp");
+
+      FUVQjet->Draw("9same");
+      leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+      leg->Draw();
+      
+      // pull bin name from end of histo name
+      TString plotname = h8NS_MB->GetName();
+      plotname = plotname(plotname.Length()-5, plotname.Length());
+      plotname = plotpath+"Geant_MB_v_HT54_"+plotname;
       gPad->SaveAs(plotname+".png");
       
     }
@@ -465,18 +606,18 @@ int MCoverlays(){
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
       h6NS->SetLineColor(kBlack);
-      h6NS->DrawCopy("same");
+      h6NS->DrawCopy("9same");
       h8NS->SetLineColor(kRed);
-      h8NS->DrawCopy("same");
+      h8NS->DrawCopy("9same");
       hPNS->SetLineColor(kGreen+1);
-      hPNS->DrawCopy("same");
+      hPNS->DrawCopy("9same");
       
       h6AS->SetLineColor(kGray+1);
-      h6AS->DrawCopy("same");
+      h6AS->DrawCopy("9same");
       h8AS->SetLineColor(kMagenta+1);
-      h8AS->DrawCopy("same");
+      h8AS->DrawCopy("9same");
       hPAS->SetLineColor(kTeal);
-      hPAS->DrawCopy("same");
+      hPAS->DrawCopy("9same");
       
       leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
       leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
@@ -599,7 +740,7 @@ TH2D* SetupZgHisto2D ( double ptbins[], int nptbins,
   //   TH1D* h8 = (TH1D*)NS_P8_SoftJets_MB->At(i);
   //   h6->Draw();
   //   h8->SetLineColor(kRed);
-  //   h8->Draw("same");
+  //   h8->Draw("9same");
   // }
 
   // for (int i=0; i<AS_P6_SoftJets_MB->GetEntries(); ++i ){
@@ -608,7 +749,7 @@ TH2D* SetupZgHisto2D ( double ptbins[], int nptbins,
   //   TH1D* h8 = (TH1D*)AS_P8_SoftJets_MB->At(i);
   //   h6->Draw();
   //   h8->SetLineColor(kRed);
-  //   h8->Draw("same");
+  //   h8->Draw("9same");
   // }
     
 

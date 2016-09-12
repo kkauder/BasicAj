@@ -79,7 +79,7 @@ int main ( int argc, const char** argv ) {
   TString ChainName  = "JetTree";
   TString OutFileName = arguments.at(0);
   
-  // jet resolution parameter
+// jet resolution parameter
   // ------------------------
   float R = 0.4;
   // Follow to different R

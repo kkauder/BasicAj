@@ -13,7 +13,12 @@ set RMod = ""
 #set RMod = R0.2_
 # set RMod = "Pt1_"
 
-set PpBase = Groom_Aj_HT54_HTled_NoEff_ppAj.root
+#set AjMod =""
+#set AjMod = "_AjGt3"
+set AjMod = "_AjLt3"
+
+#set PpBase = Groom_Aj_HT54_HTled_NoEff_ppAj.root
+set PpBase = Groom_Aj_HT54_HTled_ppAj.root
 
 # Loop over combinations and data
 set Effs='-1 0 1'
@@ -46,7 +51,7 @@ foreach Tow ( -1 0 1 )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
 	    #set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
-	    set OutName    = `echo ${PpName} | sed "s/ppAj/ppInAuAuAj/g" | sed "s/.root//g"`_${OutBase}.root
+	    set OutName    = `echo ${PpName} | sed "s/ppAj/ppInAuAuAj/g" | sed "s/.root//g"`${AjMod}_${OutBase}.root
 
 	    set TriggerName = MB
 	    set Files      = ${input}

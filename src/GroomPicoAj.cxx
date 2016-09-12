@@ -78,7 +78,9 @@ int main ( int argc, const char** argv ) {
   // const char *defaults[] = {"GroomPicoAj","Groomtest.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
   // const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/AddedGeantPythia/picoDst*root", "0", "0", "" };
   // const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/AddedGeantPythia/picoDst_15_25_9.root", "0", "0", "" };
-  const char *defaults[] = {"GroomPicoAj","GeantGroomtest_HT54_HTled_NoEff.root","all","Data/AddedGeantPythia/picoDst_25_35_9.root", "0", "0", "" };
+  // const char *defaults[] = {"GroomPicoAj","GeantGroomtest_HT54_HTled_NoEff.root","all","Data/AddedGeantPythia/picoDst_25_35_9.root", "0", "0", "" };
+  const char *defaults[] = {"GroomPicoAj","Groomtest_AjGt3_HT54_HTled_AuAu.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+
   // const char *defaults[] = {"GroomPicoAj","Y14Groomtest.root","all","Data/SmallY14HT/AuAu14Pico_101-105_*root", "0", "0", "" };
 
   if ( argc==1 ) {
@@ -105,6 +107,21 @@ int main ( int argc, const char** argv ) {
   if ( OutFileName.Contains ("R0.2") ){
     R=0.2;
     OtherR=0.4;
+  }
+
+  // AJ Cut for zg?
+  // --------------
+  float AjCut = -999;
+  int AjCutDir = 0;
+
+  if ( OutFileName.Contains ("AjGt3") ){
+    AjCut = 0.3;
+    AjCutDir = 1;
+  }
+
+  if ( OutFileName.Contains ("AjLt3") ){
+    AjCut = 0.3;
+    AjCutDir = -1;
   }
 
   // soft constituent cut
@@ -1061,7 +1078,14 @@ int main ( int argc, const char** argv ) {
 	}
 	// 	continue;
       
-	if ( DoSubjets ){
+	if ( DoSubjets
+	     && 
+	     ( AjCutDir ==0 || 
+	       ( AjCutDir==1  && aj_hi > AjCut ) ||
+	       ( AjCutDir==-1 && aj_hi < AjCut ) 
+	       )
+	     ){
+	  cout << aj_hi << endl;
 	  // ---------------
 	  // Subjet analysis
 	  // ---------------

@@ -24,6 +24,7 @@ int Fig1and3( TString R = "" ) {
   gStyle->SetTitleW(0.8f);
   gStyle->SetTitleBorderSize(0);	//Title box border thickness
 	
+  // bool MakeHtml=true;
 
   bool nofabs=true;
   // bool nofabs=false;

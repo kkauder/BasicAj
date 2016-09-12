@@ -55,7 +55,8 @@ int main ( int argc, const char** argv ) {
   
   // const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
   // const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
-  const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  // const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  const char *defaults[5] = {"GroomppInAuAuAj","Groom_Aj_AjGt3_HT54_HTled_NoEff_ppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -102,6 +103,23 @@ int main ( int argc, const char** argv ) {
     OtherR=0.4;    
   }
 
+  // AJ Cut for zg?
+  // --------------
+  float AjCut = -999;
+  int AjCutDir = 0;
+
+  if ( OutFileName.Contains ("AjGt3") ){
+    AjCut = 0.3;
+    AjCutDir = 1;
+  }
+
+  if ( OutFileName.Contains ("AjLt3") ){
+    AjCut = 0.3;
+    AjCutDir = -1;
+  }
+
+  // soft constituent cut
+  // --------------------
   float PtConsLo=0.2;
   if ( OutFileName.Contains ("Pt1") ){
     if ( !ppAjName.Contains ("Pt1") ) {
@@ -807,8 +825,12 @@ int main ( int argc, const char** argv ) {
 	
       // Check for matching? yes, for now.
       // cout << DiJetsHi.size() << "  " << DiJetsLo.size() << endl;
-      // cout << " going in"  << endl;      
+      // cout << " going in"  << endl;
+      zg1=zg2=zgm1=zgm2=0;
       if ( DiJetsLo.size()==2 ){
+
+	aj_hi=AjA.CalcAj( DiJetsHi );
+	aj_lo=AjA.CalcAj( DiJetsLo );
 
 	// quick debug
 	if ( refmult >= 269 ){
@@ -821,95 +843,102 @@ int main ( int argc, const char** argv ) {
 	// ---------------	
 	zg1=zg2=zgm1=zgm2=0;
 	
-	// Hi cut jets
-	BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
-	if ( BackgroundSubtractorHi ){
-	  sd_hi.set_subtractor( BackgroundSubtractorHi );
-	  sd_hi.set_input_jet_is_subtracted( true );
-	}
 
-	sd_jet = sd_hi( DiJetsHi.at(0) );
-	if ( sd_jet == 0){
-	  cout <<  " FOREGROUND Original Jet, HI:   " << DiJetsHi.at(0) << endl;
-	  cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
-	} else {
-	  zg1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
-	  // cout << "Hi, lead: " << sd_jet.pt() << endl;
-	  // cout << zg1 << endl;
-	}
-
-	sd_jet = sd_hi( DiJetsHi.at(1) );
-	if ( sd_jet == 0){
-	  cout <<  " FOREGROUND Original sub-leading Jet, HI:   " << DiJetsHi.at(1) << endl;
-	  cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
-	} else {
-	  zg2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
-	  // cout << "Hi, sublead: " << sd_jet.pt() << endl;
-	  // cout << zg2 << endl;
-	}
-
-	// Lo cut jets
-	BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
-	if ( BackgroundSubtractorLo ){
-	  sd_lo.set_subtractor( BackgroundSubtractorLo );
-	  sd_lo.set_input_jet_is_subtracted( true );
-	}
-
-	sd_jet = sd_lo( DiJetsLo.at(0) );
-	if ( sd_jet == 0){
-	  cout <<  " FOREGROUND Original Jet, LO:   " << DiJetsLo.at(0) << endl;
-	  cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
-	} else {
-	  // cout << "Lo, lead: " << sd_jet.pt() << endl;
-	  zgm1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
-	}
-
-	sd_jet = sd_lo( DiJetsLo.at(1) );
-	if ( sd_jet == 0){
-	  cout <<  " FOREGROUND Original sub-leading Jet, LO:   " << DiJetsLo.at(1) << endl;
-	  cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
-	} else {
-	  // cout << "Lo, sublead: " << sd_jet.pt() << endl;
-	  zgm2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
-	}
-
-	float ptHi = DiJetsHi.at(0).pt();
-	if ( ptHi >= 10 && ptHi < 20 ){
-	  zgLead1020Hi->Fill ( zg1, refmult, weight );
-	  zgLead1020Lo->Fill ( zgm1, refmult, weight );
-	}
-	if ( ptHi >= 20 && ptHi < 30 ){
-	  zgLead2030Hi->Fill ( zg1, refmult, weight );
-	  zgLead2030Lo->Fill ( zgm1, refmult, weight );
-	}
-	if ( ptHi >= 30 && ptHi < 40 ){
-	  zgLead3040Hi->Fill ( zg1, refmult, weight );
-	  zgLead3040Lo->Fill ( zgm1, refmult, weight );
-	}
-	if ( ptHi >= 40 && ptHi < 60 ){
-	  zgLead4060Hi->Fill ( zg1, refmult, weight );
-	  zgLead4060Lo->Fill ( zgm1, refmult, weight );
-	}
-	
-	float SubLeadingptHi = DiJetsHi.at(1).pt();
-	if ( SubLeadingptHi >= 10 && SubLeadingptHi < 20 ){
-	  zgSubLead1020Hi->Fill ( zg2, refmult, weight );
-	  zgSubLead1020Lo->Fill ( zgm2, refmult, weight );
-	}
-	if ( SubLeadingptHi >= 20 && SubLeadingptHi < 30 ){
-	  zgSubLead2030Hi->Fill ( zg2, refmult, weight );
-	  zgSubLead2030Lo->Fill ( zgm2, refmult, weight );
-	}
-	if ( SubLeadingptHi >= 30 && SubLeadingptHi < 40 ){
-	  zgSubLead3040Hi->Fill ( zg2, refmult, weight );
-	  zgSubLead3040Lo->Fill ( zgm2, refmult, weight );
-	}
-	if ( SubLeadingptHi >= 40 && SubLeadingptHi < 60 ){
-	  zgSubLead4060Hi->Fill ( zg2, refmult, weight );
-	  zgSubLead4060Lo->Fill ( zgm2, refmult, weight );
-	}       	
-	// Done with zg
-
+	if ( AjCutDir ==0 || 
+	     ( AjCutDir==1  && aj_hi > AjCut ) ||
+	     ( AjCutDir==-1 && aj_hi < AjCut ) 
+	     ){
+	  cout << aj_hi << endl;
+	  // Hi cut jets
+	  BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
+	  if ( BackgroundSubtractorHi ){
+	    sd_hi.set_subtractor( BackgroundSubtractorHi );
+	    sd_hi.set_input_jet_is_subtracted( true );
+	  }
+	  
+	  sd_jet = sd_hi( DiJetsHi.at(0) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original Jet, HI:   " << DiJetsHi.at(0) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    zg1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    // cout << "Hi, lead: " << sd_jet.pt() << endl;
+	    // cout << zg1 << endl;
+	  }
+	  
+	  sd_jet = sd_hi( DiJetsHi.at(1) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original sub-leading Jet, HI:   " << DiJetsHi.at(1) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    zg2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    // cout << "Hi, sublead: " << sd_jet.pt() << endl;
+	    // cout << zg2 << endl;
+	  }
+	  
+	  // Lo cut jets
+	  BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
+	  if ( BackgroundSubtractorLo ){
+	    sd_lo.set_subtractor( BackgroundSubtractorLo );
+	    sd_lo.set_input_jet_is_subtracted( true );
+	  }
+	  
+	  sd_jet = sd_lo( DiJetsLo.at(0) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original Jet, LO:   " << DiJetsLo.at(0) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    // cout << "Lo, lead: " << sd_jet.pt() << endl;
+	    zgm1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	  }
+	  
+	  sd_jet = sd_lo( DiJetsLo.at(1) );
+	  if ( sd_jet == 0){
+	    cout <<  " FOREGROUND Original sub-leading Jet, LO:   " << DiJetsLo.at(1) << endl;
+	    cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
+	  } else {
+	    // cout << "Lo, sublead: " << sd_jet.pt() << endl;
+	    zgm2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	  }
+	  
+	  float ptHi = DiJetsHi.at(0).pt();
+	  if ( ptHi >= 10 && ptHi < 20 ){
+	    zgLead1020Hi->Fill ( zg1, refmult, weight );
+	    zgLead1020Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  if ( ptHi >= 20 && ptHi < 30 ){
+	    zgLead2030Hi->Fill ( zg1, refmult, weight );
+	    zgLead2030Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  if ( ptHi >= 30 && ptHi < 40 ){
+	    zgLead3040Hi->Fill ( zg1, refmult, weight );
+	    zgLead3040Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  if ( ptHi >= 40 && ptHi < 60 ){
+	    zgLead4060Hi->Fill ( zg1, refmult, weight );
+	    zgLead4060Lo->Fill ( zgm1, refmult, weight );
+	  }
+	  
+	  float SubLeadingptHi = DiJetsHi.at(1).pt();
+	  if ( SubLeadingptHi >= 10 && SubLeadingptHi < 20 ){
+	    zgSubLead1020Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead1020Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  if ( SubLeadingptHi >= 20 && SubLeadingptHi < 30 ){
+	    zgSubLead2030Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead2030Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  if ( SubLeadingptHi >= 30 && SubLeadingptHi < 40 ){
+	    zgSubLead3040Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead3040Lo->Fill ( zgm2, refmult, weight );
+	  }
+	  if ( SubLeadingptHi >= 40 && SubLeadingptHi < 60 ){
+	    zgSubLead4060Hi->Fill ( zg2, refmult, weight );
+	    zgSubLead4060Lo->Fill ( zgm2, refmult, weight );
+	  }       	
+	  // Done with zg
+	} // Aj cuts
+	  
 	
 	j1 = MakeTLorentzVector( DiJetsHi.at(0) );
 	j2 = MakeTLorentzVector( DiJetsHi.at(1) );
@@ -931,9 +960,6 @@ int main ( int argc, const char** argv ) {
 	fastjet::Selector selector_bkgd = fastjet::SelectorAbsRapMax( 0.6 ) * (!fastjet::SelectorNHardest(2));
 	rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
 	rhoerr=AjA.GetJAlo()->GetBackgroundEstimator()->sigma() ;
-
-	aj_hi=AjA.CalcAj( DiJetsHi );
-	aj_lo=AjA.CalcAj( DiJetsLo );
 	
 	// For Elke
 	PseudoJet& pj1 = DiJetsHi.at(0);
