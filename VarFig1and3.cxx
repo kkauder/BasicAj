@@ -400,13 +400,13 @@ int VarFig1and3( TString R = "" ) {
 
   latex.SetTextColor(kBlack);
   latex.SetTextSize( 0.04);
-  // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
-  // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
+  // latex.DrawLatex( 0.05, 0.95, "p_{T,Trig}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
+  // latex.DrawLatex( 0.54, 0.95, "p_{T,Away}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
 
   latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
 
-  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
-  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
+  latex.DrawLatex( 0.65, 0.45, "  p_{T,Trig}>20 GeV/c");
+  latex.DrawLatex( 0.65, 0.4, "  p_{T,Away}>10 GeV/c");
 
 
   // if (TString(fAuAu->GetName()).Contains("R0.2") ){

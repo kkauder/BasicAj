@@ -22,8 +22,8 @@ set ResultDir   = AjResults/Pieces
 
 # "Data", not MC!
 # No efficiency correction
-#set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_Geant
-set OutBase     = ${RMod}Groom_Aj_HT54_HTled_NoEff_Geant
+set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_Geant
+#set OutBase     = ${RMod}Groom_Aj_HT54_HTled_NoEff_Geant
 #set OutBase     = ${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant
 
 # Normal (pp to Run7 AuAu) efficiency correction
@@ -34,7 +34,7 @@ set OutBase     = ${RMod}Groom_Aj_HT54_HTled_NoEff_Geant
 # No efficiency correction
 # set OutBase     = ${RMod}Groom_Aj_HT54_NoEff_GeantMc
 # set OutBase     = ${RMod}Groom_Aj_MB_NoEff_GeantMc
-set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_GeantMc
+#set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_GeantMc
 # set OutBase     = ${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_GeantMc
 
 set TriggerName = All

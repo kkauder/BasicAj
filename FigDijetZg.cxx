@@ -25,6 +25,14 @@
 #include <exception>
 
 using namespace std;
+
+// canvas stuff
+float lm = 0.11;
+float bm = 0.11;
+float yto = 0.5;
+float xto = 0.5;
+
+
 int FigDijetZg() {
   bool ShowHi=false;
   gStyle->SetOptStat(0);
@@ -32,7 +40,13 @@ int FigDijetZg() {
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
 
-  int RebinZg=2;  // Gotta stick to 1 until Systematics can deal with it
+  int RebinZg=4;  // Gotta stick to 1 until Systematics can deal with it
+
+  TLatex latex;
+  latex.SetNDC();
+  latex.SetTextSize(0.045);
+  // latex.SetTextColor(kGray+3);
+  latex.SetTextColor(kRed+3);
 
   // TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
   // TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
@@ -251,7 +265,7 @@ int FigDijetZg() {
     // if (TString(h->GetName()).Contains("SubLead"))     h->SetAxisRange( 0,8, "y" );
     h->SetLineWidth( 2 );
 
-    h->SetTitle(";z_{g};arb.");
+    h->SetTitle(";z_{g};1/N dN/dz_{g}");
     h->GetXaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
     h->GetXaxis()->SetLabelFont( 42 ); // 42: helvetica, 62: helvetica bold
     h->GetYaxis()->SetTitleFont( 42 ); // 42: helvetica, 62: helvetica bold
@@ -265,6 +279,7 @@ int FigDijetZg() {
       h->SetMarkerColor( kBlack );
     }
 
+    h->SetMarkerSize(2);
     if ( TString(h->GetName()).Contains("ppInAuAu") ){
       h->SetMarkerStyle( 25 );
     } else if ( TString(h->GetName()).Contains("AuAu") ){
@@ -278,8 +293,12 @@ int FigDijetZg() {
       h->SetLineColor( kTeal+1 );
       h->SetMarkerColor( kTeal+1 );
     } 
-
     
+    h->GetXaxis()->SetTitleSize(0.07);
+    h->GetYaxis()->SetTitleSize(0.07);
+    h->GetXaxis()->SetTitleOffset(xto);
+    h->GetYaxis()->SetTitleOffset(yto);
+
   }
 
   toa.Clear();
@@ -324,8 +343,10 @@ int FigDijetZg() {
 
   // 20-30
   new TCanvas;
+  gPad->SetLeftMargin( lm );// for bigger labels
+  gPad->SetBottomMargin( bm );// for bigger labels
   gPad->SetGridx(0);  gPad->SetGridy(0);
-  TLegend* leg = new TLegend( 0.55, 0.55, 0.89, 0.9, "Leading jet, 20-30 GeV" );
+  TLegend* leg = new TLegend( 0.45, 0.5, 0.89, 0.9, "Leading jet, 20-30 GeV" );
   leg->SetBorderSize(0);
   leg->SetLineWidth(10);
   leg->SetFillStyle(0);
@@ -351,22 +372,24 @@ int FigDijetZg() {
   ppInAuAu_zgLead2030Lo->Draw("9same");
   leg->AddEntry( ppInAuAu_zgLead2030Lo, "pp #oplus Au+Au, Lo Cut");
 
-  pp_zgLead2030Lo->Draw("9same");
-  leg->AddEntry( pp_zgLead2030Lo, "pp, Lo Cut");
+  // pp_zgLead2030Lo->Draw("9same");
+  // leg->AddEntry( pp_zgLead2030Lo, "pp, Lo Cut");
 
-  Geant_zgLead2030Lo->Draw("9same");
-  leg->AddEntry( Geant_zgLead2030Lo, "Geant, Lo Cut");
+  // Geant_zgLead2030Lo->Draw("9same");
+  // leg->AddEntry( Geant_zgLead2030Lo, "Geant, Lo Cut");
 
   FUVQjet->Draw("9same");
   leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
   leg->Draw();
-  cout << outbase << endl;
 
+  latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
   gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg2030.png");
   
   // if ( false ){
   //   // 30-40
   //   new TCanvas;
+  // gPad->SetLeftMargin( lm );// for bigger labels
+  // gPad->SetBottomMargin( bm );// for bigger labels
   //   gPad->SetGridx(0);  gPad->SetGridy(0);
   //   TLegend* leg = new TLegend( 0.55, 0.55, 0.89, 0.9, "Leading jet, 30-40 GeV" );
   //   leg->SetBorderSize(0);
@@ -402,8 +425,10 @@ int FigDijetZg() {
 
   // 10-20
   new TCanvas;
+  gPad->SetLeftMargin( lm );// for bigger labels
+  gPad->SetBottomMargin( bm );// for bigger labels
   gPad->SetGridx(0);  gPad->SetGridy(0);
-  TLegend* leg = new TLegend( 0.55, 0.55, 0.89, 0.9, "SubLeading jet, 10-20 GeV" );
+  TLegend* leg = new TLegend( 0.45, 0.55, 0.89, 0.9, "SubLeading jet, 10-20 GeV" );
   leg->SetBorderSize(0);
   leg->SetLineWidth(10);
   leg->SetFillStyle(0);
@@ -427,19 +452,22 @@ int FigDijetZg() {
   ppInAuAu_zgSubLead1020Lo->Draw("9same");
   leg->AddEntry( ppInAuAu_zgSubLead1020Lo, "pp #oplus Au+Au, Lo Cut");
   
-  pp_zgSubLead1020Lo->Draw("9same");
-  leg->AddEntry( pp_zgSubLead1020Lo, "pp, Lo Cut");
+  // pp_zgSubLead1020Lo->Draw("9same");
+  // leg->AddEntry( pp_zgSubLead1020Lo, "pp, Lo Cut");
 
-  Geant_zgSubLead1020Lo->Draw("9same");
-  leg->AddEntry( Geant_zgSubLead1020Lo, "Geant, Lo Cut");
+  // Geant_zgSubLead1020Lo->Draw("9same");
+  // leg->AddEntry( Geant_zgSubLead1020Lo, "Geant, Lo Cut");
 
   FUVQjet->Draw("9same");
   leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
   leg->Draw();
+  latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
   gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg1020.png");
 
   // // 20-30
   // new TCanvas;
+  // gPad->SetLeftMargin( lm );// for bigger labels
+  // gPad->SetBottomMargin( bm );// for bigger labels
   // gPad->SetGridx(0);  gPad->SetGridy(0);
   // TLegend* leg = new TLegend( 0.55, 0.55, 0.89, 0.9, "SubLeading jet, 20-30 GeV" );
   // leg->SetBorderSize(0);

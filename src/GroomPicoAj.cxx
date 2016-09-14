@@ -78,8 +78,8 @@ int main ( int argc, const char** argv ) {
   // const char *defaults[] = {"GroomPicoAj","Groomtest.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
   // const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/AddedGeantPythia/picoDst*root", "0", "0", "" };
   // const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/AddedGeantPythia/picoDst_15_25_9.root", "0", "0", "" };
-  // const char *defaults[] = {"GroomPicoAj","GeantGroomtest_HT54_HTled_NoEff.root","all","Data/AddedGeantPythia/picoDst_25_35_9.root", "0", "0", "" };
-  const char *defaults[] = {"GroomPicoAj","Groomtest_AjGt3_HT54_HTled_AuAu.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  const char *defaults[] = {"GroomPicoAj","GeantGroomtest_HT54_HTled_NoEff.root","all","Data/AddedGeantPythia/picoDst_25_35_9.root", "0", "0", "" };
+  // const char *defaults[] = {"GroomPicoAj","Groomtest_AjGt3_HT54_HTled_AuAu.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
 
   // const char *defaults[] = {"GroomPicoAj","Y14Groomtest.root","all","Data/SmallY14HT/AuAu14Pico_101-105_*root", "0", "0", "" };
 
@@ -532,8 +532,6 @@ int main ( int argc, const char** argv ) {
   bool SaveFullEvents = TriggerName.Contains("ppHT") || PrepEtaConeEmbedding;
   TTree* TriggeredTree=0;
 
-
-
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
   TClonesArray TriggerJetLo( "TLorentzVector",1 ); 
   TClonesArray AwayJet( "TLorentzVector",1 ); 
@@ -545,7 +543,8 @@ int main ( int argc, const char** argv ) {
   float zgtrighi, zgtriglo;
   float zgawayhi, zgawaylo;
 
-
+  TLorentzVector Thi_s1, Thi_s2, Tlo_s1, Tlo_s2;
+  TLorentzVector Ahi_s1, Ahi_s2, Alo_s1, Alo_s2;
   if (SaveFullEvents) {
     TriggeredTree = new TTree("TriggeredTree","Triggered Events");
     // NOTE: Ignore "Warning in <TTree::Bronch>: Using split mode on a class: TLorentzVector with a custom Streamer"
@@ -580,6 +579,17 @@ int main ( int argc, const char** argv ) {
     TriggeredTree->Branch("zg2",&zg2,"zg2/F");
     TriggeredTree->Branch("zgm1",&zgm1,"zgm1/F");
     TriggeredTree->Branch("zgm2",&zgm2,"zgm2/F");
+
+    TriggeredTree->Branch("Thi_s1",&Thi_s1);
+    TriggeredTree->Branch("Thi_s2",&Thi_s2);
+    TriggeredTree->Branch("Tlo_s1",&Tlo_s1);
+    TriggeredTree->Branch("Tlo_s2",&Tlo_s2);
+
+    TriggeredTree->Branch("Ahi_s1",&Ahi_s1);
+    TriggeredTree->Branch("Ahi_s2",&Ahi_s2);
+    TriggeredTree->Branch("Alo_s1",&Alo_s1);
+    TriggeredTree->Branch("Alo_s2",&Alo_s2);
+
   } 
     
   // Initialize tracking efficiency
@@ -1085,7 +1095,6 @@ int main ( int argc, const char** argv ) {
 	       ( AjCutDir==-1 && aj_hi < AjCut ) 
 	       )
 	     ){
-	  cout << aj_hi << endl;
 	  // ---------------
 	  // Subjet analysis
 	  // ---------------
@@ -1219,6 +1228,17 @@ int main ( int argc, const char** argv ) {
 	AwayJetLo.Clear();
 	zgtrighi = zgtriglo = 0;
 	zgawayhi = zgawaylo = 0;
+
+	Thi_s1=TLorentzVector();
+	Thi_s2=TLorentzVector();
+	Tlo_s1=TLorentzVector();
+	Tlo_s2=TLorentzVector();
+
+	Ahi_s1=TLorentzVector();
+	Ahi_s2=TLorentzVector();
+	Alo_s1=TLorentzVector();
+	Alo_s2=TLorentzVector();
+
 	
 	if ( ( InPattern.Contains("pp") && AjA.Has10Gev)  ||
 	     // ( InPattern.Contains("pp") && AjA.GetJAhiResult().size()>0 )  || // DEBUG
@@ -1329,6 +1349,10 @@ int main ( int argc, const char** argv ) {
 	      cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
 	    } else {
 	      zgtrighi=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	      if (zgtrighi>0) {
+		Thi_s1=MakeTLorentzVector ( sd_jet.pieces().at(0) );
+		Thi_s2=MakeTLorentzVector ( sd_jet.pieces().at(1) );
+	      }
 	    }
 	    
 	    // away-side
@@ -1339,6 +1363,10 @@ int main ( int argc, const char** argv ) {
 		cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
 	      } else {
 		zgawayhi=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+		if (zgawayhi>0) {
+		  Ahi_s1=MakeTLorentzVector ( sd_jet.pieces().at(0) );
+		  Ahi_s2=MakeTLorentzVector ( sd_jet.pieces().at(1) );
+		}
 	      }
 	    }
 
@@ -1356,7 +1384,10 @@ int main ( int argc, const char** argv ) {
 	      cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
 	    } else {
 	      zgtriglo=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
-	      // cout << zgtriglo << endl;
+	      if (zgtriglo>0) {
+		Tlo_s1=MakeTLorentzVector ( sd_jet.pieces().at(0) );
+		Tlo_s2=MakeTLorentzVector ( sd_jet.pieces().at(1) );
+	      }
 	    }
 
 	    // away-side
@@ -1367,6 +1398,10 @@ int main ( int argc, const char** argv ) {
 		cout << " --- Skipped. Something caused SoftDrop to return 0 ---" << endl;
 	      } else {
 		zgawaylo=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+		if (zgawaylo>0) {
+		  Alo_s1=MakeTLorentzVector ( sd_jet.pieces().at(0) );
+		  Alo_s2=MakeTLorentzVector ( sd_jet.pieces().at(1) );
+		}
 	      }
 	    }
 	    
