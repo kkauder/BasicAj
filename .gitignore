@@ -1,4 +1,4 @@
-## Ignore all dot files?
+1;95;0c## Ignore all dot files?
 .*
 
 ## By default, ignore all root files
@@ -8,6 +8,8 @@
 html
 latex
 logs
+*.log
+*.err
 
 ## Specific Apple stuff
 .DS_Store*
@@ -23,6 +25,7 @@ Icon?
 # ROOT stuff
 AutoDict_*
 src/dict.*
+*_cxx.d
 
 # pictures
 *png
