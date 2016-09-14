@@ -41,6 +41,11 @@ TObjArray* ChopNormPrettify ( TH2D* h2, TString titlebase="p_{T}=",
 
 // =============================================================================
 
+// canvas stuff
+float lm = 0.11;
+float bm = 0.11;
+float yto = 0.5;
+float xto = 0.5;
 
 int PpGeantOverlays(){
 
@@ -55,6 +60,13 @@ int PpGeantOverlays(){
   bool Do_AS_SoftJets_HT54=true;
   // // bool Do_NS_SoftJets_HT54=false;
   // // bool Do_AS_SoftJets_HT54=false;
+
+  TLatex latex;
+  latex.SetNDC();
+  latex.SetTextSize(0.045);
+  // latex.SetTextColor(kGray+3);
+  latex.SetTextColor(kRed+3);
+
 
 
   TString plotpath = "./HPplots/";
@@ -78,7 +90,7 @@ int PpGeantOverlays(){
 
   // Settings and helpers
   // --------------------
-  int RebinZg=2;
+  int RebinZg=4;
   int nzgBins=40;
   float zgleft  = 0.05;
   float zgright = 0.55;
@@ -133,11 +145,11 @@ int PpGeantOverlays(){
   cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 )";
   dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
   Fill ( h2_NS_GG_SoftJets_HT54, sGG_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_GG_SoftJets_HT54->GetName(), cond );
-  NS_GG_SoftJets_HT54 = ChopNormPrettify ( h2_NS_GG_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+  NS_GG_SoftJets_HT54 = ChopNormPrettify ( h2_NS_GG_SoftJets_HT54, "p_{T}^{det}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   Fill ( h2_NS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_PP_SoftJets_HT54->GetName(), cond );
-  NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+  NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
   
   // AS
@@ -148,13 +160,13 @@ int PpGeantOverlays(){
   cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 && abs(AwayJetLo.Eta())<0.6 )";
   dopt  = "zgawaylo:AwayJetLo.Pt() >> "; 
   Fill ( h2_AS_GG_SoftJets_HT54, sGG_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_GG_SoftJets_HT54->GetName(), cond );
-  AS_GG_SoftJets_HT54 = ChopNormPrettify ( h2_AS_GG_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+  AS_GG_SoftJets_HT54 = ChopNormPrettify ( h2_AS_GG_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
   dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
   Fill ( h2_AS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_PP_SoftJets_HT54->GetName(), cond );
-  AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+  AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
 
@@ -165,6 +177,9 @@ int PpGeantOverlays(){
   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 ){    
     for (int i=0; i<AS_GG_SoftJets_HT54->GetEntries(); ++i ){
       new TCanvas;
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+
       TH1D* hGNS = (TH1D*)NS_GG_SoftJets_HT54->At(i);
       TH1D* hPNS = (TH1D*)NS_PP_SoftJets_HT54->At(i);
       TH1D* hGAS = (TH1D*)AS_GG_SoftJets_HT54->At(i);
@@ -176,33 +191,30 @@ int PpGeantOverlays(){
       dummy->Draw();
             
       // leg = new TLegend( 0.55, 0.55, 0.89, 0.9, hGNS->GetTitle() );
-      leg = new TLegend( 0.5 , 0.5, 0.89, 0.9, hGNS->GetTitle() );
+      leg = new TLegend( 0.45 , 0.45, 0.89, 0.9, hGNS->GetTitle() );
       leg->SetBorderSize(0);    leg->SetLineWidth(10);
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
-      hGNS->SetLineColor(kBlack);
-      hGNS->SetMarkerColor(kBlack);
+      hGNS->SetLineColor(kMagenta+3);
+      hGNS->SetMarkerColor(kMagenta+3);
       hGNS->SetMarkerStyle(21);
       hGNS->DrawCopy("9same");
 
       hPNS->SetLineColor(kRed);
       hPNS->SetMarkerColor(kRed);
-      hPNS->SetMarkerStyle(22);
+      hPNS->SetMarkerStyle(29);
+      hPNS->SetMarkerSize(2);
       hPNS->DrawCopy("9same");
-
-      // hGAS->SetLineColor(kGray+1);
-      // hGAS->SetMarkerColor(kGray+1);
-      // hGAS->SetMarkerStyle(23);
-      // hGAS->DrawCopy("9same");
       
-      hGAS->SetLineColor(kMagenta+1);
-      hGAS->SetMarkerColor(kMagenta+1);
-      hGAS->SetMarkerStyle(26);
+      hGAS->SetLineColor(kGreen+2);
+      hGAS->SetMarkerColor(kGreen+2);
+      hGAS->SetMarkerStyle(25);
       hGAS->DrawCopy("9same");
       
-      hPAS->SetLineColor(kBlue);
-      hPAS->SetMarkerColor(kBlue);
-      hPAS->SetMarkerStyle(29);
+      hPAS->SetLineColor(kBlack);
+      hPAS->SetMarkerColor(kBlack);
+      hPAS->SetMarkerSize(2);
+      hPAS->SetMarkerStyle(30);
       hPAS->DrawCopy("9same");
 
       leg->AddEntry(hGNS,"Pythia6@GEANT, Trigger Jet", "lp");
@@ -214,6 +226,10 @@ int PpGeantOverlays(){
       FUVQjet->Draw("9same");
       leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
       leg->Draw();
+
+      latex.DrawLatex( 0.55, 0.4, "STAR Preliminary");
+
+  
       
       // pull bin name from end of histo name
       TString plotname = hGNS->GetName();
@@ -273,6 +289,11 @@ TObjArray* ChopNormPrettify ( TH2D* h2, TString titlebase, TString xlabel, TStri
     if (ymin<ymax && ymin >-1e5 ){
       h->SetAxisRange( ymin, ymax, "y" );
     }
+
+    h->GetXaxis()->SetTitleSize(0.07);
+    h->GetYaxis()->SetTitleSize(0.07);
+    h->GetXaxis()->SetTitleOffset(xto);
+    h->GetYaxis()->SetTitleOffset(yto);
 
     ret->Add(h);
 

@@ -51,8 +51,8 @@ int MCplots(){
   
   bool UseAbove25 = false;
 
-  bool Do_NS_SoftJets_MB=false;
-  bool Do_AS_SoftJets_MB=false;
+  bool Do_NS_SoftJets_MB=true;
+  bool Do_AS_SoftJets_MB=true;
   
   bool Do_NS_SoftJets_HT54=true;
   bool Do_AS_SoftJets_HT54=true;
@@ -150,12 +150,12 @@ int MCplots(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 )";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_SoftJets_MB, sP6_SoftJets_MB, "TriggeredTree", dopt + h2_NS_P6_SoftJets_MB->GetName(), cond );
-    NS_P6_SoftJets_MB = ChopNormPrettify ( h2_NS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P6_SoftJets_MB = ChopNormPrettify ( h2_NS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> ";
     Fill ( h2_NS_P8_SoftJets_MB, sP8_SoftJets_MB, "TriggeredTree", dopt + h2_NS_P8_SoftJets_MB->GetName(), cond );
-    NS_P8_SoftJets_MB = ChopNormPrettify ( h2_NS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P8_SoftJets_MB = ChopNormPrettify ( h2_NS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   } // Do_NS_SoftJets_MB
@@ -168,13 +168,13 @@ int MCplots(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 && abs(AwayJetLo.Eta())<0.6 )";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> "; 
     Fill ( h2_AS_P6_SoftJets_MB, sP6_SoftJets_MB, "TriggeredTree", dopt + h2_AS_P6_SoftJets_MB->GetName(), cond );
-    AS_P6_SoftJets_MB = ChopNormPrettify ( h2_AS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P6_SoftJets_MB = ChopNormPrettify ( h2_AS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_SoftJets_MB, sP8_SoftJets_MB, "TriggeredTree", dopt + h2_AS_P8_SoftJets_MB->GetName(), cond );
-    AS_P8_SoftJets_MB = ChopNormPrettify ( h2_AS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P8_SoftJets_MB = ChopNormPrettify ( h2_AS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   } // Do_AS_SoftJets_MB
@@ -208,12 +208,12 @@ int MCplots(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 )";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_SoftJets_HT54, sP6_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_P6_SoftJets_HT54->GetName(), cond );
-    NS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> ";
     Fill ( h2_NS_P8_SoftJets_HT54, sP8_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_P8_SoftJets_HT54->GetName(), cond );
-    NS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // // cond shouldn't matter for pp
@@ -223,7 +223,7 @@ int MCplots(){
     // return 0;
 
     Fill ( h2_NS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_PP_SoftJets_HT54->GetName(), cond );
-    NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_NS_SoftJets_HT54
@@ -238,19 +238,19 @@ int MCplots(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 && abs(AwayJetLo.Eta())<0.6 )";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> "; 
     Fill ( h2_AS_P6_SoftJets_HT54, sP6_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_P6_SoftJets_HT54->GetName(), cond );
-    AS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_SoftJets_HT54, sP8_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_P8_SoftJets_HT54->GetName(), cond );
-    AS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // cond shouldn't matter for pp
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_PP_SoftJets_HT54->GetName(), cond );
-    AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_AS_SoftJets_HT54
@@ -289,19 +289,19 @@ int MCplots(){
     // dopt  = "zgtrighi:TriggerJet.Pt() >> "; 
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_HardJets_HT54, sP6_HardJets_HT54, "TriggeredTree", dopt + h2_NS_P6_HardJets_HT54->GetName(), cond );
-    NS_P6_HardJets_HT54 = ChopNormPrettify ( h2_NS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P6_HardJets_HT54 = ChopNormPrettify ( h2_NS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // dopt  = "zgtrighi:TriggerJet.Pt() >> ";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P8_HardJets_HT54, sP8_HardJets_HT54, "TriggeredTree", dopt + h2_NS_P8_HardJets_HT54->GetName(), cond );
-    NS_P8_HardJets_HT54 = ChopNormPrettify ( h2_NS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P8_HardJets_HT54 = ChopNormPrettify ( h2_NS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // cond shouldn't matter for pp
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_PP_HardJets_HT54, sPP_HardJets_HT54, "TriggeredTree", dopt + h2_NS_PP_HardJets_HT54->GetName(), cond );
-    NS_PP_HardJets_HT54 = ChopNormPrettify ( h2_NS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_PP_HardJets_HT54 = ChopNormPrettify ( h2_NS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_NS_HardJets_HT54
@@ -317,19 +317,19 @@ int MCplots(){
     // dopt  = "zgawayhi:AwayJet.Pt() >> "; 
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P6_HardJets_HT54, sP6_HardJets_HT54, "TriggeredTree", dopt + h2_AS_P6_HardJets_HT54->GetName(), cond );
-    AS_P6_HardJets_HT54 = ChopNormPrettify ( h2_AS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P6_HardJets_HT54 = ChopNormPrettify ( h2_AS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
     //dopt  = "zgawayhi:AwayJet.Pt() >> ";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_HardJets_HT54, sP8_HardJets_HT54, "TriggeredTree", dopt + h2_AS_P8_HardJets_HT54->GetName(), cond );
-    AS_P8_HardJets_HT54 = ChopNormPrettify ( h2_AS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P8_HardJets_HT54 = ChopNormPrettify ( h2_AS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_PP_HardJets_HT54, sPP_HardJets_HT54, "TriggeredTree", dopt + h2_AS_PP_HardJets_HT54->GetName(), cond );
-    AS_PP_HardJets_HT54 = ChopNormPrettify ( h2_AS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_PP_HardJets_HT54 = ChopNormPrettify ( h2_AS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_AS_HardJets_HT54
@@ -548,6 +548,8 @@ TObjArray* ChopNormPrettify ( TH2D* h2, TString titlebase, TString xlabel, TStri
       h->SetAxisRange( ymin, ymax, "y" );
     }
 
+    h->GetXaxis()->SetTitleSize(0.06);
+    h->GetYaxis()->SetTitleSize(0.06);
     ret->Add(h);
 
   }

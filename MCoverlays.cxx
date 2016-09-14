@@ -42,6 +42,11 @@ TObjArray* ChopNormPrettify ( TH2D* h2, TString titlebase="p_{T}=",
 
 // =============================================================================
 
+// canvas stuff
+float lm = 0.11;
+float bm = 0.11;
+float yto = 0.5;
+float xto = 0.5;
 
 int MCoverlays(){
 
@@ -51,7 +56,8 @@ int MCoverlays(){
   // gStyle->SetHistMarkerSize(2);
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
-  
+
+
   bool UseAbove25 = false;
 
   bool Do_NS_SoftJets_MB=true;
@@ -155,12 +161,12 @@ int MCoverlays(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 )";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_SoftJets_MB, sP6_SoftJets_MB, "TriggeredTree", dopt + h2_NS_P6_SoftJets_MB->GetName(), cond );
-    NS_P6_SoftJets_MB = ChopNormPrettify ( h2_NS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P6_SoftJets_MB = ChopNormPrettify ( h2_NS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> ";
     Fill ( h2_NS_P8_SoftJets_MB, sP8_SoftJets_MB, "TriggeredTree", dopt + h2_NS_P8_SoftJets_MB->GetName(), cond );
-    NS_P8_SoftJets_MB = ChopNormPrettify ( h2_NS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P8_SoftJets_MB = ChopNormPrettify ( h2_NS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   } // Do_NS_SoftJets_MB
@@ -173,13 +179,13 @@ int MCoverlays(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 && abs(AwayJetLo.Eta())<0.6 )";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> "; 
     Fill ( h2_AS_P6_SoftJets_MB, sP6_SoftJets_MB, "TriggeredTree", dopt + h2_AS_P6_SoftJets_MB->GetName(), cond );
-    AS_P6_SoftJets_MB = ChopNormPrettify ( h2_AS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P6_SoftJets_MB = ChopNormPrettify ( h2_AS_P6_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_SoftJets_MB, sP8_SoftJets_MB, "TriggeredTree", dopt + h2_AS_P8_SoftJets_MB->GetName(), cond );
-    AS_P8_SoftJets_MB = ChopNormPrettify ( h2_AS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P8_SoftJets_MB = ChopNormPrettify ( h2_AS_P8_SoftJets_MB, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   } // Do_AS_SoftJets_MB
@@ -213,12 +219,12 @@ int MCoverlays(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 )";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_SoftJets_HT54, sP6_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_P6_SoftJets_HT54->GetName(), cond );
-    NS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> ";
     Fill ( h2_NS_P8_SoftJets_HT54, sP8_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_P8_SoftJets_HT54->GetName(), cond );
-    NS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // // cond shouldn't matter for pp
@@ -228,7 +234,7 @@ int MCoverlays(){
     // return 0;
 
     Fill ( h2_NS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_PP_SoftJets_HT54->GetName(), cond );
-    NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_NS_SoftJets_HT54
@@ -243,19 +249,19 @@ int MCoverlays(){
     cond  = "weight*( abs(TriggerJetLo.Eta())<0.6 && abs(AwayJetLo.Eta())<0.6 )";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> "; 
     Fill ( h2_AS_P6_SoftJets_HT54, sP6_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_P6_SoftJets_HT54->GetName(), cond );
-    AS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_SoftJets_HT54, sP8_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_P8_SoftJets_HT54->GetName(), cond );
-    AS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // cond shouldn't matter for pp
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_PP_SoftJets_HT54->GetName(), cond );
-    AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_AS_SoftJets_HT54
@@ -294,19 +300,19 @@ int MCoverlays(){
     // dopt  = "zgtrighi:TriggerJet.Pt() >> "; 
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_HardJets_HT54, sP6_HardJets_HT54, "TriggeredTree", dopt + h2_NS_P6_HardJets_HT54->GetName(), cond );
-    NS_P6_HardJets_HT54 = ChopNormPrettify ( h2_NS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P6_HardJets_HT54 = ChopNormPrettify ( h2_NS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // dopt  = "zgtrighi:TriggerJet.Pt() >> ";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P8_HardJets_HT54, sP8_HardJets_HT54, "TriggeredTree", dopt + h2_NS_P8_HardJets_HT54->GetName(), cond );
-    NS_P8_HardJets_HT54 = ChopNormPrettify ( h2_NS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_P8_HardJets_HT54 = ChopNormPrettify ( h2_NS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     // cond shouldn't matter for pp
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_PP_HardJets_HT54, sPP_HardJets_HT54, "TriggeredTree", dopt + h2_NS_PP_HardJets_HT54->GetName(), cond );
-    NS_PP_HardJets_HT54 = ChopNormPrettify ( h2_NS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    NS_PP_HardJets_HT54 = ChopNormPrettify ( h2_NS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_NS_HardJets_HT54
@@ -322,19 +328,19 @@ int MCoverlays(){
     // dopt  = "zgawayhi:AwayJet.Pt() >> "; 
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P6_HardJets_HT54, sP6_HardJets_HT54, "TriggeredTree", dopt + h2_AS_P6_HardJets_HT54->GetName(), cond );
-    AS_P6_HardJets_HT54 = ChopNormPrettify ( h2_AS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P6_HardJets_HT54 = ChopNormPrettify ( h2_AS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
   
     //dopt  = "zgawayhi:AwayJet.Pt() >> ";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_HardJets_HT54, sP8_HardJets_HT54, "TriggeredTree", dopt + h2_AS_P8_HardJets_HT54->GetName(), cond );
-    AS_P8_HardJets_HT54 = ChopNormPrettify ( h2_AS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_P8_HardJets_HT54 = ChopNormPrettify ( h2_AS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_PP_HardJets_HT54, sPP_HardJets_HT54, "TriggeredTree", dopt + h2_AS_PP_HardJets_HT54->GetName(), cond );
-    AS_PP_HardJets_HT54 = ChopNormPrettify ( h2_AS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "arb. u.",
+    AS_PP_HardJets_HT54 = ChopNormPrettify ( h2_AS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_AS_HardJets_HT54
@@ -349,6 +355,9 @@ int MCoverlays(){
   if ( Do_NS_SoftJets_MB ){
     for (int i=0; i<NS_P6_SoftJets_MB->GetEntries(); ++i ){
       new TCanvas;
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+
       TH1D* h6NS = (TH1D*)NS_P6_SoftJets_MB->At(i);
       TH1D* h8NS = (TH1D*)NS_P8_SoftJets_MB->At(i);
       
@@ -362,10 +371,11 @@ int MCoverlays(){
       TH1D* dummy = (TH1D*)h6NS->Clone("dummy");
       dummy->Reset();    dummy->SetTitle("");
       dummy->SetAxisRange(zgmin, zgmax, "y");
+      dummy->SetLineColor(kBlack);
       dummy->Draw();
             
       if ( Do_AS_SoftJets_MB )  leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
-      else                      leg = new TLegend( 0.5 , 0.5, 0.89, 0.9, h6NS->GetTitle() );
+      else                      leg = new TLegend( 0.45 , 0.52, 0.89, 0.9, h6NS->GetTitle() );
       leg->SetBorderSize(0);    leg->SetLineWidth(10);
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
@@ -417,6 +427,9 @@ int MCoverlays(){
   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 ){
     for (int i=0; i<AS_P6_SoftJets_HT54->GetEntries(); ++i ){
       new TCanvas;
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+    
       TH1D* h6NS = (TH1D*)NS_P6_SoftJets_HT54->At(i);
       TH1D* h8NS = (TH1D*)NS_P8_SoftJets_HT54->At(i);
       TH1D* hPNS = (TH1D*)NS_PP_SoftJets_HT54->At(i);
@@ -510,6 +523,9 @@ int MCoverlays(){
 
     for (int i=0; i<AS_P8_SoftJets_HT54->GetEntries(); ++i ){
       new TCanvas;
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+
       TH1D* h8NS_MB = (TH1D*)NS_P8_SoftJets_MB->At(i);
       TH1D* h8AS_MB = (TH1D*)AS_P8_SoftJets_MB->At(i);
       TH1D* h8NS_HT = (TH1D*)NS_P8_SoftJets_HT54->At(i);
@@ -518,9 +534,10 @@ int MCoverlays(){
       TH1D* dummy = (TH1D*)h8NS_MB->Clone("dummy");
       dummy->Reset();    dummy->SetTitle("");
       dummy->SetAxisRange(zgmin, zgmax, "y");
+      dummy->SetLineColor(kBlack);
       dummy->Draw();
             
-      leg = new TLegend( 0.5 , 0.5, 0.89, 0.9, TString("Pythia8")+h8AS_MB->GetTitle() );
+      leg = new TLegend( 0.45 , 0.45, 0.89, 0.9, TString("Pythia8, ")+h8AS_MB->GetTitle() );
       leg->SetBorderSize(0);    leg->SetLineWidth(10);
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
@@ -529,25 +546,25 @@ int MCoverlays(){
       h8NS_MB->SetMarkerStyle(22);
       h8NS_MB->DrawCopy("9same");
 
-      h8AS_MB->SetLineColor(kMagenta+1);
-      h8AS_MB->SetMarkerColor(kMagenta+1);
+      h8AS_MB->SetLineColor(kRed);
+      h8AS_MB->SetMarkerColor(kRed);
       h8AS_MB->SetMarkerStyle(26);
       h8AS_MB->DrawCopy("9same");
       
-      h8NS_HT->SetLineColor(kGreen+1);
-      h8NS_HT->SetMarkerColor(kGreen+1);
-      h8NS_HT->SetMarkerStyle(29);
+      h8NS_HT->SetLineColor(kBlue+1);
+      h8NS_HT->SetMarkerColor(kBlue+1);
+      h8NS_HT->SetMarkerStyle(21);
       h8NS_HT->DrawCopy("9same");
 
       h8AS_HT->SetLineColor(kBlue);
       h8AS_HT->SetMarkerColor(kBlue);
-      h8AS_HT->SetMarkerStyle(29);
+      h8AS_HT->SetMarkerStyle(25);
       h8AS_HT->DrawCopy("9same");
 
       leg->AddEntry(h8NS_MB,"No trigger, Leading Jet", "lp");
-      leg->AddEntry(h8NS_HT,"HT        , Trigger Jet", "lp");
+      leg->AddEntry(h8NS_HT,"HT, Trigger Jet", "lp");
       leg->AddEntry(h8AS_MB,"No trigger, Away Jet", "lp");
-      leg->AddEntry(h8NS_HT,"HT        , Away Jet", "lp");
+      leg->AddEntry(h8AS_HT,"HT, Away Jet", "lp");
 
 
 
@@ -589,6 +606,9 @@ int MCoverlays(){
   if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 ){
     for (int i=0; i<AS_P6_HardJets_HT54->GetEntries(); ++i ){
       new TCanvas;
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+    
       TH1D* h6NS = (TH1D*)NS_P6_HardJets_HT54->At(i);
       TH1D* h8NS = (TH1D*)NS_P8_HardJets_HT54->At(i);
       TH1D* hPNS = (TH1D*)NS_PP_HardJets_HT54->At(i);
@@ -690,6 +710,11 @@ TObjArray* ChopNormPrettify ( TH2D* h2, TString titlebase, TString xlabel, TStri
     if (ymin<ymax && ymin >-1e5 ){
       h->SetAxisRange( ymin, ymax, "y" );
     }
+
+    h->GetXaxis()->SetTitleSize(0.07);
+    h->GetYaxis()->SetTitleSize(0.07);
+    h->GetXaxis()->SetTitleOffset(xto);
+    h->GetYaxis()->SetTitleOffset(yto);
 
     ret->Add(h);
 
