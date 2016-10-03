@@ -58,17 +58,17 @@ int MCoverlays(){
   TH2::SetDefaultSumw2(true);
 
 
-  bool UseAbove25 = false;
+  bool UseAbove25 = true;
 
   bool Do_NS_SoftJets_MB=true;
-  bool Do_AS_SoftJets_MB=true;
+  bool Do_AS_SoftJets_MB=false;
   // bool Do_NS_SoftJets_MB=false;
   // bool Do_AS_SoftJets_MB=false;
   
-  bool Do_NS_SoftJets_HT54=true;
-  bool Do_AS_SoftJets_HT54=true;
-  // bool Do_NS_SoftJets_HT54=false;
-  // bool Do_AS_SoftJets_HT54=false;
+  // bool Do_NS_SoftJets_HT54=true;
+  // bool Do_AS_SoftJets_HT54=true;
+  bool Do_NS_SoftJets_HT54=false;
+  bool Do_AS_SoftJets_HT54=false;
 
   // bool Do_NS_HardJets_HT54=true;
   // bool Do_AS_HardJets_HT54=true;
@@ -108,7 +108,7 @@ int MCoverlays(){
 
   // Settings and helpers
   // --------------------
-  int RebinZg=2;
+  int RebinZg=4;
   int nzgBins=40;
   float zgleft  = 0.05;
   float zgright = 0.55;
@@ -220,12 +220,12 @@ int MCoverlays(){
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_SoftJets_HT54, sP6_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_P6_SoftJets_HT54->GetName(), cond );
     NS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> ";
     Fill ( h2_NS_P8_SoftJets_HT54, sP8_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_P8_SoftJets_HT54->GetName(), cond );
     NS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_NS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
     // // cond shouldn't matter for pp
     // dopt  = "zgtriglo:TriggerJetLo.Pt() >> ";
@@ -235,7 +235,7 @@ int MCoverlays(){
 
     Fill ( h2_NS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_NS_PP_SoftJets_HT54->GetName(), cond );
     NS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_NS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_NS_SoftJets_HT54
 
@@ -250,19 +250,19 @@ int MCoverlays(){
     dopt  = "zgawaylo:AwayJetLo.Pt() >> "; 
     Fill ( h2_AS_P6_SoftJets_HT54, sP6_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_P6_SoftJets_HT54->GetName(), cond );
     AS_P6_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P6_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
   
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_SoftJets_HT54, sP8_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_P8_SoftJets_HT54->GetName(), cond );
     AS_P8_SoftJets_HT54 = ChopNormPrettify ( h2_AS_P8_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
     // cond shouldn't matter for pp
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_PP_SoftJets_HT54, sPP_SoftJets_HT54, "TriggeredTree", dopt + h2_AS_PP_SoftJets_HT54->GetName(), cond );
     AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_AS_SoftJets_HT54
 
@@ -301,19 +301,19 @@ int MCoverlays(){
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P6_HardJets_HT54, sP6_HardJets_HT54, "TriggeredTree", dopt + h2_NS_P6_HardJets_HT54->GetName(), cond );
     NS_P6_HardJets_HT54 = ChopNormPrettify ( h2_NS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
     // dopt  = "zgtrighi:TriggerJet.Pt() >> ";
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_P8_HardJets_HT54, sP8_HardJets_HT54, "TriggeredTree", dopt + h2_NS_P8_HardJets_HT54->GetName(), cond );
     NS_P8_HardJets_HT54 = ChopNormPrettify ( h2_NS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
     // cond shouldn't matter for pp
     dopt  = "zgtriglo:TriggerJetLo.Pt() >> "; 
     Fill ( h2_NS_PP_HardJets_HT54, sPP_HardJets_HT54, "TriggeredTree", dopt + h2_NS_PP_HardJets_HT54->GetName(), cond );
     NS_PP_HardJets_HT54 = ChopNormPrettify ( h2_NS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_NS_HardJets_HT54
 
@@ -329,19 +329,19 @@ int MCoverlays(){
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P6_HardJets_HT54, sP6_HardJets_HT54, "TriggeredTree", dopt + h2_AS_P6_HardJets_HT54->GetName(), cond );
     AS_P6_HardJets_HT54 = ChopNormPrettify ( h2_AS_P6_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
   
     //dopt  = "zgawayhi:AwayJet.Pt() >> ";
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_P8_HardJets_HT54, sP8_HardJets_HT54, "TriggeredTree", dopt + h2_AS_P8_HardJets_HT54->GetName(), cond );
     AS_P8_HardJets_HT54 = ChopNormPrettify ( h2_AS_P8_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
     
     dopt  = "zgawaylo:AwayJetLo.Pt() >> ";
     Fill ( h2_AS_PP_HardJets_HT54, sPP_HardJets_HT54, "TriggeredTree", dopt + h2_AS_PP_HardJets_HT54->GetName(), cond );
     AS_PP_HardJets_HT54 = ChopNormPrettify ( h2_AS_PP_HardJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
-					   RebinZg, "ZG", zgmin, zgmax);
+					     RebinZg, "ZG", zgmin, zgmax);
 
   } // Do_AS_HardJets_HT54
 
@@ -402,9 +402,9 @@ int MCoverlays(){
       
       if ( Do_AS_SoftJets_MB ) {
 	leg->AddEntry(h6NS,"Pythia6, Trigger Jet", "lp");
-	leg->AddEntry(h6AS,"Pythia6, Away Jet", "lp");
+	leg->AddEntry(h6AS,"Pythia6, Recoil Jet", "lp");
 	leg->AddEntry(h8NS,"Pythia8, Trigger Jet", "lp");
-	leg->AddEntry(h8AS,"Pythia8, Away Jet", "lp");
+	leg->AddEntry(h8AS,"Pythia8, Recoil Jet", "lp");
       } else {
 	leg->AddEntry(h6NS,"Pythia6, Leading Jet", "lp");       
 	leg->AddEntry(h8NS,"Pythia8, Leading Jet", "lp");
@@ -478,8 +478,8 @@ int MCoverlays(){
 
       leg->AddEntry(h8NS,"Pythia8, Trigger Jet", "lp");
       leg->AddEntry(h8NS,"p+p HT, Trigger Jet", "lp");
-      leg->AddEntry(h8AS,"Pythia8, Away Jet", "lp");
-      leg->AddEntry(h8AS,"p+p HT, Away Jet", "lp");
+      leg->AddEntry(h8AS,"Pythia8, Recoil Jet", "lp");
+      leg->AddEntry(h8AS,"p+p HT, Recoil Jet", "lp");
 
 
 
@@ -512,7 +512,7 @@ int MCoverlays(){
       TString plotname = h6NS->GetName();
       plotname = plotname(plotname.Length()-5, plotname.Length());
       plotname = plotpath+"Geant_SoftJets_HT54_"+plotname;
-      gPad->SaveAs(plotname+".png");
+      // gPad->SaveAs(plotname+".png");
       
     }
   } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
@@ -561,10 +561,10 @@ int MCoverlays(){
       h8AS_HT->SetMarkerStyle(25);
       h8AS_HT->DrawCopy("9same");
 
-      leg->AddEntry(h8NS_MB,"No trigger, Leading Jet", "lp");
-      leg->AddEntry(h8NS_HT,"HT, Trigger Jet", "lp");
-      leg->AddEntry(h8AS_MB,"No trigger, Away Jet", "lp");
-      leg->AddEntry(h8AS_HT,"HT, Away Jet", "lp");
+      leg->AddEntry(h8NS_MB,"Untriggered, Leading Jet", "lp");
+      leg->AddEntry(h8NS_HT,"HT Trigger Jet", "lp");
+      leg->AddEntry(h8AS_MB,"Untriggered, Recoil Jet", "lp");
+      leg->AddEntry(h8AS_HT,"Recoil of HT Jet", "lp");
 
 
 
@@ -589,8 +589,8 @@ int MCoverlays(){
       // leg->AddEntry(hPNS,"p+p HT, TriggerJet", "lp");
       // leg->AddEntry(hPAS,"p+p HT, AwayJet", "lp");
 
-      FUVQjet->Draw("9same");
-      leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+      // FUVQjet->Draw("9same");
+      // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
       leg->Draw();
       
       // pull bin name from end of histo name
@@ -602,65 +602,138 @@ int MCoverlays(){
     }
   } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
 
-  //    -------- HT54 Hard Jets  --------
-  if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 ){
-    for (int i=0; i<AS_P6_HardJets_HT54->GetEntries(); ++i ){
-      new TCanvas;
-      gPad->SetLeftMargin( lm );// for bigger labels
-      gPad->SetBottomMargin( bm );// for bigger labels
+  //    -------- Soft Trigger Jets Compilation HT54 v MB  --------
+  if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54  && 
+       Do_NS_SoftJets_MB && Do_AS_SoftJets_MB  ){
+
+    new TCanvas;
+    gPad->SetLeftMargin( lm );// for bigger labels
+    gPad->SetBottomMargin( bm );// for bigger labels
     
-      TH1D* h6NS = (TH1D*)NS_P6_HardJets_HT54->At(i);
-      TH1D* h8NS = (TH1D*)NS_P8_HardJets_HT54->At(i);
-      TH1D* hPNS = (TH1D*)NS_PP_HardJets_HT54->At(i);
-      TH1D* h6AS = (TH1D*)AS_P6_HardJets_HT54->At(i);
-      TH1D* h8AS = (TH1D*)AS_P8_HardJets_HT54->At(i);
-      TH1D* hPAS = (TH1D*)AS_PP_HardJets_HT54->At(i);
+    TH1D* h8NS_MB0 = (TH1D*)NS_P8_SoftJets_MB->At(0);
+    TH1D* h8NS_HT0 = (TH1D*)NS_P8_SoftJets_HT54->At(0);
+    TH1D* h8NS_MB1 = (TH1D*)NS_P8_SoftJets_MB->At(1);
+    TH1D* h8NS_HT1 = (TH1D*)NS_P8_SoftJets_HT54->At(1);
+    TH1D* h8NS_MB2 = (TH1D*)NS_P8_SoftJets_MB->At(2);
+    TH1D* h8NS_HT2 = (TH1D*)NS_P8_SoftJets_HT54->At(2);
+    TH1D* h8NS_MB3 = (TH1D*)NS_P8_SoftJets_MB->At(3);
+    TH1D* h8NS_HT3 = (TH1D*)NS_P8_SoftJets_HT54->At(3);
+    TH1D* h8NS_MB4 = (TH1D*)NS_P8_SoftJets_MB->At(4);
+    TH1D* h8NS_HT4 = (TH1D*)NS_P8_SoftJets_HT54->At(4);
       
-      TH1D* dummy = (TH1D*)h6NS->Clone("dummy");
-      dummy->Reset();    dummy->SetTitle("");
-      dummy->SetAxisRange(zgmin, zgmax, "y");
-      dummy->Draw();
+    TH1D* dummy = (TH1D*)h8NS_MB0->Clone("dummy");
+    dummy->Reset();    dummy->SetTitle("");
+    dummy->SetAxisRange(zgmin, zgmax, "y");
+    dummy->SetLineColor(kBlack);
+    dummy->Draw();
+    
+    leg = new TLegend( 0.4 , 0.4, 0.89, 0.9, TString("Pythia8") );
+    leg->SetBorderSize(0);    leg->SetLineWidth(10);
+    leg->SetFillStyle(0);     leg->SetMargin(0.1);
+    
+    h8NS_MB2->SetLineColor(kOrange+8);
+    h8NS_MB2->SetMarkerColor(kOrange+8);
+    h8NS_MB2->SetMarkerStyle(22);
+    h8NS_MB2->DrawCopy("9same");
+    
+    h8NS_HT2->SetLineColor(kGreen+1);
+    h8NS_HT2->SetMarkerColor(kGreen+1);
+    h8NS_HT2->SetMarkerStyle(21);
+    h8NS_HT2->DrawCopy("9same");
+    
+    h8NS_MB3->SetLineColor(kRed);
+    h8NS_MB3->SetMarkerColor(kRed);
+    h8NS_MB3->SetMarkerStyle(22);
+    h8NS_MB3->DrawCopy("9same");
+    
+    h8NS_HT3->SetLineColor(kTeal);
+    h8NS_HT3->SetMarkerColor(kTeal);
+    h8NS_HT3->SetMarkerStyle(21);
+    h8NS_HT3->DrawCopy("9same");
+
+    h8NS_MB4->SetLineColor(kMagenta+1);
+    h8NS_MB4->SetMarkerColor(kMagenta+1);
+    h8NS_MB4->SetMarkerStyle(22);
+    h8NS_MB4->DrawCopy("9same");
+    
+    h8NS_HT4->SetLineColor(kBlue+1);
+    h8NS_HT4->SetMarkerColor(kBlue+1);
+    h8NS_HT4->SetMarkerStyle(21);
+    h8NS_HT4->DrawCopy("9same");
+
+    h = h8NS_HT2; leg->AddEntry(h,TString ("Untriggered, Leading Jet, ")+h->GetTitle(), "lp");
+    h = h8NS_MB2; leg->AddEntry(h,TString ("HT Trigger Jet, ")+h->GetTitle(), "lp");
+    h = h8NS_HT3; leg->AddEntry(h,TString ("Untriggered, Leading Jet, ")+h->GetTitle(), "lp");
+    h = h8NS_MB3; leg->AddEntry(h,TString ("HT Trigger Jet, ")+h->GetTitle(), "lp");
+    h = h8NS_HT4; leg->AddEntry(h,TString ("Untriggered, Leading Jet, ")+h->GetTitle(), "lp");
+    h = h8NS_MB4; leg->AddEntry(h,TString ("HT Trigger Jet, ")+h->GetTitle(), "lp");
+    leg->Draw();
+
+      
+    // pull bin name from end of histo name
+    TString plotname = plotpath+"Geant_MB_v_HT54_Triggers";
+    gPad->SaveAs(plotname+".png");
+  } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
+
+  //    -------- HT54 Hard Jets  --------
+if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 ){
+  for (int i=0; i<AS_P6_HardJets_HT54->GetEntries(); ++i ){
+    new TCanvas;
+    gPad->SetLeftMargin( lm );// for bigger labels
+    gPad->SetBottomMargin( bm );// for bigger labels
+    
+    TH1D* h6NS = (TH1D*)NS_P6_HardJets_HT54->At(i);
+    TH1D* h8NS = (TH1D*)NS_P8_HardJets_HT54->At(i);
+    TH1D* hPNS = (TH1D*)NS_PP_HardJets_HT54->At(i);
+    TH1D* h6AS = (TH1D*)AS_P6_HardJets_HT54->At(i);
+    TH1D* h8AS = (TH1D*)AS_P8_HardJets_HT54->At(i);
+    TH1D* hPAS = (TH1D*)AS_PP_HardJets_HT54->At(i);
+      
+    TH1D* dummy = (TH1D*)h6NS->Clone("dummy");
+    dummy->Reset();    dummy->SetTitle("");
+    dummy->SetAxisRange(zgmin, zgmax, "y");
+    dummy->Draw();
             
-      leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
-      leg->SetBorderSize(0);    leg->SetLineWidth(10);
-      leg->SetFillStyle(0);     leg->SetMargin(0.1);
+    leg = new TLegend( 0.55, 0.55, 0.89, 0.9, h6NS->GetTitle() );
+    leg->SetBorderSize(0);    leg->SetLineWidth(10);
+    leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
-      h6NS->SetLineColor(kBlack);
-      h6NS->DrawCopy("9same");
-      h8NS->SetLineColor(kRed);
-      h8NS->DrawCopy("9same");
-      hPNS->SetLineColor(kGreen+1);
-      hPNS->DrawCopy("9same");
+    h6NS->SetLineColor(kBlack);
+    h6NS->DrawCopy("9same");
+    h8NS->SetLineColor(kRed);
+    h8NS->DrawCopy("9same");
+    hPNS->SetLineColor(kGreen+1);
+    hPNS->DrawCopy("9same");
       
-      h6AS->SetLineColor(kGray+1);
-      h6AS->DrawCopy("9same");
-      h8AS->SetLineColor(kMagenta+1);
-      h8AS->DrawCopy("9same");
-      hPAS->SetLineColor(kTeal);
-      hPAS->DrawCopy("9same");
+    h6AS->SetLineColor(kGray+1);
+    h6AS->DrawCopy("9same");
+    h8AS->SetLineColor(kMagenta+1);
+    h8AS->DrawCopy("9same");
+    hPAS->SetLineColor(kTeal);
+    hPAS->DrawCopy("9same");
       
-      leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
-      leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
-      leg->AddEntry(h8NS,"Pythia8, TriggerJet", "lp");
-      leg->AddEntry(h8AS,"Pythia8, AwayJet", "lp");
-      leg->AddEntry(hPNS,"p+p HT, TriggerJet", "lp");
-      leg->AddEntry(hPAS,"p+p HT, AwayJet", "lp");
+    leg->AddEntry(h6NS,"Pythia6, TriggerJet", "lp");
+    leg->AddEntry(h6AS,"Pythia6, AwayJet", "lp");
+    leg->AddEntry(h8NS,"Pythia8, TriggerJet", "lp");
+    leg->AddEntry(h8AS,"Pythia8, AwayJet", "lp");
+    leg->AddEntry(hPNS,"p+p HT, TriggerJet", "lp");
+    leg->AddEntry(hPAS,"p+p HT, AwayJet", "lp");
 
-      FUVQjet->Draw("9same");
-      leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
-      leg->Draw();
+    FUVQjet->Draw("9same");
+    leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+    leg->Draw();
       
-      // pull bin name from end of histo name
-      TString plotname = h6NS->GetName();
-      plotname = plotname(plotname.Length()-5, plotname.Length());
-      plotname = plotpath+"Geant_HardJets_HT54_"+plotname;
-      gPad->SaveAs(plotname+".png");
+    // pull bin name from end of histo name
+    TString plotname = h6NS->GetName();
+    plotname = plotname(plotname.Length()-5, plotname.Length());
+    plotname = plotpath+"Geant_HardJets_HT54_"+plotname;
+    gPad->SaveAs(plotname+".png");
       
-    }
-  } //   if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 )
+  }
+ } //   if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 )
 
-  
-  return 0;
+
+return 0;
 }
 
 // =============================================================================
@@ -729,7 +802,7 @@ TH2D* SetupZgHisto2D ( double ptbins[], int nptbins,
 		       TString namebase )
 {
   TH2D* h2 = new TH2D( namebase, "All p_{T} bins", nptbins, ptbins,
-		      nbinsx, xleft, xright);
+		       nbinsx, xleft, xright);
 
   // for (int i=0; i<nptbins; ++i ){
   //   // cout << i << "  " << ptbins[i] << "-" << ptbins[i+1] << endl;
@@ -755,26 +828,4 @@ TH2D* SetupZgHisto2D ( double ptbins[], int nptbins,
 }
 
 // =============================================================================
-
-
-
-// Leftover snippets
-  // for (int i=0; i<NS_P6_SoftJets_MB->GetEntries(); ++i ){
-  //   new TCanvas;
-  //   TH1D* h6 = (TH1D*)NS_P6_SoftJets_MB->At(i);
-  //   TH1D* h8 = (TH1D*)NS_P8_SoftJets_MB->At(i);
-  //   h6->Draw();
-  //   h8->SetLineColor(kRed);
-  //   h8->Draw("9same");
-  // }
-
-  // for (int i=0; i<AS_P6_SoftJets_MB->GetEntries(); ++i ){
-  //   new TCanvas;
-  //   TH1D* h6 = (TH1D*)AS_P6_SoftJets_MB->At(i);
-  //   TH1D* h8 = (TH1D*)AS_P8_SoftJets_MB->At(i);
-  //   h6->Draw();
-  //   h8->SetLineColor(kRed);
-  //   h8->Draw("9same");
-  // }
-    
 

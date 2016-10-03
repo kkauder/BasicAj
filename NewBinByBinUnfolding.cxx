@@ -62,7 +62,7 @@ int NewBinByBinUnfolding( int dir=0 ){
   
 
   bool UseAbove25 = true;
-  bool UseGeantMB = false; // use HT or MB for Geant
+  bool UseGeantMB = false; // use HT or MB for Geant (detector level; HT makes more sense)
 
   // Output
   // ------
@@ -235,6 +235,7 @@ int NewBinByBinUnfolding( int dir=0 ){
   AS_PP_SoftJets_HT54 = ChopNormPrettify ( h2_AS_PP_SoftJets_HT54, "p_{T}=", "z_{g}", "1/N dN/dz_{g}",
 					   RebinZg, "ZG", zgmin, zgmax);
 
+  
   // ==========================================================================================
   // --------------------------------------
   // ---------- Unfolding histos ----------

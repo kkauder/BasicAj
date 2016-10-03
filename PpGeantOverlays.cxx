@@ -174,7 +174,7 @@ int PpGeantOverlays(){
   // -------------------------
   // --------- Draw ----------
   // -------------------------
-  if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 ){    
+  if ( false && Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 ){    
     for (int i=0; i<AS_GG_SoftJets_HT54->GetEntries(); ++i ){
       new TCanvas;
       gPad->SetLeftMargin( lm );// for bigger labels
@@ -190,8 +190,8 @@ int PpGeantOverlays(){
       dummy->SetAxisRange(zgmin, zgmax, "y");
       dummy->Draw();
             
-      // leg = new TLegend( 0.55, 0.55, 0.89, 0.9, hGNS->GetTitle() );
-      leg = new TLegend( 0.45 , 0.45, 0.89, 0.9, hGNS->GetTitle() );
+      if (i<4)    leg = new TLegend( 0.4 , 0.5, 0.89, 0.9, hGNS->GetTitle() );
+      else     leg = new TLegend( 0.4 , 0.6, 0.89, 0.9, hGNS->GetTitle() );
       leg->SetBorderSize(0);    leg->SetLineWidth(10);
       leg->SetFillStyle(0);     leg->SetMargin(0.1);
       
@@ -206,25 +206,29 @@ int PpGeantOverlays(){
       hPNS->SetMarkerSize(2);
       hPNS->DrawCopy("9same");
       
-      hGAS->SetLineColor(kGreen+2);
-      hGAS->SetMarkerColor(kGreen+2);
-      hGAS->SetMarkerStyle(25);
-      hGAS->DrawCopy("9same");
-      
-      hPAS->SetLineColor(kBlack);
-      hPAS->SetMarkerColor(kBlack);
-      hPAS->SetMarkerSize(2);
-      hPAS->SetMarkerStyle(30);
-      hPAS->DrawCopy("9same");
+      if (i<4){
+	hGAS->SetLineColor(kGreen+2);
+	hGAS->SetMarkerColor(kGreen+2);
+	hGAS->SetMarkerStyle(25);
+	hGAS->DrawCopy("9same");
+	
+	hPAS->SetLineColor(kBlack);
+	hPAS->SetMarkerColor(kBlack);
+	hPAS->SetMarkerSize(2);
+	hPAS->SetMarkerStyle(30);
+	hPAS->DrawCopy("9same");
+      }
 
-      leg->AddEntry(hGNS,"Pythia6@GEANT, Trigger Jet", "lp");
       leg->AddEntry(hPNS,"p+p HT, Trigger Jet", "lp");
-      leg->AddEntry(hGAS,"Pythia6@GEANT, Away Jet", "lp");
-      leg->AddEntry(hPAS,"p+p HT, Away Jet", "lp");
+      leg->AddEntry(hGNS,"Pythia6 #oplus GEANT, HT Trigger Jet", "lp");
+      if (i<4){
+	leg->AddEntry(hPAS,"p+p HT, Recoil Jet", "lp");
+	leg->AddEntry(hGAS,"Pythia6 #oplus GEANT, Recoil Jet", "lp");
+      }
 
 
-      FUVQjet->Draw("9same");
-      leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+      // FUVQjet->Draw("9same");
+      // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
       leg->Draw();
 
       latex.DrawLatex( 0.55, 0.4, "STAR Preliminary");
@@ -240,7 +244,93 @@ int PpGeantOverlays(){
     }
   } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
 
-  
+  // Draw Separately
+  // ---------------
+  TString s;
+  if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 ){    
+    for (int i=0; i<AS_GG_SoftJets_HT54->GetEntries(); ++i ){
+
+      s="cNS"; s+=i;
+      TCanvas* cNS = new TCanvas(s);
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+      cNS->cd();
+
+      TH1D* hGNS = (TH1D*)NS_GG_SoftJets_HT54->At(i);
+      TH1D* hPNS = (TH1D*)NS_PP_SoftJets_HT54->At(i);
+      TH1D* hGAS = (TH1D*)AS_GG_SoftJets_HT54->At(i);
+      TH1D* hPAS = (TH1D*)AS_PP_SoftJets_HT54->At(i);
+      
+      TH1D* dummy = (TH1D*)hGNS->Clone("dummy");
+      dummy->Reset();    dummy->SetTitle("");
+      dummy->SetAxisRange(zgmin, zgmax, "y");
+      dummy->DrawCopy();
+            
+      legNS = new TLegend( 0.4 , 0.6, 0.89, 0.9, hGNS->GetTitle() );
+      legNS->SetBorderSize(0);    legNS->SetLineWidth(10);
+      legNS->SetFillStyle(0);     legNS->SetMargin(0.1);
+      
+      hGNS->SetLineColor(kMagenta+3);
+      hGNS->SetMarkerColor(kMagenta+3);
+      hGNS->SetMarkerStyle(21);
+      hGNS->DrawCopy("9same");
+
+      hPNS->SetLineColor(kRed);
+      hPNS->SetMarkerColor(kRed);
+      hPNS->SetMarkerStyle(29);
+      hPNS->SetMarkerSize(2);
+      hPNS->DrawCopy("9same");
+
+      legNS->AddEntry(hPNS,"p+p HT, Trigger Jet", "lp");
+      legNS->AddEntry(hGNS,"Pythia6 #oplus GEANT, HT Trigger Jet", "lp");
+      legNS->Draw();
+      latex.DrawLatex( 0.55, 0.4, "STAR Preliminary");
+      
+      // pull bin name from end of histo name
+      TString plotname = hGNS->GetName();
+      plotname = plotname(plotname.Length()-5, plotname.Length());
+      plotname = plotpath+"PpVGeant_NS_SoftJets_HT54_"+plotname;
+      gPad->SaveAs(plotname+".png");
+
+      if (i<4){
+	s="cAS"; s+=i;
+	TCanvas* cAS = new TCanvas(s);
+	gPad->SetLeftMargin( lm );// for bigger labels
+	gPad->SetBottomMargin( bm );// for bigger labels
+	cAS->cd();
+	legAS = new TLegend( 0.4 , 0.6, 0.89, 0.9, hGAS->GetTitle() );
+	legAS->SetBorderSize(0);    legAS->SetLineWidth(10);
+	legAS->SetFillStyle(0);     legAS->SetMargin(0.1);
+
+	dummy->DrawCopy();
+	hGAS->SetLineColor(kGreen+2);
+	hGAS->SetMarkerColor(kGreen+2);
+	hGAS->SetMarkerStyle(25);
+	hGAS->DrawCopy("9same");
+	
+	hPAS->SetLineColor(kBlack);
+	hPAS->SetMarkerColor(kBlack);
+	hPAS->SetMarkerSize(2);
+	hPAS->SetMarkerStyle(30);
+	hPAS->DrawCopy("9same");
+
+	legAS->AddEntry(hPAS,"p+p HT, Recoil Jet", "lp");
+	legAS->AddEntry(hGAS,"Pythia6 #oplus GEANT, Recoil Jet", "lp");
+	legAS->Draw();
+	latex.DrawLatex( 0.55, 0.4, "STAR Preliminary");
+      
+	// pull bin name from end of histo name
+	TString plotname = hGNS->GetName();
+	plotname = plotname(plotname.Length()-5, plotname.Length());
+	plotname = plotpath+"PpVGeant_AS_SoftJets_HT54_"+plotname;
+	gPad->SaveAs(plotname+".png");
+
+      }
+      
+    }
+  } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
+
+
 }
 
 // =============================================================================
