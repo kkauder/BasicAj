@@ -53,8 +53,8 @@ endif
 #set NameBase=Groom_Fresh_NicksList_HC100
 # set NameBase=Groom_HT64
 # set NameBase=Groom_ConstSub
-#set NameBase=Groom_AuAu_HT54_HTled
-set NameBase=Groom_AuAu_AjGt3_HT54_HTled
+set NameBase=Test_Groom_AuAu_HT54_HTled
+#set NameBase=Groom_AuAu_AjGt3_HT54_HTled
 #set NameBase=Groom_AuAu_AjLt3_HT54_HTled
 
 set submitted=0

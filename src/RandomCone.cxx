@@ -60,7 +60,8 @@ int main ( int argc, const char** argv ) {
     cout << " CAREFUL: FAKING BETTER STATISTICS " << endl;
   }
   
-  const char *defaults[5] = {"RandomCone","AjResults/Fresh_NicksList_HC100_RandomCone.root","AjResults/Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
+  // const char *defaults[5] = {"RandomCone","AjResults/Fresh_NicksList_HC100_RandomCone.root","AjResults/Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
+  const char *defaults[5] = {"RandomCone","AjResults/R0.2_Fresh_NicksList_HC100_RandomCone.root","AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;

@@ -78,8 +78,8 @@ int main ( int argc, const char** argv ) {
   // const char *defaults[] = {"GroomPicoAj","Groomtest.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
   // const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/AddedGeantPythia/picoDst*root", "0", "0", "" };
   // const char *defaults[] = {"GroomPicoAj","GeantGroomtest.root","all","Data/AddedGeantPythia/picoDst_15_25_9.root", "0", "0", "" };
-  const char *defaults[] = {"GroomPicoAj","GeantGroomtest_HT54_HTled_NoEff.root","all","Data/AddedGeantPythia/picoDst_25_35_9.root", "0", "0", "" };
-  // const char *defaults[] = {"GroomPicoAj","Groomtest_AjGt3_HT54_HTled_AuAu.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  // const char *defaults[] = {"GroomPicoAj","GeantGroomtest_HT54_HTled_NoEff.root","all","Data/AddedGeantPythia/picoDst_25_35_9.root", "0", "0", "" };
+  const char *defaults[] = {"GroomPicoAj","Groomtest_HT54_HTled_AuAu.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
 
   // const char *defaults[] = {"GroomPicoAj","Y14Groomtest.root","all","Data/SmallY14HT/AuAu14Pico_101-105_*root", "0", "0", "" };
 
@@ -474,6 +474,9 @@ int main ( int argc, const char** argv ) {
   ResultTree->Branch("j2",&j2);
   ResultTree->Branch("jm1",&jm1);
   ResultTree->Branch("jm2",&jm2);
+  TLorentzVector gjm1, gjm2;
+  ResultTree->Branch("gjm1",&gjm1);
+  ResultTree->Branch("gjm2",&gjm2);
 
   float zg1, zg2, zgm1, zgm2;
   ResultTree->Branch("zg1",&zg1,"zg1/F");
@@ -533,9 +536,12 @@ int main ( int argc, const char** argv ) {
   TTree* TriggeredTree=0;
 
   TClonesArray TriggerJet( "TLorentzVector",1 ); 
-  TClonesArray TriggerJetLo( "TLorentzVector",1 ); 
+  TClonesArray TriggerJetLo( "TLorentzVector",1 );
+  TClonesArray GroomedTriggerJetLo( "TLorentzVector",1 ); 
   TClonesArray AwayJet( "TLorentzVector",1 ); 
-  TClonesArray AwayJetLo( "TLorentzVector",1 ); 
+  TClonesArray AwayJetLo( "TLorentzVector",1 );
+  TClonesArray GroomedAwayJetLo( "TLorentzVector",1 );
+ 
   static const Int_t kmaxT=5000; // max # of particles
   // TClonesArray FullEvent("TLorentzVector",kmaxT);
   TClonesArray FullEvent("TStarJetVector",kmaxT);
@@ -553,8 +559,10 @@ int main ( int argc, const char** argv ) {
     // TriggeredTree->Branch("Towers", &Towers );
     TriggeredTree->Branch("TriggerJet", &TriggerJet);
     TriggeredTree->Branch("TriggerJetLo", &TriggerJetLo);
+    TriggeredTree->Branch("GroomedTriggerJetLo", &GroomedTriggerJetLo);
     TriggeredTree->Branch("AwayJet", &AwayJet);
     TriggeredTree->Branch("AwayJetLo", &AwayJetLo);
+    TriggeredTree->Branch("GroomedAwayJetLo", &GroomedAwayJetLo);
     TriggeredTree->Branch("eventid",&eventid, "eventid/I");
     TriggeredTree->Branch("runid",&runid, "runid/I");
     TriggeredTree->Branch("weight",&weight, "weight/D"); 
@@ -567,6 +575,8 @@ int main ( int argc, const char** argv ) {
     TriggeredTree->Branch("j2",&j2);
     TriggeredTree->Branch("jm1",&jm1);
     TriggeredTree->Branch("jm2",&jm2);
+    TriggeredTree->Branch("gjm1",&gjm1);
+    TriggeredTree->Branch("gjm2",&gjm2);
 
     TriggeredTree->Branch("aj_hi",&aj_hi, "aj_hi/F");
     TriggeredTree->Branch("aj_lo",&aj_lo, "aj_lo/F");
@@ -841,6 +851,8 @@ int main ( int argc, const char** argv ) {
       j2 = TLorentzVector();
       jm1 = TLorentzVector();
       jm2 = TLorentzVector();
+      gjm1 = TLorentzVector();
+      gjm2 = TLorentzVector();
       aj_lo=-999;
       aj_hi=-999;
       zg1=zg2=zgm1=zgm2=0;
@@ -1101,6 +1113,7 @@ int main ( int argc, const char** argv ) {
 	  double z_cut = 0.10;
 	  double beta  = 0.0;
 	  
+	  // RecursiveSymmetryCutBase::_verbose=true;
 	  bool CustomRecluster=false;
 	  JetAlgorithm ReclusterJetAlgorithm;
 	  JetDefinition ReclusterJetDef;
@@ -1115,7 +1128,8 @@ int main ( int argc, const char** argv ) {
 	  Subtractor* BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
 	  if ( BackgroundSubtractorHi ){
 	    sd.set_subtractor( BackgroundSubtractorHi );
-	    sd.set_input_jet_is_subtracted( true );
+	    // sd.set_input_jet_is_subtracted( true );
+	    sd.set_input_jet_is_subtracted( false );
 	  }
 	  
 	  PseudoJet sd_jet = sd( DiJetsHi.at(0) );
@@ -1142,7 +1156,8 @@ int main ( int argc, const char** argv ) {
 	  Subtractor* BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
 	  if ( BackgroundSubtractorLo ){
 	    sd.set_subtractor( BackgroundSubtractorLo );
-	    sd.set_input_jet_is_subtracted( true );
+	    // sd.set_input_jet_is_subtracted( true );
+	    sd.set_input_jet_is_subtracted( false );
 	  }
 	  
 	  sd_jet = sd( DiJetsLo.at(0) );
@@ -1152,8 +1167,20 @@ int main ( int argc, const char** argv ) {
 	  } else {
 	    // cout << "Lo, lead: " << sd_jet.pt() << endl;
 	    zgm1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    gjm1 = MakeTLorentzVector( sd_jet );
+	    cout << "Pt: " << gjm1.Pt() << "  " << jm1.Pt() << endl;
+	    if ( gjm1.Pt() > 1.2* jm1.Pt() ){
+	      cout << " ================================== " << endl;
+	      cout << "Pt: " << gjm1.Pt() << "  " << jm1.Pt() << endl;
+	      cout << "Orig Area: " << DiJetsLo.at(0).area()<< endl;
+	      float rho=AjA.GetJAlo()->GetBackgroundEstimator()->rho() ;
+	      cout << "Orig Pt: " << "  " << jm1.Pt() + rho*DiJetsLo.at(0).area()<< endl;
+	      cout << "Subjet Pt: " << sd_jet.pieces().at(0).pt() << "  " << sd_jet.pieces().at(1).pt() << endl;
+	      cout << "Subjet Area: " << sd_jet.pieces().at(0).area() << "  " << sd_jet.pieces().at(1).area() << endl;
+	      // return -1;
+	    }
 	  }
-
+	  
 	  sd_jet = sd( DiJetsLo.at(1) );
 	  if ( sd_jet == 0){
 	    cout <<  " FOREGROUND Original sub-leading Jet, LO:   " << DiJetsLo.at(1) << endl;
@@ -1161,6 +1188,7 @@ int main ( int argc, const char** argv ) {
 	  } else {
 	    // cout << "Lo, sublead: " << sd_jet.pt() << endl;
 	    zgm2=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
+	    gjm2 = MakeTLorentzVector( sd_jet );
 	  }
 
 	  float ptHi = DiJetsHi.at(0).pt();
@@ -1224,8 +1252,10 @@ int main ( int argc, const char** argv ) {
 	FullEvent.Clear();
 	TriggerJet.Clear();
 	TriggerJetLo.Clear();
+	GroomedTriggerJetLo.Clear();
 	AwayJet.Clear();
 	AwayJetLo.Clear();
+	GroomedAwayJetLo.Clear();
 	zgtrighi = zgtriglo = 0;
 	zgawayhi = zgawaylo = 0;
 
@@ -1339,7 +1369,8 @@ int main ( int argc, const char** argv ) {
 	    Subtractor* BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
 	    if ( BackgroundSubtractorHi ){
 	      sd.set_subtractor( BackgroundSubtractorHi );
-	      sd.set_input_jet_is_subtracted( true );
+	      // sd.set_input_jet_is_subtracted( true );
+	      sd.set_input_jet_is_subtracted( false );
 	    }
 	    
 	    // near-side
@@ -1374,7 +1405,8 @@ int main ( int argc, const char** argv ) {
 	    Subtractor* BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
 	    if ( BackgroundSubtractorLo ){
 	      sd.set_subtractor( BackgroundSubtractorLo );
-	      sd.set_input_jet_is_subtracted( true );
+	      // sd.set_input_jet_is_subtracted( true );
+	      sd.set_input_jet_is_subtracted( false );
 	    }
 	    
 	    // near-side
@@ -1387,6 +1419,7 @@ int main ( int argc, const char** argv ) {
 	      if (zgtriglo>0) {
 		Tlo_s1=MakeTLorentzVector ( sd_jet.pieces().at(0) );
 		Tlo_s2=MakeTLorentzVector ( sd_jet.pieces().at(1) );
+		new ( GroomedTriggerJetLo[0] ) TLorentzVector ( MakeTLorentzVector( sd_jet ) );
 	      }
 	    }
 
@@ -1401,6 +1434,7 @@ int main ( int argc, const char** argv ) {
 		if (zgawaylo>0) {
 		  Alo_s1=MakeTLorentzVector ( sd_jet.pieces().at(0) );
 		  Alo_s2=MakeTLorentzVector ( sd_jet.pieces().at(1) );
+		  new ( GroomedAwayJetLo[0] ) TLorentzVector ( MakeTLorentzVector( sd_jet ) ) ;
 		}
 	      }
 	    }

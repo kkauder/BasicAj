@@ -60,10 +60,11 @@ int main ( int argc, const char** argv ) {
 
   // Set up some convenient default
   // ------------------------------
-  const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
+  // const char *defaults[] = {"PicoAj","test.root","ppHT","Data/ppHT/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","HTMBtest.root","All","Data/HaddedAuAu11picoMB/*.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","AuAuAj.root","HT","Data/CleanAuAu/Clean809.root", "0", "0", "" };
   // const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "" };
+  const char *defaults[] = {"PicoAj","test.root","HT","Data/SmallAuAu/Small_Clean809.root", "0", "0", "AjResults/Fresh_NicksList_HC100_AuAu.root" };
 
   if ( argc==1 ) {
     argv=defaults;
@@ -324,7 +325,7 @@ int main ( int argc, const char** argv ) {
   // TString OrigResultName="AjResults/Presel_AuAuAj.root";
 
   TString OrigResultName=arguments.at(5);
-  bool RunEtaCone= isAuAu && gSystem->GetPathInfo(OrigResultName, filestat)==0 && fabs(R-0.4)<1e-4 && true;
+  bool RunEtaCone= isAuAu && gSystem->GetPathInfo(OrigResultName, filestat)==0 && true;
 
   if ( RunEtaCone ){
     cout << "Creating Eta Cone histo using jets from " << OrigResultName << endl; 
@@ -889,6 +890,7 @@ int main ( int argc, const char** argv ) {
 	  int nMix=6;
 	  random_shuffle(OrigEvents.begin(), OrigEvents.end()) ;
 	  int mixed=0;
+	  cout << "hello world" << endl;
 	  for ( int i=0; i<OrigEvents.size(); ++i ){
 	    OrigJets->GetEntry ( OrigEvents.at(i) );
 

@@ -79,7 +79,9 @@ int FigDijetZg() {
   // latex.SetTextColor(kGray+3);
   latex.SetTextColor(kRed+3);
 
-  TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
+  TString sAuAu       = "AjResults/Test_Groom_AuAu_HT54_HTled.root";
+  // TString sppInAuAu   = "AjResults/Tow0_Eff0_Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+  // TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
   TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
   TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
   // TString sAuAu       = "AjResults/Groom_AuAu_AjGt3_HT54_HTled.root";

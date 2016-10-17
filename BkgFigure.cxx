@@ -58,7 +58,12 @@ void BkgFigure() {
   TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
   TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
 
+  // TFile *fAuAu         = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root");
+  // TFile *fRC           = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_RandomCone.root");
+  // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
+  // TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
 
+  
   TH2D* h2 = (TH2D*) fAuAu->Get( "AJ_lo");
   if ( nofabs ) h2 = (TH2D*) fAuAu->Get( "NoFabsAJ_lo");
   int AuAuMultBinL = h2->GetYaxis()->FindBin( RefmultCut );
@@ -192,7 +197,6 @@ void BkgFigure() {
   legem->AddEntry ( ECAJ_lo,       "Eta Cone Bkg (EC)", "f");
   legem->Draw();
 
-
   
   TLatex latex;
   latex.SetNDC();
@@ -226,19 +230,29 @@ void BkgFigure() {
   //}
 
   
-  // Line to guide the eye
+  // // Line to guide the eye
   TLine line;
   line.SetLineStyle( 2 );
   line.SetLineColor( kGray+2 );
   gPad->Update();
   line.DrawLine( 0, gPad->GetFrame()->GetY1(), 0, gPad->GetFrame()->GetY2() );
 
-  gPad->SaveAs("plots/BkgFigure.png");
-  gPad->SaveAs("plots/BkgFigure.pdf");
+  latex.SetTextColor( kAzure-6 );
+  latex.SetTextSize(0.07);
+  latex.SetTextFont( 62 ); // 42: helvetica, 62: helvetica bold
+  latex.DrawLatex( .14,.6, "STAR");
 
-  cout << "chi^2 between RC and AuAu: " << RCAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
-  cout << "chi^2 between EC and AuAu: " << ECAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
-  cout << "chi^2 between RC and EC: " << RCAJ_lo->Chi2Test(ECAJ_lo, "") << endl;
+  if (TString(fAuAu->GetName()).Contains("R0.2") ){
+    gPad->SaveAs("plots/R0.2_BkgFigure.png");
+    gPad->SaveAs("plots/R0.2_BkgFigure.pdf");
+  } else {
+    gPad->SaveAs("plots/BkgFigure.png");
+    gPad->SaveAs("plots/BkgFigure.pdf");
+  }
+    
+  // cout << "chi^2 between RC and AuAu: " << RCAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  // cout << "chi^2 between EC and AuAu: " << ECAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
+  // cout << "chi^2 between RC and EC: " << RCAJ_lo->Chi2Test(ECAJ_lo, "") << endl;
 
   
 }

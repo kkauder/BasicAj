@@ -13,12 +13,13 @@ set RMod = ""
 #set RMod = R0.2_
 # set RMod = "Pt1_"
 
-#set AjMod =""
+set AjMod =""
 #set AjMod = "_AjGt3"
-set AjMod = "_AjLt3"
+#set AjMod = "_AjLt3"
 
 #set PpBase = Groom_Aj_HT54_HTled_NoEff_ppAj.root
-set PpBase = Groom_Aj_HT54_HTled_ppAj.root
+#set PpBase = Groom_Aj_HT54_HTled_ppAj.root
+set PpBase = Test_Groom_Aj_HT54_HTled_ppAj.root
 
 # Loop over combinations and data
 set Effs='-1 0 1'

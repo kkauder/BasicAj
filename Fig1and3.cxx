@@ -525,7 +525,13 @@ int Fig1and3( TString R = "" ) {
     else latex.DrawLatex( .6,.45, plabel);
   }
 
-  if (TString(fAuAu->GetName()).Contains("HT54") ){
+  latex.SetTextColor( kAzure-6 );
+  latex.SetTextSize(0.07);
+  latex.SetTextFont( 62 ); // 42: helvetica, 62: helvetica bold
+  latex.DrawLatex( .14,.6, "STAR");
+
+
+    if (TString(fAuAu->GetName()).Contains("HT54") ){
     gPad->SaveAs("plots/HT54_R0.4_Fig1.png");
     gPad->SaveAs("plots/HT54_R0.4_Fig1.pdf");
   } else   if (TString(fAuAu->GetName()).Contains("HT64") ){

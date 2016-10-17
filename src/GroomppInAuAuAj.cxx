@@ -853,7 +853,8 @@ int main ( int argc, const char** argv ) {
 	  BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
 	  if ( BackgroundSubtractorHi ){
 	    sd_hi.set_subtractor( BackgroundSubtractorHi );
-	    sd_hi.set_input_jet_is_subtracted( true );
+	    // sd_hi.set_input_jet_is_subtracted( true );
+	    sd_hi.set_input_jet_is_subtracted( false );
 	  }
 	  
 	  sd_jet = sd_hi( DiJetsHi.at(0) );
@@ -880,7 +881,8 @@ int main ( int argc, const char** argv ) {
 	  BackgroundSubtractorLo = AjA.GetJAlo()->GetBackgroundSubtractor();
 	  if ( BackgroundSubtractorLo ){
 	    sd_lo.set_subtractor( BackgroundSubtractorLo );
-	    sd_lo.set_input_jet_is_subtracted( true );
+	    // sd_lo.set_input_jet_is_subtracted( true );
+	    sd_lo.set_input_jet_is_subtracted( false );
 	  }
 	  
 	  sd_jet = sd_lo( DiJetsLo.at(0) );
