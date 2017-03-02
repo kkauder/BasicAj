@@ -83,6 +83,7 @@ AjAnalysis::AjAnalysis ( double R,
   // std::cout << sjet.applies_jet_by_jet() << std::endl;  
   // std::cout << " ################################################### " << std::endl;
 
+  OverrideJetMin=-1;
 }
 
 // Main analysis method
@@ -171,13 +172,14 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
       }
     }
   }
-  if ( JAhiResult.at(0).pt() > 10 && HTmatched )            { Has10Gev=true; }
+  if ( !HTmatched )                                {     return 0; }
+  if ( JAhiResult.at(0).pt() > 10 )                { Has10Gev=true; }
+  if ( OverrideJetMin<0 && !Has10Gev )             {     return 0; }
+  if ( OverrideJetMin>0 && JAhiResult.at(0).pt()<OverrideJetMin )   {     return 0; }
  
   // New logic: Want to learn more about the trigger jet.
   // So, get the low jets now, regardless of whether or not this event qualifies. 
   // This is sadly expensive, let's hope not too bad  
-  if ( !Has10Gev )                             {     return 0; }
-  
   // find corresponding jets with soft constituents
   // ----------------------------------------------
   if ( SubtractSoftBg )
@@ -204,6 +206,9 @@ int AjAnalysis::AnalyzeAndFill ( std::vector<fastjet::PseudoJet>& particles, fas
   } else {
     JAloResult = fastjet::sorted_by_pt( JAlo.inclusive_jets() );
   }
+
+  // for (int i=0; i<JAloResult.size() ; ++i ) cout << i << "  " << JAloResult.at(i).pt() << endl;
+  // throw(-1);
   
   // // Let's try something new:
   // fastjet::contrib::ConstituentSubtractor* BackgroundSubtractor =  pJAlo->GetConstituentBackgroundSubtractor();

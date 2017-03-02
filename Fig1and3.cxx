@@ -41,7 +41,8 @@ int Fig1and3( TString R = "" ) {
   // 100% hadronic correction
   // ========================
   if ( R=="" ){
-    TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
+    // TFile *fAuAu         = TFile::Open("AjResults/Fresh_NicksList_HC100_AuAu.root");
+    TFile *fAuAu         = TFile::Open("AjResults/Test_Groom_AuAu_Remade.root");
     TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppInAuAuAj.root");
     TFile *fSyst         = TFile::Open("AjResults/Systematics_Fresh_NicksList_HC100_ppInAuAuAj.root");
     // // cross check
@@ -138,8 +139,8 @@ int Fig1and3( TString R = "" ) {
 
     h->SetLineWidth( 2 );
 
-    h->SetTitle(";|A_{J}|;Fraction");
-    if ( nofabs ) h->SetTitle(";A_{J};Fraction");
+    h->SetTitle(";|A_{J}|;Event Fraction");
+    if ( nofabs ) h->SetTitle(";A_{J};Event Fraction");
     
     h->Rebin(2);
     // h->Scale(1./h->Integral());
@@ -214,7 +215,7 @@ int Fig1and3( TString R = "" ) {
   ppInAuAuAJ_hi->SetAxisRange(0, 1, "x");
   AuAuAJ_hi->SetAxisRange(0, 1, "x");
 
-  ppInAuAuAJ_hi->Draw("9same");
+  ppInAuAuAJ_hi->Draw("9sameE0X0");
   
   TH1D* AJ_hi_minmax=0;
   TH1D* AJ_lo_minmax=0;
@@ -339,11 +340,11 @@ int Fig1and3( TString R = "" ) {
   AJ_lo_minmax->SetMarkerColor( kGray );
   AJ_lo_minmax->SetMarkerSize(0);
 
-  ppInAuAuAJ_hi->Draw("9same");
+  ppInAuAuAJ_hi->Draw("9sameE0X0");
   AJ_hi_minmax->Draw("9E2same");
 
-  ppInAuAuAJ_hi->Draw("9same");
-  AuAuAJ_hi->Draw("9same");
+  ppInAuAuAJ_hi->Draw("9sameE0X0");
+  AuAuAJ_hi->Draw("9sameE0X0");
 
   // // For p-value, add systematics in quadrature
   // TH1D* AJ_hi_sysstat = (TH1D*) ppInAuAuAJ_hi->Clone("AJ_hi_sysstat");
@@ -477,10 +478,10 @@ int Fig1and3( TString R = "" ) {
   // ------------------------
   AJ_lo_minmax->Draw("9E2same");
 
-  ppInAuAuAJ_hi->Draw("9same");
-  AuAuAJ_hi->Draw("9same");
-  ppInAuAuAJ_lo->Draw("9same");
-  AuAuAJ_lo->Draw("9same");
+  ppInAuAuAJ_hi->Draw("9sameE0X0");
+  AuAuAJ_hi->Draw("9sameE0X0");
+  ppInAuAuAJ_lo->Draw("9sameE0X0");
+  AuAuAJ_lo->Draw("9sameE0X0");
 
   TLegend* leghi = new TLegend( 0.15, 0.7, 0.48, 0.88, "p_{T}^{Cut}>2 GeV/c:" );
   if ( !nofabs )leghi = new TLegend( 0.35, 0.75, 0.68, 0.88, "p_{T}^{Cut}>2 GeV/c:" );
@@ -528,7 +529,8 @@ int Fig1and3( TString R = "" ) {
   latex.SetTextColor( kAzure-6 );
   latex.SetTextSize(0.07);
   latex.SetTextFont( 62 ); // 42: helvetica, 62: helvetica bold
-  latex.DrawLatex( .14,.6, "STAR");
+  if ( nofabs ) latex.DrawLatex( .14,.6, "STAR");
+  else          latex.DrawLatex( .14,.3, "STAR");
 
 
     if (TString(fAuAu->GetName()).Contains("HT54") ){
@@ -708,7 +710,11 @@ int Fig1and3( TString R = "" ) {
   cout << "<AJ> for pp @ AuAu, LOW cut: " << ppInAuAuAJ_lo->GetMean() << " +/- " << ppInAuAuAJ_lo->GetMeanError() << endl;
   cout << "<AJ> for      AuAu, LOW cut: " <<     AuAuAJ_lo->GetMean() << " +/- " <<     AuAuAJ_lo->GetMeanError() << endl;
   
-  
+  cout << ppInAuAuAJ_hi->Integral() << endl;
+  cout << ppInAuAuAJ_lo->Integral() << endl;
+  cout << AuAuAJ_hi->Integral() << endl;
+  cout << AuAuAJ_lo->Integral() << endl;
+
   // Done. Save
   // ==========
   out->Write();

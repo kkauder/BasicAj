@@ -4,10 +4,15 @@
 
 double CalcAj ( TLorentzVector* j1, TLorentzVector* j2 );
 
-int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
-		TString sEmb = "AjResults/Tow-1_Eff0_Groom_Aj_HT54_GeantInAuAuAj_newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root" ) {
+int MatchDijets(
+		// TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
+		// TString sEmb = "AjResults/Tow-1_Eff0_Groom_Aj_HT54_GeantInAuAuAj_newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"
+		TString sRef = "AjResults/Groom_Aj_TrueMB_NoEff_GeantMc.root",
+		TString sEmb = "AjResults/Groom_Aj_HT54_Geant.root"
+		) {
 
-  int MinRefmult = 269;
+  // int MinRefmult = 269;
+  int MinRefmult = 0;
 
   //  gStyle->SetOptStat(0);
   gStyle->SetHistLineWidth(2);
@@ -28,7 +33,8 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
   //  TFile* fOut = new TFile("Results/" + outbase + ".DijetZg.root","RECREATE");
   
   RRef->BuildIndex("runid","eventid");
-  REmb->BuildIndex("jetrunid","jeteventid");
+  // REmb->BuildIndex("jetrunid","jeteventid");
+  REmb->BuildIndex("runid","eventid");
   
   // To match, use runid and eventid
   // -------------------------------
@@ -39,8 +45,10 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
 
   int runidEmb;
   int eventidEmb;  
-  REmb->SetBranchAddress("jeteventid", &eventidEmb );
-  REmb->SetBranchAddress("jetrunid", &runidEmb );
+  //REmb->SetBranchAddress("jeteventid", &eventidEmb );
+  // REmb->SetBranchAddress("jetrunid", &runidEmb );
+  REmb->SetBranchAddress("eventid", &eventidEmb );
+  REmb->SetBranchAddress("runid", &runidEmb );
   
   // Interesting measurables -- Ref
   // ------------------------------
@@ -52,11 +60,11 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
   double weightRef=1;
   RRef->SetBranchAddress("weight", &weightRef );
   
-  ResultTree->SetBranchAddress("j1", &pJ1Ref);
-  ResultTree->SetBranchAddress("j2", &pJ2Ref);
-  ResultTree->SetBranchAddress("jm1", &pJM1Ref);
-  ResultTree->SetBranchAddress("jm2", &pJM2Ref);
-  ResultTree->SetBranchAddress("refmult", &refmultRef);
+  RRef->SetBranchAddress("j1", &pJ1Ref);
+  RRef->SetBranchAddress("j2", &pJ2Ref);
+  RRef->SetBranchAddress("jm1", &pJM1Ref);
+  RRef->SetBranchAddress("jm2", &pJM2Ref);
+  RRef->SetBranchAddress("refmult", &refmultRef);
   
   // Interesting measurables -- Emb
   // ------------------------------
@@ -68,17 +76,26 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
   double weightEmb=1;
   REmb->SetBranchAddress("weight", &weightEmb );
   
-  ResultTree->SetBranchAddress("j1", &pJ1Emb);
-  ResultTree->SetBranchAddress("j2", &pJ2Emb);
-  ResultTree->SetBranchAddress("jm1", &pJM1Emb);
-  ResultTree->SetBranchAddress("jm2", &pJM2Emb);
-  ResultTree->SetBranchAddress("refmult", &refmultEmb);
+  REmb->SetBranchAddress("j1", &pJ1Emb);
+  REmb->SetBranchAddress("j2", &pJ2Emb);
+  REmb->SetBranchAddress("jm1", &pJM1Emb);
+  REmb->SetBranchAddress("jm2", &pJM2Emb);
+  REmb->SetBranchAddress("refmult", &refmultEmb);
   
 
   // Histos
   // -------
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
+
+
+  int nPtBins = 80;
+  float ptmin=0;
+  float ptmax=80;
+
+  TH2D* DeltaPt1 = new TH2D( "DeltaPt1",";p_{T}^{Part};p_{T}^{Part,1}-p_{T}^{Det,1} [GeV/c]", nPtBins, ptmin, ptmax, 100, -40, 60 );
+  TH2D* DeltaPt2 = new TH2D( "DeltaPt2",";p_{T}^{Part};p_{T}^{Part,2}-p_{T}^{Det,2} [GeV/c]", nPtBins, ptmin, ptmax, 100, -40, 60 );
+
 
   // TH2D* LeadPtLoVPtHi = new TH2D("LeadPtLoVPtHi", ";p_{T,Hi};p_{T,Lo}",100, 0, 60, 100, 0, 60 );
   // TH1D* LeadPtLoMinusPtHi = new TH1D("LeadPtLoMinusPtHi", ";p_{T,Lo}-p_{T,Hi}",120, -30, 30 );
@@ -131,7 +148,7 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
   // --------
   
   Long64_t NEvents = RRef->GetEntries();
-  // NEvents = 1000;
+  // NEvents = 10000;
 
   for ( int evi=0; evi<NEvents; ++evi){
     if ( !(evi%10000) ) cout << "Working on " << evi << " / " << NEvents << endl;
@@ -146,9 +163,9 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
       // MISSED or LOST
       continue;
     }
-    cout << "Found it" << endl;
+    // cout << "Found it" << endl;
     REmb->GetEntry( eviEmb );
-
+    
     if ( fabs(weightRef / weightEmb - 1) > 1e-4 ) {
       cerr << "weightRef / weightEmb = " << weightRef / weightEmb  << endl;
       cerr << "weightRef = " <<  weightRef  << "    weightEmb = " <<  weightEmb << endl;
@@ -159,6 +176,35 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
 
       return -1;
     }
+
+    // Find best match
+    // ---------------
+    TLorentzVector* Match1 = 0;
+    if ( pJM1Ref->DeltaR( *pJ1Emb ) < MatchingR ) {
+      Match1 = pJ1Emb;
+    } else if ( pJM1Ref->DeltaR( *pJ2Emb ) < MatchingR ) {
+      Match1 = pJ2Emb;
+    } else {
+      cerr << " Huh?" << endl;
+      continue;
+    }
+
+    TLorentzVector* Match2 = 0;
+    if ( pJM2Ref->DeltaR( *pJ2Emb ) < MatchingR ) {
+      Match2 = pJ2Emb;
+    } else if ( pJM2Ref->DeltaR( *pJ1Emb ) < MatchingR ) {
+      Match2 = pJ1Emb;
+    } else {
+      cerr << " Huh2?" << endl;
+      continue;
+    }
+
+    // cout << pJM1Ref->Pt() << "  " << pJ1Emb->Pt() << endl;
+    // DeltaPt1->Fill ( pJM1Ref->Pt(), pJ1Emb->Pt(), weightRef);
+    DeltaPt1->Fill ( pJM1Ref->Pt(), pJM1Ref->Pt() - Match1->Pt(), weightRef);
+    DeltaPt2->Fill ( pJM2Ref->Pt(), pJM2Ref->Pt() - Match2->Pt(), weightRef);
+    
+    
 
     // // Leading jets
     // if ( LongIndex ){
@@ -281,6 +327,10 @@ int MatchDijets(TString sRef = "AjResults/Groom_Aj_HT54_NoEff_GeantMc.root",
   // new TCanvas;
   // hdphiHi->Draw();
 
+  new TCanvas;
+  DeltaPt1->Draw("colz");
+  new TCanvas;
+  DeltaPt2->Draw("colz");
   return 0;
   LeadPtLoVPtHi->SaveAs("LeadPtLoVPtHi.root");
   new TCanvas;

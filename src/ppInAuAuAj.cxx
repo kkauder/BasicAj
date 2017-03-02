@@ -122,6 +122,7 @@ int main ( int argc, const char** argv ) {
   if ( OutFileName.Contains ("MixTest") ){
     nMix=1;
     RefMultCut=269;
+    cout << "USING MIXTEST" << endl;
   }
 
   if ( nMix !=1 ){

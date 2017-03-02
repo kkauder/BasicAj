@@ -22,11 +22,15 @@ int GroomPrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  
   // TString ft0eP = "AjResults/Tow0_Eff1_Groom_Fresh_NicksList_HC100_ppInAuAuAj.root";
   // TString ft0eM = "AjResults/Tow0_Eff-1_Groom_Fresh_NicksList_HC100_ppInAuAuAj.root";
 
-  TString refname = "AjResults/Groom_AuAu_HT54_HTled.root";
+  // TString refname = "AjResults/Groom_AuAu_HT54_HTled.root";
 
   // TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj";
-  TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3";
+  // TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3";
   // TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3";
+
+  TString Base = "Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj";
+  TString refname = "AjResults/Y14Test_Groom_AuAu_HT54_HTled.root";
+  if ( Base.Contains("Y14") ) AuAuMultL = 260;
 
   TString outname = "AjResults/zgSystematics_" + Base + ".root";
   

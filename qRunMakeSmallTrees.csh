@@ -8,10 +8,13 @@ set Exec = "bin/MakeSmallerTrees"
 make $Exec || exit
 
 set ResultDir   = Data/SmallY14HT
+#set ResultDir   = Data/Small_LowMid_Y14HT
+
 set OutBase     = AuAu14Pico
 set TriggerName = HT
 
 set noglob
+
 foreach directory ( `find Data/y14_AuAu_HT2/ -maxdepth 1 -name "[1-9]*"` )
     
     set Files       = ${directory}/*.root

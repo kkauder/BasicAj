@@ -28,6 +28,11 @@ int PrepSystematics( TString R="0.4", int AuAuMultL=269, int AuAuMultR=-1  )
   TString Base = "Groom_Aj_HT54_HTled_ppInAuAuAj";
   TString outname = "AjResults/Systematics_" + Base + ".root";
   
+  // TString Base = "Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj";
+  // if ( Base.Contains("Y14") ) AuAuMultL = 260;
+  // TString outname = "AjResults/Systematics_" + Base + ".root";
+
+
   TString ft0e0 = "AjResults/Tow0_Eff0_" + Base + ".root";
   TString ftPe0 = "AjResults/Tow1_Eff0_" + Base + ".root";
   TString ftMe0 = "AjResults/Tow-1_Eff0_" + Base + ".root";

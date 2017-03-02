@@ -343,6 +343,11 @@ int main ( int argc, const char** argv ) {
 
   TH2D* hLeadPtrecoVPtorigInTop20 = new TH2D( "hLeadPtrecoVPtorigInTop20",";p_{T}^{orig};p_{T}^{reco}", 120, 0, 60, 120, 0, 60 );
 
+  TH2D* j1NEF = new TH2D( "j1NEF","NEF for hard constituent leading jets;p_{T}^{Det};NEF", 100, 10 , 60, 30, -0.5, 1.5 );
+  TH2D* j2NEF = new TH2D( "j2NEF","NEF for hard constituent subleading jets;p_{T}^{Det};NEF", 100, 10 , 60, 30, -0.5, 1.5 );
+  TH2D* mj1NEF = new TH2D( "mj1NEF","NEF for matched leading jets;p_{T}^{Det};NEF", 100, 10 , 60, 30, -0.5, 1.5 );
+  TH2D* mj2NEF = new TH2D( "mj2NEF","NEF for matched subleading jets;p_{T}^{Det};NEF", 100, 10 , 60, 30, -0.5, 1.5 );
+  
   // Quick debug
   TH1D* hLeadPtInTop20 = new TH1D( "hLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
   TH1D* hSubLeadPtInTop20 = new TH1D( "hSubLeadPtInTop20","p_{T}^{reco}", 120, 0, 60 );
@@ -451,6 +456,7 @@ int main ( int argc, const char** argv ) {
     reader.PrintStatus(10);      
     AcceptedEvents.push_back( reader.GetNOfCurrentEvent() );
   }
+  // cout << AcceptedEvents.size() << endl;return 0;
   
   // Now every pp jet gets assigned nMix many events to be embedded in
   // This way we can cycle through the potentially large AuAu chain sequentially
@@ -836,6 +842,26 @@ int main ( int argc, const char** argv ) {
 	if ( refmult >= 269 ){
 	  HT54InTop20->Fill( Has54GevTower );
 	  HT64InTop20->Fill( Has64GevTower );
+
+	  // neutral energy fraction
+	  PseudoJet cj1 = join ( OnlyCharged( DiJetsHi.at(0).constituents() ) );
+	  PseudoJet nj1 = join ( OnlyNeutral( DiJetsHi.at(0).constituents() ) );
+	  PseudoJet cj2 = join ( OnlyCharged( DiJetsHi.at(1).constituents() ) );
+	  PseudoJet nj2 = join ( OnlyNeutral( DiJetsHi.at(1).constituents() ) );
+	  PseudoJet cmj1 = join ( OnlyCharged( DiJetsLo.at(0).constituents() ) );
+	  PseudoJet nmj1 = join ( OnlyNeutral( DiJetsLo.at(0).constituents() ) );
+	  PseudoJet cmj2 = join ( OnlyCharged( DiJetsLo.at(1).constituents() ) );
+	  PseudoJet nmj2 = join ( OnlyNeutral( DiJetsLo.at(1).constituents() ) );
+	  
+	  // cout << DiJetsLo.at(0).pt() << "  " << cmj1.pt() << "  " << nmj1.pt() 
+	  // 	 <<  "  " << nmj1.pt() + cmj1.pt() << endl;
+	  // Weird meaning for Lo jets because there's no background subtraction
+	  
+	  j1NEF->Fill ( DiJetsHi.at(0).pt(), nj1.pt() / ( nj1.pt() + cj1.pt() )  );
+	  j2NEF->Fill ( DiJetsHi.at(1).pt(), nj2.pt() / ( nj2.pt() + cj2.pt() )  );
+	  mj1NEF->Fill ( DiJetsLo.at(0).pt(), nmj1.pt() / ( nmj1.pt() + cmj1.pt() )  );
+	  mj2NEF->Fill ( DiJetsLo.at(1).pt(), nmj2.pt() / ( nmj2.pt() + cmj2.pt() )  );
+	  	  
 	}
 
 	// ---------------
@@ -939,9 +965,9 @@ int main ( int argc, const char** argv ) {
 	    zgSubLead4060Lo->Fill ( zgm2, refmult, weight );
 	  }       	
 	  // Done with zg
-	} // Aj cuts
-	  
-	
+
+	} // Aj cuts	  
+	    
 	j1 = MakeTLorentzVector( DiJetsHi.at(0) );
 	j2 = MakeTLorentzVector( DiJetsHi.at(1) );
 	jm1 = MakeTLorentzVector( DiJetsLo.at(0) );

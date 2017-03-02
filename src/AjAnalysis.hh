@@ -63,6 +63,7 @@ private :
 
   double dPhiCut;        ///< opening angle for dijet requirement. Accept only  |&phi;1 - &phi;2 - &pi;| < &Delta;&phi;.
 
+
   fastjet::JetDefinition jet_def;       ///< jet definition
   fastjet::JetDefinition other_jet_def; ///< jet definition with a different radius
 
@@ -185,6 +186,8 @@ public:
   /** This little helper is true if there's at least one 10 GeV jet
    **/
   bool Has10Gev;
+  double OverrideJetMin;        ///< quick and dirty way to override the 10 GeV minimum
+
 
   // Getters and Setters
   // -------------------

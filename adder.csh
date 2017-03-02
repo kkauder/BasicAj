@@ -5,8 +5,8 @@ set RMod = ""
 #set RMod = Pt1_
 
 foreach Tow ( -1 0 1 )
-    #foreach Eff ( -1 0 1 )
-    foreach Eff ( 0 )
+    foreach Eff ( -1 0 1 )
+    #foreach Eff ( 0 )
 	@ TowEff = $Tow * $Eff
 
 	if ( $TowEff != 0 ) continue;
@@ -20,8 +20,11 @@ foreach Tow ( -1 0 1 )
 	# set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_GeantInAuAuAj_*.root
 	# set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Groom_Aj_HT54_HTled_GeantInAuAuAj.root
 
-	set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj_*.root
-	set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root
+	# set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj_*.root
+	# set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root
+
+	set In  = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj_AuAu14Pico*.root
+	set Out = AjResults/Tow${Tow}_Eff${Eff}_${RMod}Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root
 
 	hadd -f ${Out} ${In}
     end

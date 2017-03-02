@@ -22,6 +22,8 @@ set RMod = ""
 set OutName     = AjResults/${RMod}Test_Groom_Aj_HT54_HTled_ppAj.root
 # set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_ppAj.root
 
+set OutName     = AjResults/${RMod}Delme_Groom_Aj_HT54_HTled_ppAj.root
+
 set logbase = `basename $OutName | sed 's/.root//g'`
 
 set TriggerName = ppHT
@@ -32,9 +34,10 @@ set Files       = Data/ppHT/*.root
 
 
 
-foreach Tow ( -1 0 1 )
+# foreach Tow ( -1 0 1 )
+#     foreach Eff ( -1 0 1 )
+foreach Tow ( 0 )
     foreach Eff ( 0 )
-#    foreach Eff ( -1 0 1 )
  	@ TowEff = $Tow * $Eff
 
 	# Only perpendicluar combinations

@@ -359,31 +359,35 @@ int main ( int argc, const char** argv ) {
   float rhoHi;
   float j1area;
   float j2area;
-
+  float aj_lo, aj_hi;
+  double weight=1;     // Primarily to stitch together MC data
   ResultTree->Branch("eventid",&eventid, "eventid/i");
   ResultTree->Branch("runid",&runid, "runid/i");
-  ResultTree->Branch("refmult",&refmult, "refmult/d");
-  ResultTree->Branch("rho",&rho, "rho/f");
-  ResultTree->Branch("rhoerr",&rhoerr, "rhoerr/f");
-  ResultTree->Branch("rhoHi",&rhoHi, "rhoHi/f");
-  ResultTree->Branch("j1area",&j1area, "j1area/f");
-  ResultTree->Branch("j2area",&j2area, "j2area/f");
+  ResultTree->Branch("refmult",&refmult, "refmult/D");
+  ResultTree->Branch("weight",&weight, "weight/D"); 
+  ResultTree->Branch("aj_lo",&aj_lo, "aj_lo/F");
+  ResultTree->Branch("aj_hi",&aj_hi, "aj_hi/F");
+  ResultTree->Branch("rho",&rho, "rho/F");
+  ResultTree->Branch("rhoerr",&rhoerr, "rhoerr/F");
+  ResultTree->Branch("rhoHi",&rhoHi, "rhoHi/F");
+  ResultTree->Branch("j1area",&j1area, "j1area/F");
+  ResultTree->Branch("j2area",&j2area, "j2area/F");
 
   float MatchPerc1, MatchPerc2;
-  ResultTree->Branch("MatchPerc1",&MatchPerc1, "MatchPerc1/f");
-  ResultTree->Branch("MatchPerc2",&MatchPerc2, "MatchPerc2/f");
+  ResultTree->Branch("MatchPerc1",&MatchPerc1, "MatchPerc1/F");
+  ResultTree->Branch("MatchPerc2",&MatchPerc2, "MatchPerc2/F");
   float MatchLoss1, MatchLoss2;
-  ResultTree->Branch("MatchLoss1",&MatchLoss1, "MatchLoss1/f");
-  ResultTree->Branch("MatchLoss2",&MatchLoss2, "MatchLoss2/f");
+  ResultTree->Branch("MatchLoss1",&MatchLoss1, "MatchLoss1/F");
+  ResultTree->Branch("MatchLoss2",&MatchLoss2, "MatchLoss2/F");
 
   // area and pT of all remaining jets (those used for rho)
   static const Int_t kmaxJ=500; // max # of jets
   int nRestJ=0;
   float RestArea[kmaxJ];
   float RestPt[kmaxJ];
-  ResultTree->Branch("nRestJ",&nRestJ, "nRestJ/i");
-  ResultTree->Branch("RestArea",RestArea, "RestArea[nRestJ]/f");
-  ResultTree->Branch("RestPt",  RestPt,   "RestPt[nRestJ]/f");
+  ResultTree->Branch("nRestJ",&nRestJ, "nRestJ/I");
+  ResultTree->Branch("RestArea",RestArea, "RestArea[nRestJ]/F");
+  ResultTree->Branch("RestPt",  RestPt,   "RestPt[nRestJ]/F");
   
   // For embedding: save the full event and the trigger jet
   // if this is pp and there's at least a 10 GeV jet.
@@ -405,7 +409,6 @@ int main ( int argc, const char** argv ) {
   // TClonesArray Tracks("TLorentzVector",kmaxT);
   // TClonesArray Towers("TLorentzVector",kmaxT);
 
-  float aj_lo, aj_hi;
   if (SaveFullEvents) {
     TriggeredTree = new TTree("TriggeredTree","Triggered Events");
     // NOTE: Ignore "Warning in <TTree::Bronch>: Using split mode on a class: TLorentzVector with a custom Streamer"
@@ -414,20 +417,20 @@ int main ( int argc, const char** argv ) {
     // TriggeredTree->Branch("Towers", &Towers );
     TriggeredTree->Branch("TriggerJet", &TriggerJet);
     TriggeredTree->Branch("AwayJet", &AwayJet);
-    TriggeredTree->Branch("eventid",&eventid, "eventid/i");
-    TriggeredTree->Branch("runid",&runid, "runid/i");
+    TriggeredTree->Branch("eventid",&eventid, "eventid/I");
+    TriggeredTree->Branch("runid",&runid, "runid/I");
 
-    TriggeredTree->Branch("refmult",&refmult, "refmult/d");
-    TriggeredTree->Branch("rho",&rho, "rho/f");
-    TriggeredTree->Branch("rhoerr",&rhoerr, "rhoerr/f");
+    TriggeredTree->Branch("refmult",&refmult, "refmult/D");
+    TriggeredTree->Branch("rho",&rho, "rho/F");
+    TriggeredTree->Branch("rhoerr",&rhoerr, "rhoerr/F");
 
     TriggeredTree->Branch("j1",&j1);
     TriggeredTree->Branch("j2",&j2);
     TriggeredTree->Branch("jm1",&jm1);
     TriggeredTree->Branch("jm2",&jm2);
 
-    TriggeredTree->Branch("aj_hi",&aj_hi, "aj_hi/f");
-    TriggeredTree->Branch("aj_lo",&aj_lo, "aj_lo/f");
+    TriggeredTree->Branch("aj_hi",&aj_hi, "aj_hi/F");
+    TriggeredTree->Branch("aj_lo",&aj_lo, "aj_lo/F");
   } 
     
   // Initialize tracking efficiency

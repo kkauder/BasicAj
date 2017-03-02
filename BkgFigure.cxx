@@ -102,8 +102,8 @@ void BkgFigure() {
   for (int i=0 ; i<toa.GetEntries() ; ++i ){
     h=(TH1D*) toa.At(i);
     h->SetLineWidth( 2 );
-    h->SetTitle(";|A_{J}|;Fraction");
-    if ( nofabs ) h->SetTitle(";A_{J};Fraction");
+    h->SetTitle(";|A_{J}|;Event Fraction");
+    if ( nofabs ) h->SetTitle(";A_{J};Event Fraction");
       
     h->Rebin(2);
     // h->Scale(1./h->Integral());
@@ -186,8 +186,8 @@ void BkgFigure() {
     sys_ppInAuAuAJ_lo->Draw("9E2same");
   }
   
-  ppInAuAuAJ_lo->Draw("9same");
-  AuAuAJ_lo->Draw("9same");
+  ppInAuAuAJ_lo->Draw("9sameE0X0");
+  AuAuAJ_lo->Draw("9sameE0X0");
   
   leglo->AddEntry ( ppInAuAuAJ_lo, "p+p HT #oplus Au+Au MB", "p");
   leglo->AddEntry ( AuAuAJ_lo,     "Au+Au HT", "p");
@@ -216,10 +216,10 @@ void BkgFigure() {
   // latex.DrawLatex( 0.05, 0.95, "p_{T,lead}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");
   // latex.DrawLatex( 0.54, 0.95, "p_{T,sublead}(p_{T}^{Cut}>2 GeV/c)>10 GeV/c");
 
-  latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
+  // latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
 
-  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
-  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
+  // latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
+  // latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
 
   // if ( nofabs ) {
   //   latex.DrawLatex( 0.57, 0.84, "p_{T,1}(p_{T}^{Cut}>2 GeV/c)>20 GeV/c");

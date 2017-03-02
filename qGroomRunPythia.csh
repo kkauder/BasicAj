@@ -43,7 +43,8 @@ if ( $randomoff > 0 ) then
 endif
 
 #set NameBase=HT54_HTled_TrueMB
-set NameBase=TrueMB
+#set NameBase=TrueMB
+set NameBase=HT54
 
 set submitted=0
 foreach input ( ${base}* )

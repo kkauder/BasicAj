@@ -81,6 +81,7 @@ $(BDIR)/%  : $(ODIR)/%.o
 all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/PythiaAj  \
 	 $(BDIR)/RandomCone  \
+	 $(BDIR)/VarRandomCone  \
 	 $(BDIR)/TreeWithMc \
 	 $(BDIR)/JustMc \
 	 $(BDIR)/MakeSmallerTrees \
@@ -88,7 +89,10 @@ all    : $(BDIR)/PicoAj  $(BDIR)/ppInAuAuAj  \
 	 $(BDIR)/GroomPicoAj \
 	 $(BDIR)/GroomppInAuAuAj \
 	 $(BDIR)/EmbedAndMatch \
+	 $(BDIR)/SystGeantGroomPicoAj \
 	 $(BDIR)/Y14analyzer
+
+#	 $(BDIR)/FlexPicoAj \
 #	 doxy
 
 #	 $(BDIR)/ScanTree \
@@ -125,10 +129,12 @@ lib/libMyJetlib.so	: $(ODIR)/JetAnalyzer.o $(ODIR)/dict.o $(ODIR)/ktTrackEff.o
 
 $(ODIR)/JetAnalyzer.o 		: $(SDIR)/JetAnalyzer.cxx $(INCS)
 $(ODIR)/AjAnalysis.o 	 	: $(SDIR)/AjAnalysis.cxx $(INCS) $(SDIR)/AjAnalysis.hh
+$(ODIR)/FlexAjAnalysis.o 	: $(SDIR)/FlexAjAnalysis.cxx $(INCS) $(SDIR)/FlexAjAnalysis.hh
 
 
 #Aj
 $(BDIR)/PicoAj		: $(ODIR)/PicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/FlexPicoAj	: $(ODIR)/FlexPicoAj.o		$(ODIR)/FlexAjAnalysis.o 	lib/libMyJetlib.so
 $(BDIR)/ppInAuAuAj 	: $(ODIR)/ppInAuAuAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/ppInMcAj	: $(ODIR)/ppInMcAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/PythiaAj	: $(ODIR)/PythiaAj.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
@@ -139,11 +145,14 @@ $(BDIR)/TestCountPythia	: $(ODIR)/TestCountPythia.o 	$(ODIR)/AjAnalysis.o	 	lib/
 $(BDIR)/TreeWithMc      : $(ODIR)/TreeWithMc.o		lib/libMyJetlib.so
 $(BDIR)/JustMc		: $(ODIR)/JustMc.o
 $(BDIR)/RandomCone	: $(ODIR)/RandomCone.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+$(BDIR)/VarRandomCone	: $(ODIR)/VarRandomCone.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 $(BDIR)/GroomPicoAj	: $(ODIR)/GroomPicoAj.o		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/GroomppInAuAuAj	: $(ODIR)/GroomppInAuAuAj.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/GroomPythiaAj	: $(ODIR)/GroomPythiaAj.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 $(BDIR)/EmbedAndMatch	: $(ODIR)/EmbedAndMatch.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
+
+$(BDIR)/SystGeantGroomPicoAj	: $(ODIR)/SystGeantGroomPicoAj.o	$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 
 #$(BDIR)/AlternateEmbedding 	: $(ODIR)/AlternateEmbedding.o 		$(ODIR)/AjAnalysis.o	 	lib/libMyJetlib.so
 

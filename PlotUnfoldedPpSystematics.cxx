@@ -79,6 +79,7 @@ int PlotUnfoldedPpSystematics(){
   TFile* fP = new TFile("HThistos/BinByBinUnfolding_HTGeant_PtScale1.root","READ");
   TFile* fM = new TFile("HThistos/BinByBinUnfolding_HTGeant_PtScale-1.root","READ");
   
+  TFile* out= new TFile("AjResults/UnfoldedPpSystematics_Histos.root","RECREATE");
   TObjArray NS0; 
   TObjArray AS0; 
   LoadAndPrettify ( NS0, AS0, f0, "", RebinZg, zgmin, zgmax );
@@ -200,12 +201,14 @@ int PlotUnfoldedPpSystematics(){
       }
     }
 
-    // new TCanvas;
-    // gPad->SetLeftMargin( lm );// for bigger labels
-    // gPad->SetBottomMargin( bm );// for bigger labels
-
-    // relerrNS->Draw();
-    // relerrAS->Draw("same");
+    if ( !UseFixedRelErr ){
+      new TCanvas;
+      gPad->SetLeftMargin( lm );// for bigger labels
+      gPad->SetBottomMargin( bm );// for bigger labels
+      
+      relerrNS->Draw();
+      relerrAS->Draw("same");
+    }
 
     new TCanvas;
     gPad->SetLeftMargin( lm );// for bigger labels
@@ -306,10 +309,21 @@ int PlotUnfoldedPpSystematics(){
     
     plotname = plotpath+"UnfoldedPpSystematics_HTGeant_"+plotname;
     gPad->SaveAs( plotname+".png");
+    gPad->SaveAs( plotname+".pdf");
 
 
   }
+  for (int i=0; i<NS0.GetEntries(); ++i ){
+    cout << "Writing" << NS0.At(i)->GetName() << endl;
+    NS0.At(i)->Write();
+  }
+  for (int i=0; i<AS0.GetEntries(); ++i ){
+    cout << "Writing " << AS0.At(i)->GetName() << endl;
+    AS0.At(i)->Write();
+  }
   
+  out->Write();
+  cout << "Wrote to " << out->GetName() << endl;
   return 0;
 }
 // =============================================================================

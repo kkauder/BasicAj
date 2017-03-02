@@ -79,17 +79,25 @@ int FigDijetZg() {
   // latex.SetTextColor(kGray+3);
   latex.SetTextColor(kRed+3);
 
-  TString sAuAu       = "AjResults/Test_Groom_AuAu_HT54_HTled.root";
-  // TString sppInAuAu   = "AjResults/Tow0_Eff0_Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
-  // TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
+  TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
   TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
   TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+
+  // TString sAuAu       = "AjResults/Test_Groom_AuAu_HT54_HTled.root";  
+  // TString sppInAuAu   = "AjResults/Tow0_Eff0_Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+  // TString sAuAu       = "AjResults/Groom_AuAu_HT54_HTled.root";
+
   // TString sAuAu       = "AjResults/Groom_AuAu_AjGt3_HT54_HTled.root";
   // TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3.root";
   // TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj_AjGt3.root";
   // TString sAuAu       = "AjResults/Groom_AuAu_AjLt3_HT54_HTled.root";
   // TString sppInAuAu   = "AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3.root";
   // TString sSyst       = "AjResults/zgSystematics_Groom_Aj_HT54_HTled_ppInAuAuAj_AjLt3.root";
+
+  // // TString sAuAu       = "AjResults/Y14Test_Groom_AuAu_HT54_HTled.root";
+  // TString sAuAu       = "AjResults/HiY14Test_Groom_AuAu_HT54_HTled.root";
+  // TString sppInAuAu   = "AjResults/Tow0_Eff0_Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
+  // TString sSyst       = "AjResults/zgSystematics_Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root";
 
   // Some references
   TString sGeant = "AjResults/Above25_Groom_Aj_HT54_HTled_NoEff_Geant.root";
@@ -102,6 +110,9 @@ int FigDijetZg() {
   outbase.ReplaceAll (".root","");
 
   int RefmultCut = 269;  // 269 for 0-20%, 399 for 0-10%
+  // int GCentCut = 6; // 6 for 0-20%
+  if ( sAuAu.Contains("Y14Test") ) RefmultCut = 260; // Reasonable approx for y14
+    
 
   // --------------------------------------------------------------
   // ------------------------ Load AuAu ---------------------------
@@ -427,7 +438,7 @@ int FigDijetZg() {
   dummy->SetAxisRange(zgleft, zgright, "x");
   dummy->SetAxisRange(zgmin, zgmax, "y");
   dummy->SetLineColor(kBlack);
-  dummy->Draw();
+  dummy->Draw("AXIS");
 
   AuAu_zgLead2030Lo->Draw("9same");
   if ( ShowHi ) Syst_zgLead2030Hi_minmax->Draw("9E2same");
@@ -466,15 +477,77 @@ int FigDijetZg() {
   // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
   leg->Draw();
 
-  latex.DrawLatex( 0.55, 0.55, "STAR Preliminary");
-
-  latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
-
-  latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
-  latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
+  latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
+  // latex.DrawLatex( 0.55, 0.55, "STAR Preliminary");
+  // latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
+  // latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
+  // latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
 
   gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg2030.png");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg2030.pdf");
   
+  // 30-40
+  new TCanvas;
+  gPad->SetLeftMargin( lm );// for bigger labels
+  gPad->SetBottomMargin( bm );// for bigger labels
+  gPad->SetGridx(0);  gPad->SetGridy(0);
+  TLegend* leg = new TLegend( 0.4, 0.6, 0.89, 0.9, "Trigger Jet, p_{T}^{Trig} = 30-40 GeV/c" );
+  leg->SetBorderSize(0);
+  leg->SetLineWidth(10);
+  leg->SetFillStyle(0);
+  leg->SetMargin(0.1);
+
+  TH1D* dummy = (TH1D*) AuAu_zgLead3040Lo->Clone("dummy");
+  dummy->Reset();    dummy->SetTitle("");
+  dummy->SetAxisRange(zgleft, zgright, "x");
+  dummy->SetAxisRange(zgmin, zgmax, "y");
+  dummy->SetLineColor(kBlack);
+  dummy->Draw("AXIS");
+
+  AuAu_zgLead3040Lo->Draw("9same");
+  if ( ShowHi ) Syst_zgLead3040Hi_minmax->Draw("9E2same");
+  Syst_zgLead3040Lo_minmax->Draw("9E2same");
+
+  if ( ShowHi ){
+    AuAu_zgLead3040Hi->Draw("9same");
+    leg->AddEntry( AuAu_zgLead3040Hi, "Au+Au, Hi Cut");
+  
+    ppInAuAu_zgLead3040Hi->Draw("9same");
+    leg->AddEntry( ppInAuAu_zgLead3040Hi, "pp #oplus Au+Au, Hi Cut");
+  }
+
+  
+  if ( ShowPp )  {
+    pp_zgLead3040Lo->Draw("9same");
+    leg->AddEntry( pp_zgLead3040Lo, "p+p HT");
+    // pp_zgLead3040Lo->Draw("9histsame");
+    // leg->AddEntry( pp_zgLead3040Lo, "p+p HT","l");
+  }
+
+  AuAu_zgLead3040Lo->Draw("9same");
+  leg->AddEntry( AuAu_zgLead3040Lo, "Au+Au HT 0-20%");
+  
+  ppInAuAu_zgLead3040Lo->Draw("9same");
+  leg->AddEntry( ppInAuAu_zgLead3040Lo, "pp #oplus Au+Au MB 0-20%");
+
+  if ( ShowGeant )  {
+    //Geant_zgLead3040Lo->Draw("9same");
+    // leg->AddEntry( Geant_zgLead3040Lo, "PYTHIA6 #oplus GEANT");
+    Geant_zgLead3040Lo->Draw("9histsame");
+    leg->AddEntry( Geant_zgLead3040Lo, "PYTHIA6 #oplus GEANT","l");
+  }
+
+  // FUVQjet->Draw("9same");
+  // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+  leg->Draw();
+
+  // latex.DrawLatex( 0.55, 0.55, "STAR Preliminary");
+  // latex.DrawLatex( 0.65, 0.5, "With p_{T}^{Cut}>2 GeV/c:");
+  // latex.DrawLatex( 0.65, 0.45, "  p_{T,lead}>20 GeV/c");
+  // latex.DrawLatex( 0.65, 0.4, "  p_{T,sublead}>10 GeV/c");
+
+  gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg3040.png");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg3040.pdf");
   // --------------------------------------------------------------
   // ----------------------- Draw SubLeading -------------------------
   // --------------------------------------------------------------
@@ -495,7 +568,7 @@ int FigDijetZg() {
   dummy2->SetAxisRange(zgleft, zgright, "x");
   dummy2->SetAxisRange(zgmin, zgmax, "y");
   dummy2->SetLineColor(kBlack);
-  dummy2->Draw();
+  dummy2->Draw("AXIS");
 
   AuAu_zgSubLead1020Lo->Draw("9same");
   if ( ShowHi ) Syst_zgSubLead1020Hi_minmax->Draw("9E2same");
@@ -534,9 +607,71 @@ int FigDijetZg() {
   leg->Draw();
   latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
   gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg1020.png");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg1020.pdf");
 
 
+  // 20-30
+  new TCanvas;
+  gPad->SetLeftMargin( lm );// for bigger labels
+  gPad->SetBottomMargin( bm );// for bigger labels
+  gPad->SetGridx(0);  gPad->SetGridy(0);
+  TLegend* leg = new TLegend( 0.4, 0.6, 0.89, 0.9, "Recoil Jet, p_{T}^{Recoil} = 20-30 GeV/c" );
+  leg->SetBorderSize(0);
+  leg->SetLineWidth(10);
+  leg->SetFillStyle(0);
+  leg->SetMargin(0.1);
+  
+  TH1D* dummy2 = (TH1D*) AuAu_zgLead2030Lo->Clone("dummy2");
+  dummy2->Reset();    dummy2->SetTitle("");
+  dummy2->SetAxisRange(zgleft, zgright, "x");
+  dummy2->SetAxisRange(zgmin, zgmax, "y");
+  dummy2->SetLineColor(kBlack);
+  dummy2->Draw("AXIS");
+
+  AuAu_zgSubLead2030Lo->Draw("9same");
+  if ( ShowHi ) Syst_zgSubLead2030Hi_minmax->Draw("9E2same");
+  Syst_zgSubLead2030Lo_minmax->Draw("9E2same");
+  
+  if ( ShowHi ) {
+    AuAu_zgSubLead2030Hi->Draw("9same");
+    leg->AddEntry( AuAu_zgSubLead2030Hi, "Au+Au, Hi Cut");
+    
+    ppInAuAu_zgSubLead2030Hi->Draw("9same");
+    leg->AddEntry( ppInAuAu_zgSubLead2030Hi, "pp #oplus Au+Au, Hi Cut");
+  }
+  
+  if ( ShowPp )  {
+    pp_zgSubLead2030Lo->Draw("9same");
+    leg->AddEntry( pp_zgSubLead2030Lo, "p+p HT");
+    // pp_zgSubLead2030Lo->Draw("9histsame");
+    // leg->AddEntry( pp_zgSubLead2030Lo, "p+p HT","l");
+  }    
+
+  AuAu_zgSubLead2030Lo->Draw("9same");
+  leg->AddEntry( AuAu_zgSubLead2030Lo, "Au+Au HT 0-20%");
+  
+  ppInAuAu_zgSubLead2030Lo->Draw("9same");
+  leg->AddEntry( ppInAuAu_zgSubLead2030Lo, "pp #oplus Au+Au MB 0-20%");
+  
+  if ( ShowGeant )  {
+    //Geant_zgSubLead2030Lo->Draw("9same");
+    // leg->AddEntry( Geant_zgSubLead2030Lo, "PYTHIA6 #oplus GEANT");
+    Geant_zgSubLead2030Lo->Draw("9histsame");
+    leg->AddEntry( Geant_zgSubLead2030Lo, "PYTHIA6 #oplus GEANT","l");
+  }
+    
+  // FUVQjet->Draw("9same");
+  // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
+  leg->Draw();
+  latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg2030.png");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg2030.pdf");
+
+  
+  // ---------------------------------------
   // For Olga :)
+  // RATIOS
+  // ---------------------------------------
   TF1* f = new TF1 ("f","[0]+[1]*x", 0, 1);
   f->SetParameters(1,0);
   f->SetLineStyle(7);
@@ -556,13 +691,36 @@ int FigDijetZg() {
       
 
   new TCanvas;
-  rLead->SetTitle ("AuAu / ppInAuAu, Leading, pT>20" );
-  rLead->SetAxisRange(0,2, "y");
-  rLead->Draw("9");
+  // rLead->SetTitle ("AuAu / ppInAuAu, Leading, pT>20" );
+
+  TH1D* dummy3 = dummy2->Clone( "dummy3"); dummy3->Reset();
+  dummy3->SetTitle("");
+  dummy3->SetAxisRange(zgleft, zgright, "x");
+  dummy3->SetAxisRange(0, 2, "y");
+  dummy3->SetLineColor(kBlack);
+  dummy3->SetTitle ("");
+  // dummy3->GetYaxis()->SetTitle("p+p / Au+Au");
+  dummy3->GetYaxis()->SetTitle("Au+Au / p+p");
+  dummy3->SetAxisRange(0,2, "y");
+  dummy3->DrawCopy("AXIS");
+
+  rLead->Draw("9same");
   Syst_rLead->Draw("9E2same");
   rLead->Draw("9same");
   f->Draw("9same");
+  leg = new TLegend( 0.4, 0.7, 0.89, 0.9, "Trigger Jet, p_{T}^{Trig} = 20-30 GeV/c" );
+  leg->SetBorderSize(0);
+  leg->SetLineWidth(10);
+  leg->SetFillStyle(0);
+  leg->SetMargin(0.1);
+  leg->AddEntry( rLead, "Au+Au HT / p+p HT #oplus Au+Au MB");
+  leg->Draw();
+  latex.DrawLatex( 0.55, 0.64, "STAR Preliminary");
 
+  gPad->SaveAs( "plots/"+  outbase + ".RatioLeadZg2030.png");
+  gPad->SaveAs( "plots/"+  outbase + ".RatioLeadZg2030.pdf");
+
+  
   // new TCanvas;
   // cout << Syst_rLead->GetBinContent(5) << endl;
   // Syst_rLead->Draw("9E2"); return 0;
@@ -581,12 +739,28 @@ int FigDijetZg() {
   Syst_rSubLead->SetMarkerColor( kGray );
 
   new TCanvas;
-  rSubLead->SetTitle ("AuAu / ppInAuAu, SubLeading, pT>10" );
+  // rSubLead->SetTitle ("AuAu / ppInAuAu, SubLeading, pT>10" );
+  // rSubLead->GetYaxis()->SetTitle("Ratio Au+Au HT / p+p HT #oplus Au+Au MB");
+  rSubLead->GetYaxis()->SetTitle("Ratio");
   rSubLead->SetAxisRange(0, 2, "y");
-  rSubLead->Draw("9");
+  // rSubLead->Draw("9");
+  dummy3->DrawCopy("AXIS");
+  rSubLead->Draw("9same");
   Syst_rSubLead->Draw("9E2same");
   rSubLead->Draw("9same");
   f->Draw("same");
+
+  leg = new TLegend( 0.4, 0.7, 0.89, 0.9, "Recoil Jet, p_{T}^{Recoil} = 10-20 GeV/c" );
+  leg->SetBorderSize(0);
+  leg->SetLineWidth(10);
+  leg->SetFillStyle(0);
+  leg->SetMargin(0.1);
+  leg->AddEntry( rSubLead, "Au+Au HT / p+p HT #oplus Au+Au MB");
+  leg->Draw();
+  latex.DrawLatex( 0.55, 0.64, "STAR Preliminary");
+  
+  gPad->SaveAs( "plots/"+  outbase + ".RatioSubLeadZg1020.png");
+  gPad->SaveAs( "plots/"+  outbase + ".RatioSubLeadZg1020.pdf");
 
   
   // // 20-30
@@ -621,6 +795,7 @@ int FigDijetZg() {
   // FUVQjet->Draw("9same");
   // leg->AddEntry( FUVQjet, "F_{UV} (quarks)","l");
   // leg->Draw();
+  // latex.DrawLatex( 0.55, 0.64, "STAR Preliminary");
   // gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg2030.png");
 
 

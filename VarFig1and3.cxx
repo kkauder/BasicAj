@@ -40,15 +40,21 @@ int VarFig1and3( TString R = "" ) {
   // 100% hadronic correction
   // ========================
   if ( R=="" ){
-    TFile *fAuAu         = TFile::Open("AjResults/Groom_AuAu_HT54_HTled.root");
-    TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root");
-    TFile *fSyst         = TFile::Open("AjResults/Systematics_Groom_Aj_HT54_HTled_ppInAuAuAj.root");
+    // TFile *fAuAu         = TFile::Open("AjResults/Groom_AuAu_HT54_HTled.root");
+    // TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Groom_Aj_HT54_HTled_ppInAuAuAj.root");
+    // TFile *fSyst         = TFile::Open("AjResults/Systematics_Groom_Aj_HT54_HTled_ppInAuAuAj.root");
+    TFile *fAuAu         = TFile::Open("AjResults/Y14Test_Groom_AuAu_HT54_HTled.root");
+    TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root");
+    TFile *fSyst         = TFile::Open("AjResults/Systematics_Y14Test_Groom_Aj_HT54_HTled_ppInAuAuAj.root");
   } else if ( R.Contains("0.2") ){
     TFile *fAuAu         = TFile::Open("AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root");
     TFile *fppInAuAu     = TFile::Open("AjResults/Tow0_Eff0_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
     TFile *fSyst         = TFile::Open("AjResults/Systematics_R0.2_Fresh_NicksList_HC100_ppInAuAuAj.root");
   } else return 0;
-  
+
+  // if ( TString(fAuAu->GetName()).Contains("Y14Test") ) RefmultCut = 260; // Reasonable approx for y14
+
+    
   // Others
   // ======
   // TFile *fAuAu         = TFile::Open("AjResults/rndm2/HC30_Presel.root");
@@ -263,7 +269,7 @@ int VarFig1and3( TString R = "" ) {
   if ( fSyst ){
     if (RefmultCut!= 269 ) {
       cerr << "CAUTION: Systematics were computed for RefmultCult == 269" << endl;
-      return -1;
+      // return -1;
     }
     if ( nofabs ) AJ_hi_minmax = (TH1D*) fSyst->Get("NoFabsAJ_hi_minmax");
     else AJ_hi_minmax = (TH1D*) fSyst->Get("AJ_hi_minmax");

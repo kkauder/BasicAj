@@ -38,6 +38,8 @@ int PrepUnfolding ( ) {
   gStyle->SetTitleX(0.1f);
   gStyle->SetTitleW(0.8f);
   gStyle->SetTitleBorderSize(0);	//Title box border thickness
+  gStyle->SetHistLineWidth(2);
+
   TLegend* leg = 0;
   
   float RCut = 0.4;
@@ -46,12 +48,11 @@ int PrepUnfolding ( ) {
     
   // Input
   // -----
-  TString PpLevelFile = "HThistos/Groom_Aj_HT54_HTled_TrueMB_NoEff_ppAj.root"; // pp-like events
+  TString PpLevelFile = "AjResults/Groom_Aj_HT54_HTled_TrueMB_NoEff_ppAj.root"; // pp-like events
 
   // Output
   // ------
-  // TString OutFileName = "PpForUnfolding.root";
-  TString OutFileName = "HThistos/ForUnfolding_";
+  TString OutFileName = "AjResults/ForUnfolding_";
   OutFileName += gSystem->BaseName(PpLevelFile);
   
 
@@ -114,6 +115,7 @@ int PrepUnfolding ( ) {
   float ptmax=70;
 
   TH1D* PpTrigPt = new TH1D( "PpTrigPt",";Trigger p_{T}^{Det} [GeV/c]", nPtBins, ptmin, ptmax );
+  TH1D* PpRecoilPt = new TH1D( "PpRecoilPt",";Recoil p_{T}^{Det} [GeV/c]", nPtBins, ptmin, ptmax );
 
   // Set up Data
   // ----------------------
@@ -139,8 +141,11 @@ int PrepUnfolding ( ) {
   float ptmaxMeas =  ptmax;
 
   // Only need one of these
-  TH2D* Meas2D  = new TH2D( "Meas2D", "TRAIN z_{g}^{lead} vs. p_{T}^{lead}, Pythia in MC", nPtBinsMeas, ptminMeas, ptmaxMeas, nZgBinsMeas, zgminMeas, zgmaxMeas);
-  TH2D* TestMeas2D  = new TH2D( "TestMeas2D", "TEST z_{g}^{lead} vs. p_{T}^{lead}, Pythia in MC", nPtBinsMeas, ptminMeas, ptmaxMeas, nZgBinsMeas, zgminMeas, zgmaxMeas);
+  TH2D* TrigMeas2D  = new TH2D( "TrigMeas2D", "TRAIN z_{g}^{lead} vs. p_{T}^{lead}, Pythia in MC", nPtBinsMeas, ptminMeas, ptmaxMeas, nZgBinsMeas, zgminMeas, zgmaxMeas);
+  TH2D* TrigTestMeas2D  = new TH2D( "TrigTestMeas2D", "TEST z_{g}^{lead} vs. p_{T}^{lead}, Pythia in MC", nPtBinsMeas, ptminMeas, ptmaxMeas, nZgBinsMeas, zgminMeas, zgmaxMeas);
+
+  TH2D* RecoilMeas2D  = new TH2D( "RecoilMeas2D", "TRAIN z_{g}^{lead} vs. p_{T}^{lead}, Pythia in MC", nPtBinsMeas, ptminMeas, ptmaxMeas, nZgBinsMeas, zgminMeas, zgmaxMeas);
+  TH2D* RecoilTestMeas2D  = new TH2D( "RecoilTestMeas2D", "TEST z_{g}^{lead} vs. p_{T}^{lead}, Pythia in MC", nPtBinsMeas, ptminMeas, ptmaxMeas, nZgBinsMeas, zgminMeas, zgmaxMeas);
 
   // ------------------------
   // Loop over measured level
@@ -159,24 +164,40 @@ int PrepUnfolding ( ) {
     if ( fabs ( PpT->Eta() ) > EtaCut ) continue;
     PpTrigPt->Fill( PpT->Pt(), ppweight );
         
-    TLorentzVector* PpA = 0;
-    if (PpAwayJet->GetEntries()!=1 ) PpA = (TLorentzVector*) PpAwayJet->At(0);
-
-    Meas2D->Fill( PpT->Pt(), ppzgtriglo, ppweight );
-    TestMeas2D->Fill( PpT->Pt(), ppzgtriglo, ppweight );
+    TrigMeas2D->Fill( PpT->Pt(), ppzgtriglo, ppweight );
+    TrigTestMeas2D->Fill( PpT->Pt(), ppzgtriglo, ppweight );
     
-
+    // Recoil
+    // ------
+    TLorentzVector* PpA = 0;
+    if (PpAwayJet->GetEntries()!=0 ) PpA = (TLorentzVector*) PpAwayJet->At(0);
+    if ( !PpA ) continue;
+    
+    // Require truth in acceptance
+    // ---------------------------
+    if ( fabs ( PpA->Eta() ) > EtaCut ) continue;
+    PpRecoilPt->Fill( PpA->Pt(), ppweight );
+        
+    RecoilMeas2D->Fill( PpA->Pt(), ppzgawaylo, ppweight );
+    RecoilTestMeas2D->Fill( PpA->Pt(), ppzgawaylo, ppweight );
+    
   }
 
   new TCanvas ( "c0","");
   gPad->SetGridx(0);  gPad->SetGridy(0);
   gPad->SetLogy();
-  // leg = new TLegend( 0.55, 0.55, 0.89, 0.9, "Trigger Jet (leading, above 10 GeV)" );
-  // leg->SetBorderSize(0);
-  // leg->SetLineWidth(10);
-  // leg->SetFillStyle(0);
-  // leg->SetMargin(0.1);
-  PpTrigPt->Draw();
+  PpTrigPt->SetLineColor(kRed);
+  PpTrigPt->Draw("9");
+  PpRecoilPt->SetLineColor(kBlue);
+  PpRecoilPt->Draw("9same");
+  leg = new TLegend( 0.55, 0.75, 0.89, 0.9, "" );
+  leg->SetBorderSize(0);
+  leg->SetLineWidth(10);
+  leg->SetFillStyle(0);
+  leg->SetMargin(0.1);
+  leg->AddEntry( PpTrigPt->GetName(), "Trigger Jet");
+  leg->AddEntry( PpRecoilPt->GetName(), "Recoil Jet");
+  leg->Draw();
 
   fout->Write();
 

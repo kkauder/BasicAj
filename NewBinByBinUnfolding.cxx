@@ -286,6 +286,9 @@ int NewBinByBinUnfolding( int dir=0 ){
 
     TH1D* hPpAS = (TH1D*)AS_PP_SoftJets_HT54->At(i);
     TH1D* hPpUnfoldedAS = (TH1D*)hPpAS->Clone( "UnfoldedAS_"+name );
+    // hratioAS->SaveAs(TString(hratioAS->GetName())+".root");
+    // hPpAS->SaveAs(TString(hPpAS->GetName())+".root");
+    // hPpUnfoldedAS->SaveAs(TString(hPpUnfoldedAS->GetName())+".root");
     hPpUnfoldedAS->Divide(hratioAS);
     // Renormalize
     h = hPpUnfoldedNS; h->Scale ( 1./ h->Integral(1, h->GetNbinsX()) / h->GetXaxis()->GetBinWidth(1));

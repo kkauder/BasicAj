@@ -14,8 +14,10 @@ set RMod = ""
 # set RMod = "Pt1_"
 
 # Loop over combinations and data
-foreach Tow ( -1 0 1 )
-    foreach Eff ( -1 0 1 )
+foreach Tow ( 0 )
+    foreach Eff ( 0 )
+# foreach Tow ( -1 0 1 )
+#     foreach Eff ( -1 0 1 )
 	@ TowEff = $Tow * $Eff
 	# Only perpendicluar combinations
 	if ( $TowEff != 0 ) continue;
@@ -30,12 +32,15 @@ foreach Tow ( -1 0 1 )
 	foreach input ( ${base}* )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
-	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
+	    #set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
+	    set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}MixTest_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
 	    set TriggerName = MB
 	    set Files      = ${input}
 
-	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
-	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
+	    # set LogFile     = logs/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
+	    # set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
+	    set LogFile     = logs/${TowMod}_${EffMod}_${RMod}MixTest_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.out
+	    set ErrFile     = logs/${TowMod}_${EffMod}_${RMod}MixTest_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.err
 
 	    echo "Logging output to " $LogFile
 	    echo "Logging errors to " $ErrFile

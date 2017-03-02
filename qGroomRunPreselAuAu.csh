@@ -56,6 +56,7 @@ endif
 set NameBase=Test_Groom_AuAu_HT54_HTled
 #set NameBase=Groom_AuAu_AjGt3_HT54_HTled
 #set NameBase=Groom_AuAu_AjLt3_HT54_HTled
+#set NameBase=Test_Groom_AuAu_Remade
 
 set submitted=0
 foreach input ( ${base}* )

@@ -227,6 +227,7 @@ int PpFigDijetZg() {
 
   latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
   gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg2030.png");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetLeadZg2030.pdf");
   
   // --------------------------------------------------------------
   // ----------------------- Draw SubLeading -------------------------
@@ -273,6 +274,7 @@ int PpFigDijetZg() {
   leg->Draw();
   latex.DrawLatex( 0.55, 0.44, "STAR Preliminary");
   gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg1020.png");
+  gPad->SaveAs( "plots/"+  outbase + ".DijetSubLeadZg1020.pdf");
 
 
   return 0;

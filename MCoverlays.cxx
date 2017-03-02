@@ -65,10 +65,10 @@ int MCoverlays(){
   // bool Do_NS_SoftJets_MB=false;
   // bool Do_AS_SoftJets_MB=false;
   
-  // bool Do_NS_SoftJets_HT54=true;
-  // bool Do_AS_SoftJets_HT54=true;
-  bool Do_NS_SoftJets_HT54=false;
-  bool Do_AS_SoftJets_HT54=false;
+  bool Do_NS_SoftJets_HT54=true;
+  bool Do_AS_SoftJets_HT54=true;
+  // bool Do_NS_SoftJets_HT54=false;
+  // bool Do_AS_SoftJets_HT54=false;
 
   // bool Do_NS_HardJets_HT54=true;
   // bool Do_AS_HardJets_HT54=true;
@@ -77,7 +77,10 @@ int MCoverlays(){
 
 
   TString plotpath = "./HPplots/";
-
+  
+  TString OutName = "./AjResults/MCoverlays.root";
+  TFile * out = new TFile( OutName , "RECREATE");
+  
   // PYTHIA6 -- GEANT Output. Compare to pp
   // --------------------------------------
   TString sP6_SoftJets_MB   = "HThistos/Groom_Aj_TrueMB_NoEff_Geant.root";
@@ -133,8 +136,8 @@ int MCoverlays(){
   TF1* FUVQjet = new TF1("FUVQjet", "[0]*(PbarQjet)", 0.1,0.5);
   FUVQjet->SetParameter( 0,1);
   FUVQjet->SetLineColor(kGray+2);
-  FUVQjet->SetLineWidth(1);
-  FUVQjet->SetLineStyle(2);
+  FUVQjet->SetLineWidth(3);
+  FUVQjet->SetLineStyle(7);
   FUVQjet->SetParameter( 0,1);
 
   // Fill 2D histos and chop up into 1D
@@ -732,8 +735,8 @@ if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 ){
   }
  } //   if ( Do_NS_HardJets_HT54 && Do_AS_HardJets_HT54 )
 
-
-return 0;
+ out->Write();
+ return 0;
 }
 
 // =============================================================================

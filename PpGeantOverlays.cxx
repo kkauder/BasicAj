@@ -73,7 +73,7 @@ int PpGeantOverlays(){
 
   // GEANT Level
   // -----------
-  // TString sGG_SoftJets_MB   = "HThistos/Groom_Aj_TrueMB_NoEff_Geant.root";
+  // TString sGG_SoftJets_HT54 = "AjResults/AEff0_PtRes0_ATow0_SystGroom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root"; // DEBUG    
   TString sGG_SoftJets_HT54 = "HThistos/Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root";
   TString sGG_HardJets_HT54 = "HThistos/Groom_Aj_TrueMB_NoEff_Geant.root";
   if (UseAbove25){
@@ -240,6 +240,7 @@ int PpGeantOverlays(){
       plotname = plotname(plotname.Length()-5, plotname.Length());
       plotname = plotpath+"PpVGeant_SoftJets_HT54_"+plotname;
       gPad->SaveAs(plotname+".png");
+      gPad->SaveAs(plotname+".pdf");
       
     }
   } //   if ( Do_NS_SoftJets_HT54 && Do_AS_SoftJets_HT54 )
@@ -291,6 +292,8 @@ int PpGeantOverlays(){
       plotname = plotname(plotname.Length()-5, plotname.Length());
       plotname = plotpath+"PpVGeant_NS_SoftJets_HT54_"+plotname;
       gPad->SaveAs(plotname+".png");
+      gPad->SaveAs(plotname+".pdf");
+      return 0;
 
       if (i<4){
 	s="cAS"; s+=i;
@@ -324,6 +327,7 @@ int PpGeantOverlays(){
 	plotname = plotname(plotname.Length()-5, plotname.Length());
 	plotname = plotpath+"PpVGeant_AS_SoftJets_HT54_"+plotname;
 	gPad->SaveAs(plotname+".png");
+	gPad->SaveAs(plotname+".pdf");
 
       }
       

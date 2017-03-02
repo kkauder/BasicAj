@@ -9,8 +9,11 @@ set RMod = ""
 # set inbase  = ${RMod}Groom_Aj_HT54_HTled_ppInAuAuAj_newpicoDstcentralMB
 # set outbase = ${RMod}Groom_Aj_HT54_HTled_ppInAuAuAj
 
-set inbase  = ${RMod}Groom_Aj_HT54_HTled_NoEff_ppInAuAuAj_newpicoDstcentralMB
-set outbase = ${RMod}Groom_Aj_HT54_HTled_NoEff_ppInAuAuAj
+# set inbase  = ${RMod}Groom_Aj_HT54_HTled_NoEff_ppInAuAuAj_newpicoDstcentralMB
+# set outbase = ${RMod}Groom_Aj_HT54_HTled_NoEff_ppInAuAuAj
+
+set inbase  = ${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj_newpicoDstcentralMB
+set outbase = ${RMod}Test_Groom_Aj_HT54_HTled_ppInAuAuAj
 
 # Loop over combinations and data
 set Effs='-1 0 1'
