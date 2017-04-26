@@ -7,8 +7,8 @@ set Exec = "./bin/GroomPicoAj"
 make $Exec || exit
 
 # choose R or Pt options
-# set RMod = ""
-set RMod = R0.2_
+set RMod = ""
+# set RMod = R0.2_
 # set RMod = Pt1_
 
 # standard arguments
@@ -36,17 +36,21 @@ set ResultDir   = AjResults/Pieces
 # set OutBase     = ${RMod}Groom_Aj_HT54_NoEff_GeantMc
 # set OutBase     = ${RMod}Groom_Aj_MB_NoEff_GeantMc
 #set OutBase     = ${RMod}Groom_Aj_TrueMB_NoEff_GeantMc
-# set OutBase     = ${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_GeantMc
+#set OutBase     = ${RMod}Groom_Aj_HT54_TrueMB_NoEff_GeantMc
 #set OutBase     = ${RMod}Groom_Aj_TrueMB_NoCut_NoEff_GeantMc
 
 #set OutBase     = ${RMod}ForResAj_Geant
 #set OutBase     = ${RMod}ForResAj_NoEff_NoCut_GeantMc
 #set OutBase     = ${RMod}ForResAj_NoEff_TrueMB_NoCut_GeantMc
-set OutBase     = ${RMod}ForResAj_HT54_Geant
+#set OutBase     = ${RMod}ForResAj_HT54_Geant
 
 
 # Cross check
 #set OutBase     = ${RMod}CrossCheckForResAj_NoEff_Geant
+#set OutBase     = ${RMod}CrossCheckForResAj_HC70_NoEff_HT54_Geant
+
+#set OutBase     = ${RMod}BetterHT_Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant
+set OutBase     = ${RMod}BetterHT_Groom_Aj_HT54_HTled_TrueMB_NoEff_GeantMc
 
 
 set TriggerName = All

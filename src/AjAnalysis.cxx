@@ -13,6 +13,11 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+/** 
+    convenient output
+*/
+ostream & operator<<(ostream & ostr, const fastjet::PseudoJet& jet);
+
 // Standard ctor
 AjAnalysis::AjAnalysis ( double R,
 			 double jet_ptmin, double jet_ptmax,
@@ -549,3 +554,16 @@ double LookupXsec( TString filename ){
 
 }
 
+//----------------------------------------------------------------------
+ostream & operator<<(ostream & ostr, const fastjet::PseudoJet& jet) {
+  if (jet == 0) {
+    ostr << " 0 ";
+  } else {
+    ostr << " pt = " << jet.pt()
+         << " m = " << jet.m()
+         << " y = " << jet.rap()
+         << " phi = " << jet.phi()
+         << " ClusSeq = " << (jet.has_associated_cs() ? "yes" : "no");
+  }
+  return ostr;
+}

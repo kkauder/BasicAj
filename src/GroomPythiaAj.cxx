@@ -457,8 +457,11 @@ int main ( int argc, const char** argv ) {
 	     && sv->Pt()>ManualHtCut) {
 	  HasManualHighTower=true;	
 	  if ( HTled ) {
-	    if ( !pHT ) pHT=sv;
-	    if ( sv->Pt() > pHT->Pt() ) pHT=sv;
+	    if ( OutFileName.Contains("BetterHT") ){
+	      if ( !pHT || (pHT && sv->Pt()>pHT->Pt()) ) pHT = sv; // This is more correct, use to reproduce new code in ppzg
+	    } else {
+	      if ( HTled ) pHT = sv; // This is slightly FALSE, use to recreate QM, HP
+	    }
 	  }
 	}
 	

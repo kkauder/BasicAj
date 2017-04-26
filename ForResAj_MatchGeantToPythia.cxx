@@ -41,9 +41,11 @@ int ForResAj_MatchGeantToPythia (
 				 // TString PpLevelFile = "AjResults/R0.2_ForResAj_NoEff_HT54_Geant.root"
 				 // TString PpLevelFile = "AjResults/ForResAj_NoEff_HT54_Geant.root"
 				 // TString PpLevelFile = "AjResults/ForResAj_HT54_Geant.root"
-				 TString PpLevelFile = "AjResults/R0.2_ForResAj_HT54_Geant.root"
+				 // TString PpLevelFile = "AjResults/R0.2_ForResAj_HT54_Geant.root"
 				 // TString PpLevelFile = "AjResults/ForResAj_Geant.root"
 				 // TString PpLevelFile = "AjResults/ForResAj_NoEff_Geant.root"
+
+				 TString PpLevelFile = "AjResults/CrossCheckForResAj_HC70_NoEff_HT54_Geant.root" // HACKY way to quickly check HC70
 				 ) {
   gStyle->SetOptStat(0);
   gStyle->SetTitleX(0.1f);
@@ -81,9 +83,16 @@ int ForResAj_MatchGeantToPythia (
   // Input
   // -----
  
-  // TString McLevelFile  = "AjResults/ForResAj_NoEff_NoCut_GeantMc.root"; // Reference (particle level) jets
-  // TString McLevelFile  = "AjResults/ForResAj_NoEff_TrueMB_NoCut_GeantMc.root"; // Reference (particle level) jets
-  TString McLevelFile  = "AjResults/R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root"; // Reference (particle level) jets
+  // DONTUSE: TString McLevelFile  = "AjResults/ForResAj_NoEff_NoCut_GeantMc.root"; // Reference (particle level) jets
+  // TString McLevelFile  = "AjResults/R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root"; // Reference (particle level) jets
+  TString McLevelFile  = "AjResults/ForResAj_NoEff_TrueMB_NoCut_GeantMc.root"; // Reference (particle level) jets
+
+  // HACKY way to quickly check HC70
+  if ( PpLevelFile.Contains("HC70") )   McLevelFile  = "AjResults/ForResAj_NoEff_HT54_Geant.root"; // Reference (particle level) jets
+  
+  if ( PpLevelFile.Contains( "R0.2") ){
+    McLevelFile.ReplaceAll("ForResAj_","R0.2_ForResAj_");
+  }
 
   // Output
   // ------

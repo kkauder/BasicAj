@@ -1237,17 +1237,3 @@ int main ( int argc, const char** argv ) {
   return 0;
   
 }
-//----------------------------------------------------------------------
-/// overloaded jet info output
-ostream & operator<<(ostream & ostr, const PseudoJet & jet) {
-  if (jet == 0) {
-    ostr << " 0 ";
-  } else {
-    ostr << " pt = " << jet.pt()
-         << " m = " << jet.m()
-         << " y = " << jet.rap()
-         << " phi = " << jet.phi()
-         << " ClusSeq = " << (jet.has_associated_cs() ? "yes" : "no");
-  }
-  return ostr;
-}

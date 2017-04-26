@@ -270,6 +270,11 @@ int main ( int argc, const char** argv ) {
     reader.SetFractionHadronicCorrection(0.0);
   }
 
+  if ( OutFileName.Contains ("CrossCheckForResAj_HC70_") ){
+    reader.SetApplyFractionHadronicCorrection(kTRUE);
+    reader.SetFractionHadronicCorrection(0.7);
+  }
+
   if ( InPattern.Contains( "picoDst_4_5" ) ) reader.SetUseRejectAnyway( true );
 
   
@@ -851,7 +856,11 @@ int main ( int argc, const char** argv ) {
 	     ) {
 	  // cout << sv->Pt() << "  " << sv->Phi() << "  " << sv->Eta() << "  " << sv->GetCharge() << endl;
 	  HasManualHighTower=true;
-	  if ( HTled ) pHT = sv;
+	  if ( OutFileName.Contains("BetterHT") ){
+	    if ( !pHT || (pHT && sv->Pt()>pHT->Pt()) ) pHT = sv; // This is more correct, use to reproduce new code in ppzg
+	  } else {
+	    if ( HTled ) pHT = sv; // This is slightly FALSE, use to recreate QM, HP
+	  }
 	}
 	
 	if (sv->GetCharge()==0 ) (*sv) *= fTowScale; // for systematics
@@ -1240,7 +1249,7 @@ int main ( int argc, const char** argv ) {
 	    // cout << "Lo, lead: " << sd_jet.pt() << endl;
 	    zgm1=sd_jet.structure_of<contrib::SoftDrop>().symmetry();
 	    gjm1 = MakeTLorentzVector( sd_jet );
-	    cout << "Pt: " << gjm1.Pt() << "  " << jm1.Pt() << endl;
+	    // cout << "Pt: " << gjm1.Pt() << "  " << jm1.Pt() << endl;
 	    if ( gjm1.Pt() > 1.2* jm1.Pt() ){
 	      cout << " ================================== " << endl;
 	      cout << "Pt: " << gjm1.Pt() << "  " << jm1.Pt() << endl;
@@ -1685,22 +1694,4 @@ bool ShiftEta ( PseudoJet& j, float MinDist, float MaxJetRap ){
   return true; 
   
 }
-
-//----------------------------------------------------------------------
-/// overloaded jet info output
-ostream & operator<<(ostream & ostr, const PseudoJet & jet) {
-  if (jet == 0) {
-    ostr << " 0 ";
-  } else {
-    ostr << " pt = " << jet.pt()
-         << " m = " << jet.m()
-         << " y = " << jet.rap()
-         << " phi = " << jet.phi()
-         << " ClusSeq = " << (jet.has_associated_cs() ? "yes" : "no");
-  }
-  return ostr;
-}
-//----------------------------------------------------------------------
-
-
 

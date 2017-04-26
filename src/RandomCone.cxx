@@ -60,8 +60,10 @@ int main ( int argc, const char** argv ) {
     cout << " CAREFUL: FAKING BETTER STATISTICS " << endl;
   }
   
-  // const char *defaults[5] = {"RandomCone","AjResults/Fresh_NicksList_HC100_RandomCone.root","AjResults/Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
-  const char *defaults[5] = {"RandomCone","AjResults/R0.2_Fresh_NicksList_HC100_RandomCone.root","AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
+  // const char *defaults[5] = {"RandomCone","AjResults/WithDpt_Fresh_NicksList_HC100_RandomCone.root","AjResults/Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
+  const char *defaults[5] = {"RandomCone","AjResults/WithDpt_Fresh_NicksList_HC100_RandomCone.root","AjResults/Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+    
+  // const char *defaults[5] = {"RandomCone","AjResults/R0.2_WithDpt_Fresh_NicksList_HC100_RandomCone.root","AjResults/R0.2_Fresh_NicksList_HC100_AuAu.root","MB","Data/NewPicoDst_AuAuCentralMB/*.root"};
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -148,6 +150,9 @@ int main ( int argc, const char** argv ) {
 
   TH1D* DebugRhoDiff = new TH1D("DebugRhoDiff", "Difference in median pT when excluding two highest jets", 100, -10, 10 );
   
+  TH2D* DeltaPt1 = new TH2D( "DeltaPt1","DeltaPt1;#Delta p_{T} [GeV/c];Refmult",300, -30, 30, 800, -0.5, 799.5 );
+  TH2D* DeltaPt2 = new TH2D( "DeltaPt2","DeltaPt2;#Delta p_{T} [GeV/c];Refmult",300, -30, 30, 800, -0.5, 799.5 );
+
   // Helpers
   // -------
   vector<PseudoJet> particles;
@@ -344,6 +349,9 @@ int main ( int argc, const char** argv ) {
 
       RandomAJ_lo->Fill( fabs ( (pt1 - pt2) / (pt1 + pt2) ), refmult );
       NoFabsRandomAJ_lo->Fill( (pt1 - pt2) / (pt1 + pt2), refmult );
+
+      DeltaPt1->Fill ( RC1.pt() - TMath::Pi()*R*R * JAlo.GetBackgroundEstimator()->rho(), refmult );
+      DeltaPt2->Fill ( RC2.pt() - TMath::Pi()*R*R * JAlo.GetBackgroundEstimator()->rho(), refmult );
     }
             
 

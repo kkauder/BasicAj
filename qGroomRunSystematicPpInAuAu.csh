@@ -9,8 +9,8 @@ make $Exec || exit
 # split into chunks
 set base = Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root
 
-set RMod = ""
-#set RMod = R0.2_
+#set RMod = ""
+set RMod = R0.2_
 # set RMod = "Pt1_"
 
 set AjMod =""
@@ -19,7 +19,8 @@ set AjMod =""
 
 #set PpBase = Groom_Aj_HT54_HTled_NoEff_ppAj.root
 #set PpBase = Groom_Aj_HT54_HTled_ppAj.root
-set PpBase = Test_Groom_Aj_HT54_HTled_ppAj.root
+#set PpBase = Test_Groom_Aj_HT54_HTled_ppAj.root
+set PpBase = Remade_Groom_Fresh_NicksList_HC100_ppAj.root
 
 # Loop over combinations and data
 set Effs='-1 0 1'
@@ -27,8 +28,10 @@ if ( $PpBase =~ *NoEff* ) then
     set Effs=' 0 '
 endif
 
-foreach Tow ( -1 0 1 )
-    foreach Eff ( $Effs )
+# foreach Tow ( -1 0 1 )
+#     foreach Eff ( $Effs )
+foreach Tow ( 0 )
+    foreach Eff ( 0 )
 	@ TowEff = $Tow * $Eff
 	# Only perpendicluar combinations
 	if ( $TowEff != 0 ) continue;
@@ -52,7 +55,8 @@ foreach Tow ( -1 0 1 )
 	    # arguments
 	    set OutBase=`basename $input | sed 's/.root//g'`
 	    #set OutName    = AjResults/${TowMod}_${EffMod}_${RMod}Groom_Fresh_NicksList_HC100_ppInAuAuAj_${OutBase}.root
-	    set OutName    = `echo ${PpName} | sed "s/ppAj/ppInAuAuAj/g" | sed "s/.root//g"`${AjMod}_${OutBase}.root
+	    # set OutName    = `echo ${PpName} | sed "s/ppAj/ppInAuAuAj/g" | sed "s/.root//g"`${AjMod}_${OutBase}.root
+	    set OutName    = `echo ${PpName} | sed "s/ppAj/ppInAuAuAj/g" | sed "s/.root//g"`${AjMod}_105_${OutBase}.root
 
 	    set TriggerName = MB
 	    set Files      = ${input}

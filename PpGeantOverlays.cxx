@@ -76,10 +76,14 @@ int PpGeantOverlays(){
   // TString sGG_SoftJets_HT54 = "AjResults/AEff0_PtRes0_ATow0_SystGroom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root"; // DEBUG    
   TString sGG_SoftJets_HT54 = "HThistos/Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root";
   TString sGG_HardJets_HT54 = "HThistos/Groom_Aj_TrueMB_NoEff_Geant.root";
+  // TString sGG_SoftJets_HT54 = "AjResults/BetterHT_Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root";
+  // TString sGG_HardJets_HT54 = "AjResults/BetterHT_Groom_Aj_TrueMB_NoEff_Geant.root";
   if (UseAbove25){
     // sGG_SoftJets_MB   = "HThistos/Above25_Groom_Aj_TrueMB_NoEff_Geant.root";
     sGG_SoftJets_HT54 = "HThistos/Above25_Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root";
     sGG_HardJets_HT54 = "HThistos/Above25_Groom_Aj_TrueMB_NoEff_Geant.root";
+    // sGG_SoftJets_HT54 = "AjResults/Above25_BetterHT_Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant.root";
+    // sGG_HardJets_HT54 = "AjResults/Above25_BetterHT_Groom_Aj_TrueMB_NoEff_Geant.root";
   }    
 
 
@@ -293,7 +297,7 @@ int PpGeantOverlays(){
       plotname = plotpath+"PpVGeant_NS_SoftJets_HT54_"+plotname;
       gPad->SaveAs(plotname+".png");
       gPad->SaveAs(plotname+".pdf");
-      return 0;
+      // return 0;
 
       if (i<4){
 	s="cAS"; s+=i;

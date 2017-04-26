@@ -1,11 +1,20 @@
+// int ResAjPlotter(TString fs = "AjResults/R0.2_ForResAj_HT54_Geant_MatchedTo_R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root")
+int ResAjPlotter(TString fs = "AjResults/ForResAj_HT54_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root")
 {
   // TFile *f = TFile::Open("AjResults/ForResAj_Geant_MatchedTo_ForResAj_NoEff_NoCut_GeantMc.root");
   // TFile *f = TFile::Open("AjResults/ForResAj_Geant_NoOutliers_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
   // TFile *f = TFile::Open("AjResults/ForResAj_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
   // TFile *f = TFile::Open("AjResults/ForResAj_Geant_NoOutliers_MatchedTo_ForResAj_NoEff_NoCut_GeantMc.root");
   // TFile *f = TFile::Open("AjResults/ForResAj_HT54_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
-  TFile *f = TFile::Open("AjResults/R0.2_ForResAj_HT54_Geant_MatchedTo_R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");  
+  // TFile *f = TFile::Open("AjResults/R0.2_ForResAj_HT54_Geant_MatchedTo_R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
 
+  
+  TFile *f = TFile::Open(fs);  
+
+  TString fouts = fs;
+  fouts.ReplaceAll("AjResults/","AjResults/Processed_");
+  TFile *fout = new TFile( fouts, "RECREATE");
+  
   gStyle->SetOptStat(0);
   gStyle->SetTitleX(0.1f);
   gStyle->SetTitleW(0.8f);
@@ -102,8 +111,8 @@
   leg->AddEntry(trig31->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigtrig31/dettrig31+0.5), int ( 100*sigtrig31/mutrig31+0.5));
-  latex->SetTextColor(kRed);
-  latex->DrawLatex( 0.15, 0.7, plabel);
+  latex.SetTextColor(kRed);
+  latex.DrawLatex( 0.15, 0.7, plabel);
   
   trig36->Draw("same");
   gtrig36->Draw("same");
@@ -113,8 +122,8 @@
   leg->AddEntry(trig36->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigtrig36/dettrig36+0.5), int ( 100*sigtrig36/mutrig36+0.5));
-  latex->SetTextColor(kGreen+1);
-  latex->DrawLatex( 0.5, 0.4, plabel);
+  latex.SetTextColor(kGreen+1);
+  latex.DrawLatex( 0.5, 0.4, plabel);
 
   trig41->Draw("same");
   gtrig41->Draw("same");
@@ -124,8 +133,8 @@
   leg->AddEntry(trig41->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigtrig41/dettrig41+0.5), int ( 100*sigtrig41/mutrig41+0.5));
-  latex->SetTextColor(kBlue);
-  latex->DrawLatex( 0.65, 0.25, plabel);
+  latex.SetTextColor(kBlue);
+  latex.DrawLatex( 0.65, 0.25, plabel);
 
   leg->Draw();
   gPad->SaveAs( base+"TriggerHighJER.png");
@@ -191,8 +200,8 @@
   // grecoil21->Draw("same");
   // sprintf ( plabel, "#splitline{p_{T}^{part}=%.1f GeV/c}{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%, #frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
   // 	    detrecoil21,int ( 100*sigrecoil21/detrecoil21+0.5), int ( 100*sigrecoil21/murecoil21+0.5));
-  // latex->SetTextColor(kBlack);
-  // latex->DrawLatex( 0.12, 0.7, plabel);
+  // latex.SetTextColor(kBlack);
+  // latex.DrawLatex( 0.12, 0.7, plabel);
 
   recoil26->SetAxisRange(3,43,"x");
   recoil26->SetAxisRange(0,2.0,"y");
@@ -205,8 +214,8 @@
   leg->AddEntry(recoil26->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigrecoil26/detrecoil26+0.5), int ( 100*sigrecoil26/murecoil26+0.5));
-  latex->SetTextColor(kYellow+2);
-  latex->DrawLatex( 0.2, 0.7, plabel);
+  latex.SetTextColor(kYellow+2);
+  latex.DrawLatex( 0.2, 0.7, plabel);
 
 
   recoil31->Draw("same");
@@ -217,8 +226,8 @@
   leg->AddEntry(recoil31->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigrecoil31/detrecoil31+0.5), int ( 100*sigrecoil31/murecoil31+0.5));
-  latex->SetTextColor(kRed);
-  latex->DrawLatex( 0.5, 0.45, plabel);
+  latex.SetTextColor(kRed);
+  latex.DrawLatex( 0.5, 0.45, plabel);
   
   recoil36->Draw("same");
   grecoil36->Draw("same");
@@ -228,8 +237,8 @@
   leg->AddEntry(recoil36->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigrecoil36/detrecoil36+0.5), int ( 100*sigrecoil36/murecoil36+0.5));
-  latex->SetTextColor(kGreen+1);
-  latex->DrawLatex( 0.62, 0.25, plabel);
+  latex.SetTextColor(kGreen+1);
+  latex.DrawLatex( 0.62, 0.25, plabel);
 
   leg->Draw();
   gPad->SaveAs( base+"RecoilHighJER.png");
@@ -287,8 +296,8 @@
   leg->AddEntry(triglo31->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigtriglo31/dettriglo31+0.5), int ( 100*sigtriglo31/mutriglo31+0.5));
-  latex->SetTextColor(kRed);
-  latex->DrawLatex( 0.15, 0.7, plabel);
+  latex.SetTextColor(kRed);
+  latex.DrawLatex( 0.15, 0.7, plabel);
   
   triglo36->Draw("same");
   gtriglo36->Draw("same");
@@ -298,8 +307,8 @@
   leg->AddEntry(triglo36->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigtriglo36/dettriglo36+0.5), int ( 100*sigtriglo36/mutriglo36+0.5));
-  latex->SetTextColor(kGreen+1);
-  latex->DrawLatex( 0.5, 0.45, plabel);
+  latex.SetTextColor(kGreen+1);
+  latex.DrawLatex( 0.5, 0.45, plabel);
 
   triglo41->Draw("same");
   gtriglo41->Draw("same");
@@ -309,8 +318,8 @@
   leg->AddEntry(triglo41->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigtriglo41/dettriglo41+0.5), int ( 100*sigtriglo41/mutriglo41+0.5));
-  latex->SetTextColor(kBlue);
-  latex->DrawLatex( 0.67, 0.25, plabel);
+  latex.SetTextColor(kBlue);
+  latex.DrawLatex( 0.67, 0.25, plabel);
 
   leg->Draw();
   gPad->SaveAs( base+"TriggerLowJER.png");
@@ -375,8 +384,8 @@
   // grecoillo21->Draw("same");
   // sprintf ( plabel, "#splitline{p_{T}^{part}=%.1f GeV/c}{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%, #frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
   // 	    detrecoillo21,int ( 100*sigrecoillo21/detrecoillo21+0.5), int ( 100*sigrecoillo21/murecoillo21+0.5));
-  // latex->SetTextColor(kBlack);
-  // latex->DrawLatex( 0.12, 0.7, plabel);
+  // latex.SetTextColor(kBlack);
+  // latex.DrawLatex( 0.12, 0.7, plabel);
 
   recoillo26->SetAxisRange(8,51,"x");
   recoillo26->SetAxisRange(0,2.0,"y");
@@ -389,8 +398,8 @@
   leg->AddEntry(recoillo26->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigrecoillo26/detrecoillo26+0.5), int ( 100*sigrecoillo26/murecoillo26+0.5));
-  latex->SetTextColor(kYellow+2);
-  latex->DrawLatex( 0.2, 0.7, plabel);
+  latex.SetTextColor(kYellow+2);
+  latex.DrawLatex( 0.2, 0.7, plabel);
 
 
   recoillo31->Draw("same");
@@ -401,8 +410,8 @@
   leg->AddEntry(recoillo31->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigrecoillo31/detrecoillo31+0.5), int ( 100*sigrecoillo31/murecoillo31+0.5));
-  latex->SetTextColor(kRed);
-  latex->DrawLatex( 0.5, 0.45, plabel);
+  latex.SetTextColor(kRed);
+  latex.DrawLatex( 0.5, 0.45, plabel);
   
   recoillo36->Draw("same");
   grecoillo36->Draw("same");
@@ -412,8 +421,8 @@
   leg->AddEntry(recoillo36->GetName(),plabel,"L");
   sprintf ( plabel, "#splitline{#frac{#sigma p_{T}^{det}}{p_{T}^{part}} = %d%%}{#frac{#sigma p_{T}^{det}}{p_{T}^{det}} = %d%%}",
 	    int ( 100*sigrecoillo36/detrecoillo36+0.5), int ( 100*sigrecoillo36/murecoillo36+0.5));
-  latex->SetTextColor(kGreen+1);
-  latex->DrawLatex( 0.62, 0.25, plabel);
+  latex.SetTextColor(kGreen+1);
+  latex.DrawLatex( 0.62, 0.25, plabel);
 
   leg->Draw();
   gPad->SaveAs( base+"RecoilLowJER.png");
@@ -554,75 +563,104 @@
 
 
   // 2D
+
   new TCanvas ( "Profile1","",500, 500);
   gPad->SetCanvasSize(450,450);
 
   int rebin = 4;
   float ptmin=0;
-  float ptmax=35;
-  float ptmax=65;
+  // float ptmax=35;
+  float ptmax=50;
   PpMcTriggerPt->Rebin2D(rebin,rebin);
   PpMcTriggerPtLo->Rebin2D(rebin,rebin);
   TProfile* PpMcTriggerPtProf = PpMcTriggerPt->ProfileX("PpMcTriggerPtProf",1,-1,"s");
   TProfile* PpMcTriggerPtProfLo = PpMcTriggerPtLo->ProfileX("PpMcTriggerPtProfLo",1,-1,"s");
 
-  PpMcTriggerPtProf->GetYaxis()->SetTitle("p_{T}^{Part}");
-  PpMcTriggerPtProfLo->GetYaxis()->SetTitle("p_{T}^{Part} [GeV/c]");
+  float axptmin=0;
+  float axptmax=60;
+  TH2D* dummy = new TH2D( "dummy",";p_{T}^{Det} [GeV/c];p_{T}^{Part} [GeV/c]", 100, axptmin,axptmax,100, axptmin,axptmax);
+  dummy->Draw("AXIS");
+
+  PpMcTriggerPtProf->GetYaxis()->SetTitle("p_{T}^{Part} [GeV/c]");
   PpMcTriggerPtProf->SetAxisRange( ptmin, ptmax, "x");
   PpMcTriggerPtProf->SetAxisRange( ptmin, ptmax, "y");
+  PpMcTriggerPtProfLo->GetYaxis()->SetTitle("p_{T}^{Part} [GeV/c]");
+  if ( IsR02 )   PpMcTriggerPtProfLo->SetAxisRange( ptmin, ptmax, "x");
+  else           PpMcTriggerPtProfLo->SetAxisRange( 18, ptmax, "x");
+  PpMcTriggerPtProfLo->SetAxisRange( ptmin, ptmax, "y");
 
   PpMcTriggerPtProf->SetLineColor(kRed);
-  PpMcTriggerPtProf->Draw();
   PpMcTriggerPtProfLo->SetLineColor(kBlue);
   PpMcTriggerPtProfLo->Draw("same");
+  PpMcTriggerPtProf->Draw("same");
+
+  latex.SetTextSize(0.045);
 
   TLine l;
   l.SetLineStyle(7);
-  l.DrawLine( ptmin, ptmin, ptmax, ptmax );
+  l.DrawLine( axptmin, axptmin, axptmax, axptmax );
 
-  leg = new TLegend( 0.15, 0.6, 0.7, 0.85, Rstring+", Leading Jets" );
+  latex.SetTextColor(kBlack);
+  latex.DrawLatex( 0.15, 0.8, Rstring+", Leading Jets" );
+  latex.SetTextColor( kAzure-6 );   
+  latex.DrawLatex( 0.15,0.73, "STAR Simulation");
+
+  // leg = new TLegend( 0.15, 0.6, 0.7, 0.85, Rstring+", Leading Jets" );
+  leg = new TLegend( 0.32, 0.14, 0.87, 0.28 );
+  // leg = new TLegend( 0.34, 0.12, 0.89, 0.34, 
   leg->SetBorderSize(0);  leg->SetLineWidth(10);
   leg->SetFillStyle(0);   leg->SetMargin(0.1);
   
-  leg->AddEntry(   PpMcTriggerPtProf, "hard core");
-  leg->AddEntry(   PpMcTriggerPtProfLo, "matched");
+  leg->AddEntry(   PpMcTriggerPtProf, "p_{T}^{Cut}>2 GeV/c");
+  leg->AddEntry(   PpMcTriggerPtProfLo, "p_{T}^{Cut}>0.2 GeV/c, Matched");
 
 
   leg->Draw();
   gPad->SaveAs( base+"LeadProfile.png");
   gPad->SaveAs( base+"All.pdf");
 
-
   new TCanvas ( "Profile2","",500, 500);
   gPad->SetCanvasSize(450,450);
 
-  PpMcRecoilPt->Rebin2D(5,5);
-  PpMcRecoilPtLo->Rebin2D(5,5);
+  PpMcRecoilPt->Rebin2D(rebin,rebin);
+  PpMcRecoilPtLo->Rebin2D(rebin,rebin);
   TProfile* PpMcRecoilPtProf = PpMcRecoilPt->ProfileX("PpMcRecoilPtProf",1,-1,"s");
   TProfile* PpMcRecoilPtProfLo = PpMcRecoilPtLo->ProfileX("PpMcRecoilPtProfLo",1,-1,"s");
 
     
-  ptmin=0;
-  ptmax=70;
+  // ptmin=0;
+  // ptmax=50;
+  dummy->Draw("AXIS");
   PpMcRecoilPtProf->GetYaxis()->SetTitle("p_{T}^{Part}");
-  PpMcRecoilPtProfLo->GetYaxis()->SetTitle("p_{T}^{Part} [GeV/c]");
   PpMcRecoilPtProf->SetAxisRange( ptmin, ptmax, "x");
   PpMcRecoilPtProf->SetAxisRange( ptmin, ptmax, "y");
+  PpMcRecoilPtProfLo->GetYaxis()->SetTitle("p_{T}^{Part} [GeV/c]");
+  if ( IsR02 ) PpMcRecoilPtProfLo->SetAxisRange( ptmin, ptmax, "x");
+  else         PpMcRecoilPtProfLo->SetAxisRange( 10, ptmax, "x");
+  PpMcRecoilPtProfLo->SetAxisRange( ptmin, ptmax, "y");
 
   PpMcRecoilPtProf->SetLineColor(kRed);
-  PpMcRecoilPtProf->Draw();
   PpMcRecoilPtProfLo->SetLineColor(kBlue);
+
   PpMcRecoilPtProfLo->Draw("same");
+  PpMcRecoilPtProf->Draw("same");
 
-  l.DrawLine( ptmin, ptmin, ptmax, ptmax );
+  l.DrawLine( axptmin, axptmin, axptmax, axptmax );
 
-  leg = new TLegend( 0.15, 0.6, 0.7, 0.85, Rstring+", SubLeading Jets" );
+  latex.SetTextColor(kBlack);
+  latex.DrawLatex( 0.15, 0.8, Rstring+", SubLeading Jets" );
+  latex.SetTextColor( kAzure-6 );   
+  latex.DrawLatex( 0.15,0.73, "STAR Simulation");
+
+  leg = new TLegend( 0.32, 0.14, 0.87, 0.28 );
   leg->SetBorderSize(0);  leg->SetLineWidth(10);
   leg->SetFillStyle(0);   leg->SetMargin(0.1);
   
-  leg->AddEntry(   PpMcRecoilPtProf, "hard core");
-  leg->AddEntry(   PpMcRecoilPtProfLo, "matched");
-
+  leg->SetBorderSize(0);  leg->SetLineWidth(10);
+  leg->SetFillStyle(0);   leg->SetMargin(0.1);
+  
+  leg->AddEntry(   PpMcRecoilPtProf, "p_{T}^{Cut}>2 GeV/c");
+  leg->AddEntry(   PpMcRecoilPtProfLo, "p_{T}^{Cut}>0.2 GeV/c, Matched");
 
   leg->Draw();
   gPad->SaveAs( base+"SubLeadProfile.png");
@@ -630,4 +668,7 @@
 
   gPad->SaveAs( base+"All.pdf]");
 
+  fout->Write();
+  return 0;
+  
 }

@@ -28,7 +28,7 @@ set ResultDir   = AjResults/Pieces
 
 
 
-set OutBase     = ${RMod}ForResAj_HT54_Geant
+#set OutBase     = ${RMod}ForResAj_HT54_Geant
 
 
 # MC branch

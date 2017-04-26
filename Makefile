@@ -9,6 +9,8 @@ CXXFLAGS      = -O2 -fPIC -pipe -Wall -std=c++11
 CXXFLAGS     += -Wno-unused-variable
 CXXFLAGS     += -Wno-unused-but-set-variable
 CXXFLAGS     += -Wno-sign-compare
+# # for gprof
+# CXXFLAGS     += -pg
 else
 CXXFLAGS      = -O -fPIC -pipe -Wall -Wno-deprecated-writable-strings -Wno-unused-variable -Wno-unused-private-field -Wno-gnu-static-float-init
 CXXFLAGS     += -Wno-return-type-c-linkage
@@ -20,7 +22,9 @@ ifeq ($(os),Linux)
 #LDFLAGS       = -g
 #LDFLAGSS      = -g --shared 
 LDFLAGS       = 
-LDFLAGSS      = --shared 
+LDFLAGSS      = --shared
+# # for gprof
+# LDFLAGS     += -pg
 else
 LDFLAGS       = -O -Xlinker -bind_at_load -flat_namespace
 LDFLAGSS      = -flat_namespace -undefined suppress

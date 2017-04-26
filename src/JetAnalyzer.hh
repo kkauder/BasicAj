@@ -148,6 +148,16 @@ public :
       delete bkgd_subtractor;
       bkgd_subtractor = 0 ;
     }
+    // NOT SURE WHY THIS BREAKS
+    // Seems like the ownership is transferred...
+    // if ( scalarPtDensity ) {
+    //   delete scalarPtDensity;
+    //   scalarPtDensity = 0 ;
+    // }
+    if ( c_bkgd_subtractor ) {
+      delete c_bkgd_subtractor;
+      c_bkgd_subtractor = 0 ;
+    }
     
   };
   

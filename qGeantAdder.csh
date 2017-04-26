@@ -2,15 +2,21 @@
 
 set ExecPath = `pwd`
 
-#set RMod = ""
-set RMod = R0.2_
+set RMod = ""
+#set RMod = R0.2_
 #set RMod = Pt1_
 
 # set inbase  = ${RMod}ForResAj_NoEff_TrueMB_NoCut_GeantMc_picoDst
 # set outbase = ${RMod}ForResAj_NoEff_TrueMB_NoCut_GeantMc
 
-set inbase  = Tow0_Eff0_${RMod}ForResAj_HT54_Geant_picoDst
-set outbase = ${RMod}ForResAj_HT54_Geant
+# set inbase  = Tow0_Eff0_${RMod}ForResAj_HT54_Geant_picoDst
+# set outbase = ${RMod}ForResAj_HT54_Geant
+
+# set inbase  = ${RMod}CrossCheckForResAj_HC70_NoEff_HT54_Geant_picoDst
+# set outbase = ${RMod}CrossCheckForResAj_HC70_NoEff_HT54_Geant
+
+set inbase  = ${RMod}BetterHT_Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant_picoDst
+set outbase = ${RMod}BetterHT_Groom_Aj_HT54_HTled_TrueMB_NoEff_Geant
 
 # set inbase  = ${RMod}ForResAj_NoEff_HT54_Geant_picoDst
 # set outbase = ${RMod}ForResAj_NoEff_HT54_Geant

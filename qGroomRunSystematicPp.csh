@@ -13,16 +13,18 @@ set RMod = ""
 
 # standard arguments
 # note that outname will be modified by the binary!
+#set OutName     = AjResults/${RMod}Remade_Groom_Fresh_NicksList_HC100_ppAj.root
 #set OutName     = AjResults/${RMod}Groom_Fresh_NicksList_HC100_ppAj.root
 #set OutName     = AjResults/${RMod}Groom_HT64_ppAj.root
 #set OutName     = AjResults/${RMod}Groom_Aj_HT54_NoEff_ppAj.root
 
 #set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_NoEff_ppAj.root
 #set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_NoEff_ppAj.root
-set OutName     = AjResults/${RMod}Test_Groom_Aj_HT54_HTled_ppAj.root
+#set OutName     = AjResults/${RMod}Test_Groom_Aj_HT54_HTled_ppAj.root
 # set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_TrueMB_NoEff_ppAj.root
 
-set OutName     = AjResults/${RMod}Delme_Groom_Aj_HT54_HTled_ppAj.root
+#set OutName     = AjResults/${RMod}Delme_Groom_Aj_HT54_HTled_ppAj.root
+set OutName     = AjResults/${RMod}Groom_Aj_HT54_HTled_ppAj.root
 
 set logbase = `basename $OutName | sed 's/.root//g'`
 

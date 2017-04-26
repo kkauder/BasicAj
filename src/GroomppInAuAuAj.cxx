@@ -56,7 +56,9 @@ int main ( int argc, const char** argv ) {
   // const char *defaults[5] = {"ppInAuAuAj","ppInAuAuAjTest.root","AjResults/Tow0_Eff0_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB*.root"};
   // const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Tow0_Eff0_Fresh_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
   // const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
-  const char *defaults[5] = {"GroomppInAuAuAj","Groom_Aj_AjGt3_HT54_HTled_NoEff_ppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  // const char *defaults[5] = {"GroomppInAuAuAj","Groom_Aj_AjGt3_HT54_HTled_NoEff_ppInAuAuAjTest.root","AjResults/Groom_Aj_HT54_HTled_NoEff_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+  const char *defaults[5] = {"GroomppInAuAuAj","GroomppInAuAuAj_105_MixTest.root","AjResults/Tow0_Eff0_Remade_Groom_Fresh_NicksList_HC100_ppAj.root","MB","Data/NewPicoDst_AuAuCentralMB/newpicoDstcentralMB_8177020_DC4BA348C050D5562E7461357C4B341D_0.root"};
+    
   if ( argc==1 ) {
     argv=defaults;
     argc=5;
@@ -86,8 +88,8 @@ int main ( int argc, const char** argv ) {
       cerr << "Inconsistent naming scheme." << endl;
       return -1;
     }
-  }
-
+  }	
+     
   // jet resolution parameter
   // ------------------------
   float R = 0.4;
@@ -130,10 +132,15 @@ int main ( int argc, const char** argv ) {
   }
   
 
-  // Jet Pt cuts
+  // Dijet Pt cuts
   // -----------
   float LeadPtMin = AjParameters::LeadPtMin;
   float SubLeadPtMin = AjParameters::SubLeadPtMin;
+  if ( OutFileName.Contains ("105") ){
+    LeadPtMin=10;
+    SubLeadPtMin=5;
+  }
+
   // if ( OutFileName.Contains ("R0.2") ){
   //   LeadPtMin=16.0;
   //   SubLeadPtMin=8.0;
@@ -182,6 +189,14 @@ int main ( int argc, const char** argv ) {
   ppJets->GetBranch("AwayJet")->SetAutoDelete(kFALSE);
   ppJets->SetBranchAddress("AwayJet", &pAwayJet);
 
+  TClonesArray* pTriggerJetLo = new TClonesArray("TLorentzVector");
+  ppJets->GetBranch("TriggerJetLo")->SetAutoDelete(kFALSE);
+  ppJets->SetBranchAddress("TriggerJetLo", &pTriggerJetLo);
+
+  TClonesArray* pAwayJetLo = new TClonesArray("TLorentzVector");
+  ppJets->GetBranch("AwayJetLo")->SetAutoDelete(kFALSE);
+  ppJets->SetBranchAddress("AwayJetLo", &pAwayJetLo);
+
   TLorentzVector* pOrigJ1 = new TLorentzVector();
   ppJets->GetBranch("j1")->SetAutoDelete(kFALSE);
   ppJets->SetBranchAddress("j1", &pOrigJ1);
@@ -211,6 +226,8 @@ int main ( int argc, const char** argv ) {
   vector< vector<PseudoJet> > FullPpEvent;
   vector<PseudoJet> vTriggerJet;
   vector<PseudoJet> vAwayJet;
+  vector<PseudoJet> vTriggerJetLo;
+  vector<PseudoJet> vAwayJetLo;
   vector<PseudoJet> vOrigJ1;
   vector<PseudoJet> vOrigJ2;
   vector<PseudoJet> vOrigJM1;
@@ -231,6 +248,13 @@ int main ( int argc, const char** argv ) {
     if (pTriggerJet->GetEntries()!=1 ) cout << ppEv<< "  " << pTriggerJet->GetEntries() << endl;
     vTriggerJet.push_back( MakePseudoJet( (TLorentzVector*) pTriggerJet->At(0) ) );
     vAwayJet.push_back( MakePseudoJet( (TLorentzVector*) pAwayJet->At(0) ) );
+    vTriggerJetLo.push_back( MakePseudoJet( (TLorentzVector*) pTriggerJetLo->At(0) ) );
+    if ( pAwayJetLo->At(0) ) 
+      vAwayJetLo.push_back( MakePseudoJet( (TLorentzVector*) pAwayJetLo->At(0) ) );
+    else
+      vAwayJetLo.push_back( PseudoJet() );
+    
+    
 
     vOrigJ1.push_back( MakePseudoJet( (TLorentzVector*) pOrigJ1 ) );
     vOrigJ2.push_back( MakePseudoJet( (TLorentzVector*) pOrigJ2 ) );
@@ -421,8 +445,11 @@ int main ( int argc, const char** argv ) {
 
   // Save trigger jet to result
   TLorentzVector TriggerJet, AwayJet;
+  TLorentzVector TriggerJetLo, AwayJetLo;
   ResultTree->Branch("TriggerJet",&TriggerJet);
   ResultTree->Branch("AwayJet",&AwayJet);
+  ResultTree->Branch("TriggerJetLo",&TriggerJetLo);
+  ResultTree->Branch("AwayJetLo",&AwayJetLo);
   
   // Helpers
   // -------
@@ -488,8 +515,8 @@ int main ( int argc, const char** argv ) {
 
   // Initialize analysis class
   // -------------------------
-  AjAnalysis AjA( R,
-		  AjParameters::jet_ptmin, AjParameters::jet_ptmax,
+  
+  AjAnalysis AjA( R, AjParameters::jet_ptmin, AjParameters::jet_ptmax,
 		  LeadPtMin, SubLeadPtMin, 
 		  // AjParameters::LeadPtMin, AjParameters::SubLeadPtMin, 
 		  AjParameters::max_track_rap,
@@ -814,9 +841,6 @@ int main ( int argc, const char** argv ) {
 	  
 	}
 	
-	// PseudoJet& oj1 =  vOrigJ1.at(*jit);
-	// PseudoJet& oj2 =  vOrigJ2.at(*jit);
-
       }
       
       // quick debug
@@ -874,7 +898,7 @@ int main ( int argc, const char** argv ) {
 	     ( AjCutDir==1  && aj_hi > AjCut ) ||
 	     ( AjCutDir==-1 && aj_hi < AjCut ) 
 	     ){
-	  cout << aj_hi << endl;
+	  // cout << aj_hi << endl;
 	  // Hi cut jets
 	  BackgroundSubtractorHi = AjA.GetJAhi()->GetBackgroundSubtractor();
 	  if ( BackgroundSubtractorHi ){
@@ -1067,6 +1091,8 @@ int main ( int argc, const char** argv ) {
 
 	TriggerJet =  MakeTLorentzVector( vTriggerJet.at(*jit) );
 	AwayJet =  MakeTLorentzVector( vAwayJet.at(*jit) );
+	TriggerJetLo =  MakeTLorentzVector( vTriggerJetLo.at(*jit) );
+	AwayJetLo =  MakeTLorentzVector( vAwayJetLo.at(*jit) );
 	ResultTree->Fill();
 	// cout << " Au+Au: " << runid << "  " << eventid << endl;
 	// cout << " Geant: " << jetrunid << "  " << jeteventid << endl;
@@ -1189,17 +1215,4 @@ int main ( int argc, const char** argv ) {
   return 0;
   
 }
-//----------------------------------------------------------------------
-/// overloaded jet info output
-ostream & operator<<(ostream & ostr, const PseudoJet & jet) {
-  if (jet == 0) {
-    ostr << " 0 ";
-  } else {
-    ostr << " pt = " << jet.pt()
-         << " m = " << jet.m()
-         << " y = " << jet.rap()
-         << " phi = " << jet.phi()
-         << " ClusSeq = " << (jet.has_associated_cs() ? "yes" : "no");
-  }
-  return ostr;
-}
+
