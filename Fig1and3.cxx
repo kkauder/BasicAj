@@ -3,9 +3,14 @@
 #include "TStyle.h"
 #include "TColor.h"
 #include "TCanvas.h"
-
 #include <TObjArray.h>
+
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <string>
+
 using namespace std;
 
 int Fig1and3( TString R = "" ) {
@@ -24,7 +29,7 @@ int Fig1and3( TString R = "" ) {
   gStyle->SetTitleW(0.8f);
   gStyle->SetTitleBorderSize(0);	//Title box border thickness
 	
-  // bool MakeHtml=true;
+  bool MakeHtmlAndYaml=true;
 
   bool nofabs=true;
   // bool nofabs=false;
@@ -532,8 +537,8 @@ int Fig1and3( TString R = "" ) {
   if ( nofabs ) latex.DrawLatex( .14,.6, "STAR");
   else          latex.DrawLatex( .14,.3, "STAR");
 
-
-    if (TString(fAuAu->GetName()).Contains("HT54") ){
+  
+  if (TString(fAuAu->GetName()).Contains("HT54") ){
     gPad->SaveAs("plots/HT54_R0.4_Fig1.png");
     gPad->SaveAs("plots/HT54_R0.4_Fig1.pdf");
   } else   if (TString(fAuAu->GetName()).Contains("HT64") ){
@@ -554,6 +559,76 @@ int Fig1and3( TString R = "" ) {
         
   }
 
+
+  if ( MakeHtmlAndYaml ){
+    // AuAuAJ_hi, ppInAuAuAJ_hi, AuAuAJ_lo, ppInAuAuAJ_lo,
+    TString HtmlName = "";
+    if ( R=="" ){
+      HtmlName = "R0.4_Fig.html";
+    } else if ( R.Contains("0.2") ){
+      HtmlName = "R0.2_Fig.html";
+    }
+
+    if ( HtmlName != "" ){
+      ofstream HtmlOut ( HtmlName );
+      HtmlOut << "<table border=\"1\" cellpadding=\"5\">" << endl;
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th></th>" << endl;
+      HtmlOut << "\t\t<th colspan=5>p<sub>T</sub><sup>Cut</sup>&gt;2 GeV/<i>c</i></th>" << endl;
+      HtmlOut << "\t\t<th colspan=5>p<sub>T</sub><sup>Cut</sup>&gt;0.2 GeV/<i>c</i>, matched</th>" << endl;
+      HtmlOut << "\t</tr>" << endl;
+
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th>A<sub>J</sub></th>" << endl;
+      HtmlOut << "\t\t<th>Event Fraction<br>Au+Au HT</th>" << endl;
+      HtmlOut << "\t\t<th>stat. error</th>" << endl;
+      HtmlOut << "\t\t<th>Event Fraction<br>p+p HT &oplus; Au+Au MB</th>" << endl;
+      HtmlOut << "\t\t<th>stat. error</th>" << endl;
+      HtmlOut << "\t\t<th>syst. error<br>btw. Au+Au and p+p</th>" << endl;
+
+      HtmlOut << "\t\t<th>Event Fraction<br>Au+Au HT</th>" << endl;
+      HtmlOut << "\t\t<th>stat. error</th>" << endl;
+      HtmlOut << "\t\t<th>Event Fraction<br>p+p HT &oplus; Au+Au MB</th>" << endl;
+      HtmlOut << "\t\t<th>stat. error</th>" << endl;
+      HtmlOut << "\t\t<th>syst. error<br>btw. Au+Au and p+p</th>" << endl;
+      HtmlOut << "\t</tr>" << endl;
+
+      for ( int bin = dummy->GetXaxis()->GetFirst(); bin<= dummy->GetXaxis()->GetLast(); ++bin ){
+	stringstream tabline;
+	tabline.precision(2);
+	tabline << "\t<tr>" << endl;
+	tabline << "\t\t<td>" << AuAuAJ_lo->GetBinCenter( bin ) << "</td>" << endl;
+	
+	if ( AuAuAJ_hi->GetBinContent( bin ) > 1e-6 || ppInAuAuAJ_hi->GetBinContent( bin ) > 1e-6 ){
+	  tabline << "\t\t<td>" << AuAuAJ_hi->GetBinContent( bin ) << "</td>" << endl;
+	  tabline << "\t\t<td>" << AuAuAJ_hi->GetBinError( bin ) << "</td>" << endl;
+	  
+	  tabline << "\t\t<td>" << ppInAuAuAJ_hi->GetBinContent( bin ) << "</td>" << endl;
+	  tabline << "\t\t<td>" << ppInAuAuAJ_hi->GetBinError( bin ) << "</td>" << endl;
+	  tabline << "\t\t<td>" << AJ_hi_minmax->GetBinError( bin ) << "</td>" << endl;
+	} else {
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+	}
+	
+	tabline << "\t\t<td>" << AuAuAJ_lo->GetBinContent( bin ) << "</td>" << endl;
+	tabline << "\t\t<td>" << AuAuAJ_lo->GetBinError( bin ) << "</td>" << endl;
+	
+	tabline << "\t\t<td>" << ppInAuAuAJ_lo->GetBinContent( bin ) << "</td>" << endl;
+	tabline << "\t\t<td>" << ppInAuAuAJ_lo->GetBinError( bin ) << "</td>" << endl;
+	tabline << "\t\t<td>" << AJ_lo_minmax->GetBinError( bin ) << "</td>" << endl;
+	tabline << "\t</tr>" << endl;
+	HtmlOut << tabline.str();
+      }
+      HtmlOut << "</table>" << endl;
+      HtmlOut.close();
+    }
+
+  }
+    
   // float KSqHi = AJ_hi_sysstat->KolmogorovTest(AuAuAJ_hi, "");
   // float C2qHi = AJ_hi_sysstat->Chi2Test(AuAuAJ_hi, "");
   // float KSHi = ppInAuAuAJ_hi->KolmogorovTest(AuAuAJ_hi, "");
@@ -735,4 +810,5 @@ int Fig1and3( TString R = "" ) {
   // // cout << "Anderson-Darling test for pp @ AuAu vs. AuAu, LOW cut : " << ppInAuAuAJ_lo->AndersonDarlingTest(AuAuAJ_lo, "D") << endl;
 
 }
+
 
