@@ -31,6 +31,7 @@
 
 #include "TStarJetVectorContainer.h"
 #include "TStarJetVector.h"
+#include "TStarJetVectorJet.h"
 #include "TStarJetPicoTriggerInfo.h"
 #include "TStarJetPicoUtils.h"
 

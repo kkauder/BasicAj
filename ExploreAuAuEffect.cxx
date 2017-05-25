@@ -244,7 +244,7 @@
     latex.DrawLatex( 0.65, 0.7, "Anti-k_{T}, R=0.4");
     latex.SetTextColor(kBlack);  latex.DrawLatex( .15,.25, "a)");
   }  
-  latex.SetTextColor( kAzure-6 );   latex.DrawLatex( .65,.5, "STAR");
+  latex.SetTextColor( kAzure-6 );   latex.DrawLatex( .75,.5, "STAR");
   
   gPad->SaveAs(plotpath+"tdpt.png");  
 
@@ -269,7 +269,8 @@
   } else {
     latex.DrawLatex( 0.15, 0.7, "Anti-k_{T}, R=0.4");
     latex.SetTextColor(kBlack);  latex.DrawLatex( .15,.25, "b)");
-  }  
+  }
+  latex.SetTextColor( kAzure-6 );   latex.DrawLatex( .75,.5, "STAR");
 
   gPad->SaveAs(plotpath+"tdptlo.png");
 
