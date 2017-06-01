@@ -1,13 +1,8 @@
-// int ResAjPlotter(TString fs = "AjResults/R0.2_ForResAj_HT54_Geant_MatchedTo_R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root")
-int ResAjPlotter(TString fs = "AjResults/ForResAj_HT54_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root")
+int ResAjPlotter(TString fs = "AjResults/R0.2_ForResAj_HT54_Geant_MatchedTo_R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root")
+// int ResAjPlotter(TString fs = "AjResults/ForResAj_HT54_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root")
 {
-  // TFile *f = TFile::Open("AjResults/ForResAj_Geant_MatchedTo_ForResAj_NoEff_NoCut_GeantMc.root");
-  // TFile *f = TFile::Open("AjResults/ForResAj_Geant_NoOutliers_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
-  // TFile *f = TFile::Open("AjResults/ForResAj_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
-  // TFile *f = TFile::Open("AjResults/ForResAj_Geant_NoOutliers_MatchedTo_ForResAj_NoEff_NoCut_GeantMc.root");
-  // TFile *f = TFile::Open("AjResults/ForResAj_HT54_Geant_MatchedTo_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
-  // TFile *f = TFile::Open("AjResults/R0.2_ForResAj_HT54_Geant_MatchedTo_R0.2_ForResAj_NoEff_TrueMB_NoCut_GeantMc.root");
 
+  bool MakeHtmlAndYaml=true;
   
   TFile *f = TFile::Open(fs);  
 
@@ -669,6 +664,146 @@ int ResAjPlotter(TString fs = "AjResults/ForResAj_HT54_Geant_MatchedTo_ForResAj_
   gPad->SaveAs( base+"All.pdf]");
 
   fout->Write();
-  return 0;
-  
+
+  if ( MakeHtmlAndYaml ){
+    TString HtmlName = "";
+    if ( IsR02 ){
+      HtmlName = "R0.2_Res.html";
+    } else {
+      HtmlName = "R0.4_Res.html";
+    }
+
+    TString RootName = HtmlName;
+    RootName.ReplaceAll( "html","root");
+
+    if ( HtmlName != "" ){
+      ofstream HtmlOut ( HtmlName );
+      TGraphErrors* Trig = new TGraphErrors();
+      Trig->SetName("Trig"); Trig->SetTitle( TString(";") + PpMcTriggerPtProf->GetXaxis()->GetTitle() + TString(";") + PpMcTriggerPtProf->GetYaxis()->GetTitle() );
+      TGraphErrors* TrigMatched = new TGraphErrors();
+      TrigMatched->SetName("TrigMatched"); TrigMatched->SetTitle( TString(";") + PpMcTriggerPtProfLo->GetXaxis()->GetTitle() + TString(";") + PpMcTriggerPtProfLo->GetYaxis()->GetTitle() );
+
+      TGraphErrors* Recoil = new TGraphErrors();
+      Recoil->SetName("Recoil"); Recoil->SetTitle( TString(";") + PpMcRecoilPtProf->GetXaxis()->GetTitle() + TString(";") + PpMcRecoilPtProf->GetYaxis()->GetTitle() );
+      TGraphErrors* RecoilMatched = new TGraphErrors();
+      RecoilMatched->SetName("RecoilMatched"); RecoilMatched->SetTitle( TString(";") + PpMcRecoilPtProfLo->GetXaxis()->GetTitle() + TString(";") + PpMcRecoilPtProfLo->GetYaxis()->GetTitle() );
+
+      HtmlOut << "<table border=\"1\" cellpadding=\"5\">" << endl;
+      HtmlOut << "\t<tr>" << endl;
+
+      float startpt = 20;
+      float startptlo = 17;
+      float rstartpt = 9;
+      float rstartptlo = 9;
+      float endpt = 51;     
+      if ( IsR02 ){	
+	HtmlOut << "\t\t<th colspan=9>R=0.2</th>" << endl;
+	startptlo = 13;
+	rstartptlo = 5;
+      }else {
+	HtmlOut << "\t\t<th colspan=9>R=0.4</th>" << endl;
+      }
+      HtmlOut << "\t</tr>" << endl;
+      
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th></th>" << endl;
+      HtmlOut << "\t\t<th colspan=4>Leading Jets</th>" << endl;
+      HtmlOut << "\t\t<th colspan=4>Sub-Leading Jets</th>" << endl;
+      HtmlOut << "\t</tr>" << endl;
+
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th></th>" << endl;
+      HtmlOut << "\t\t<th colspan=2>p<sub>T</sub><sup>Cut</sup>&gt;2 GeV/<i>c</i></th>" << endl;
+      HtmlOut << "\t\t<th colspan=2>p_<sub>T</sub><sup>Cut</sup>&gt;0.2 GeV/<i>c</i>, matched</th>" << endl;
+      HtmlOut << "\t\t<th colspan=2>p<sub>T</sub><sup>Cut</sup>&gt;2 GeV/<i>c</i></th>" << endl;
+      HtmlOut << "\t\t<th colspan=2>p_<sub>T</sub><sup>Cut</sup>&gt;0.2 GeV/<i>c</i>, matched</th>" << endl;
+      HtmlOut << "\t</tr>" << endl;
+
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th>p<sub>T</sub><sup>Det</sup> [GeV/<i>c</i>]</th>" << endl;
+
+      HtmlOut << "\t\t<th>&langle;p<sub>T</sub><sup>Part</sup>&rangle; [GeV/<i>c</i>] </th>" << endl;
+      HtmlOut << "\t\t<th>RMS(p<sub>T</sub><sup>Part</sup>) [GeV/<i>c</i>] </th>" << endl;
+      HtmlOut << "\t\t<th>&langle;p<sub>T</sub><sup>Part</sup>&rangle; [GeV/<i>c</i>] </th>" << endl;
+      HtmlOut << "\t\t<th>RMS(p<sub>T</sub><sup>Part</sup>) [GeV/<i>c</i>] </th>" << endl;
+
+      HtmlOut << "\t\t<th>&langle;p<sub>T</sub><sup>Part</sup>&rangle; [GeV/<i>c</i>] </th>" << endl;
+      HtmlOut << "\t\t<th>RMS(p<sub>T</sub><sup>Part</sup>) [GeV/<i>c</i>] </th>" << endl;
+      HtmlOut << "\t\t<th>&langle;p<sub>T</sub><sup>Part</sup>&rangle; [GeV/<i>c</i>] </th>" << endl;
+      HtmlOut << "\t\t<th>RMS(p<sub>T</sub><sup>Part</sup>) [GeV/<i>c</i>] </th>" << endl;
+
+      HtmlOut << "\t</tr>" << endl;
+      int nTrig=0;
+      int nTrigMatched=0;
+      int nRecoil=0;
+      int nRecoilMatched=0;
+      for ( int bin = PpMcTriggerPtProf->GetXaxis()->GetFirst(); bin<= PpMcTriggerPtProf->GetXaxis()->FindBin(50); ++bin ){
+      	stringstream tabline;
+      	tabline.precision(3);
+      	tabline << "\t<tr>" << endl;
+      	tabline << "\t\t<td>" << PpMcTriggerPtProf->GetBinCenter( bin ) << "</td>" << endl;
+
+      	if ( PpMcTriggerPtProf->GetBinCenter(bin)>startpt &&  PpMcTriggerPtProf->GetBinCenter(bin)<endpt  ){
+      	  tabline << "\t\t<td>" << PpMcTriggerPtProf->GetBinContent( bin ) << "</td>" << endl;
+      	  tabline << "\t\t<td>" << PpMcTriggerPtProf->GetBinError( bin ) << "</td>" << endl;
+	  Trig->SetPoint(nTrig, PpMcTriggerPtProf->GetBinCenter(bin), PpMcTriggerPtProf->GetBinContent(bin) );
+	  Trig->SetPointError(nTrig, PpMcTriggerPtProf->GetBinWidth(bin)/2.0, PpMcTriggerPtProf->GetBinError(bin) );
+	  nTrig++;
+	} else {
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+      	}
+	
+      	if ( PpMcTriggerPtProfLo->GetBinCenter(bin)>startptlo &&  PpMcTriggerPtProfLo->GetBinCenter(bin)<endpt  ){
+      	  tabline << "\t\t<td>" << PpMcTriggerPtProfLo->GetBinContent( bin ) << "</td>" << endl;
+      	  tabline << "\t\t<td>" << PpMcTriggerPtProfLo->GetBinError( bin ) << "</td>" << endl;
+	  TrigMatched->SetPoint(nTrigMatched, PpMcTriggerPtProfLo->GetBinCenter(bin), PpMcTriggerPtProfLo->GetBinContent(bin) );
+	  TrigMatched->SetPointError(nTrigMatched, PpMcTriggerPtProfLo->GetBinWidth(bin)/2.0, PpMcTriggerPtProfLo->GetBinError(bin) );
+	  nTrigMatched++;
+      	} else {
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+      	}
+
+      	if ( PpMcRecoilPtProf->GetBinCenter(bin)>rstartpt &&  PpMcRecoilPtProf->GetBinCenter(bin)<endpt  ){
+      	  tabline << "\t\t<td>" << PpMcRecoilPtProf->GetBinContent( bin ) << "</td>" << endl;
+      	  tabline << "\t\t<td>" << PpMcRecoilPtProf->GetBinError( bin ) << "</td>" << endl;
+	  Recoil->SetPoint(nRecoil, PpMcRecoilPtProf->GetBinCenter(bin), PpMcRecoilPtProf->GetBinContent(bin) );
+	  Recoil->SetPointError(nRecoil, PpMcRecoilPtProf->GetBinWidth(bin)/2.0, PpMcRecoilPtProf->GetBinError(bin) );
+	  nRecoil++;
+      	} else {
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+      	}
+	
+      	if ( PpMcRecoilPtProfLo->GetBinCenter(bin)>rstartptlo &&  PpMcRecoilPtProf->GetBinCenter(bin)<51  ){
+      	  tabline << "\t\t<td>" << PpMcRecoilPtProfLo->GetBinContent( bin ) << "</td>" << endl;
+      	  tabline << "\t\t<td>" << PpMcRecoilPtProfLo->GetBinError( bin ) << "</td>" << endl;
+	  RecoilMatched->SetPoint(nRecoilMatched, PpMcRecoilPtProfLo->GetBinCenter(bin), PpMcRecoilPtProfLo->GetBinContent(bin) );
+	  RecoilMatched->SetPointError(nRecoilMatched, PpMcRecoilPtProfLo->GetBinWidth(bin)/2.0, PpMcRecoilPtProfLo->GetBinError(bin) );
+	  nRecoilMatched++;
+      	} else {
+	  tabline << "\t\t<td></td>" << endl;
+	  tabline << "\t\t<td></td>" << endl;
+      	}
+
+      	HtmlOut << tabline.str();
+      }
+      HtmlOut << "</table>" << endl;
+      HtmlOut.close();
+
+      TFile* RootOut = new TFile ( RootName, "RECREATE" );
+      Trig->Write();
+      TrigMatched->Write();
+      Recoil->Write();
+      RecoilMatched->Write();
+      // Profile1->cd(); Trig->Draw("same");
+      // Profile1->cd(); TrigMatched->Draw("same");
+      // Profile2->cd(); Recoil->Draw("same");
+      // Profile2->cd(); RecoilMatched->Draw("same");
+    }
+
+  }
+
+  return 0;  
 }

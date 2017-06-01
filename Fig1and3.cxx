@@ -572,10 +572,21 @@ int Fig1and3( TString R = "" ) {
     if ( HtmlName != "" ){
       ofstream HtmlOut ( HtmlName );
       HtmlOut << "<table border=\"1\" cellpadding=\"5\">" << endl;
+
+      HtmlOut << "\t<tr>" << endl;
+      if ( R=="" ){
+	HtmlOut << "\t\t<th colspan=11>R=0.4</th>" << endl;
+      } else if ( R.Contains("0.2") ){
+	HtmlOut << "\t\t<th colspan=11>R=0.2</th>" << endl;
+      }else {
+	HtmlOut << "\t\t<th colspan=11>R=???</th>" << endl;
+      }
+      HtmlOut << "\t</tr>" << endl;
+      
       HtmlOut << "\t<tr>" << endl;
       HtmlOut << "\t\t<th></th>" << endl;
       HtmlOut << "\t\t<th colspan=5>p<sub>T</sub><sup>Cut</sup>&gt;2 GeV/<i>c</i></th>" << endl;
-      HtmlOut << "\t\t<th colspan=5>p<sub>T</sub><sup>Cut</sup>&gt;0.2 GeV/<i>c</i>, matched</th>" << endl;
+      HtmlOut << "\t\t<th colspan=5>p_<sub>T</sub><sup>Cut</sup>&gt;0.2 GeV/<i>c</i>, matched</th>" << endl;
       HtmlOut << "\t</tr>" << endl;
 
       HtmlOut << "\t<tr>" << endl;

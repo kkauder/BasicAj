@@ -33,6 +33,10 @@ src/dict.*
 *gif
 *eps
 
+# tables
+*html
+*csv
+
 # Some directories
 Results
 Data
@@ -40,7 +44,8 @@ CleanAuAu
 old
 bin
 
-
+#Archives
+*zip
 
 # Compiled Object files
 *.slo

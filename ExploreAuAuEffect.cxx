@@ -1,4 +1,7 @@
 {
+
+  bool MakeHtmlAndYaml=true;
+
   // gStyle->SetOptFit(1);
   // gStyle->SetOptStat(220001111);
   gStyle->SetOptStat(0);
@@ -24,9 +27,8 @@
   TH1::SetDefaultSumw2(true);
   TH2::SetDefaultSumw2(true);
 
-  // TFile *f = TFile::Open("GroomppInAuAuAj_105_MixTest.root");
-  TFile *f = TFile::Open("AjResults/Tow0_Eff0_R0.2_Remade_Groom_Fresh_NicksList_HC100_105_ppInAuAuAj.root");
-  // TFile *f = TFile::Open("AjResults/Tow0_Eff0_Remade_Groom_Fresh_NicksList_HC100_105_ppInAuAuAj.root");
+  // TFile *f = TFile::Open("AjResults/Tow0_Eff0_R0.2_Remade_Groom_Fresh_NicksList_HC100_105_ppInAuAuAj.root");
+  TFile *f = TFile::Open("AjResults/Tow0_Eff0_Remade_Groom_Fresh_NicksList_HC100_105_ppInAuAuAj.root");
 
   TTree * ResultTree = f->Get("ResultTree");
 
@@ -281,7 +283,81 @@
   // new TCanvas;
   // rho1->Draw();
 
-  return 0;
+  
+  if ( MakeHtmlAndYaml ){
+    // Sigh. HTML is a pain to work with. Will use csv and create them on the fly.
+    
+    TString CsvName = "";
+    if ( TString(f->GetName()).Contains("R0.2") ){
+      CsvName = "R0.2_dpt.csv";
+    } else {
+      CsvName = "R0.4_dpt.csv";
+    }
+    
+    TString RootName = CsvName;
+    RootName.ReplaceAll( "csv","root");
+    TFile* RootOut = new TFile ( RootName, "RECREATE" );
+    TH1D* DeltaPt = (TH1D*) tdpt->Clone("DeltaPt");
+    DeltaPt->Reset();
+    TH1D* DeltaPtMatched = (TH1D*) tdpt->Clone("DeltaPtMatched");
+    DeltaPtMatched->Reset();
+    
+    if ( CsvName != "" ){
+      float startpt = -0.5;
+      float endpt = 9.5;     
+      ofstream CsvOut ( CsvName );
+      for ( int bin = tdpt->GetXaxis()->FindBin(startpt); bin <= tdpt->GetXaxis()->FindBin(endpt); ++bin ){
+      	stringstream tabline;
+      	tabline.precision(3);
+      	tabline << tdpt->GetBinCenter( bin ) << ",";
+      	if ( tdpt->GetBinContent(bin)>1e-3 ){
+	  tabline << tdpt->GetBinContent( bin ) << ",";
+	  tabline << tdpt->GetBinError( bin ) << endl;
+	  DeltaPt->SetBinContent( bin, tdpt->GetBinContent( bin ) );
+	  DeltaPt->SetBinError( bin, tdpt->GetBinError( bin ) );
+      	} else {
+	  tabline << "&lt;10<sup>-3</sup>" << ",";
+	  tabline << endl;
+      	}
+	CsvOut << tabline.str();
+      }
+      CsvOut.close();
+    }
+
+    TString CsvNameLo = "";
+    if ( TString(f->GetName()).Contains("R0.2") ){
+      CsvNameLo = "R0.2_dptlo.csv";
+    } else {
+      CsvNameLo = "R0.4_dptlo.csv";
+    }
+
+    if ( CsvNameLo != "" ){
+      float startpt = -16;
+      float endpt = 20;     
+      ofstream CsvOut ( CsvNameLo );
+      for ( int bin = tdptlo->GetXaxis()->FindBin(startpt); bin <= tdptlo->GetXaxis()->FindBin(endpt); ++bin ){
+      	stringstream tabline;
+      	tabline.precision(3);
+      	tabline << tdptlo->GetBinCenter( bin ) << ",";
+      	if ( tdptlo->GetBinContent(bin)>1e-3 ){
+	  tabline << tdptlo->GetBinContent( bin ) << ",";
+	  tabline << tdptlo->GetBinError( bin ) << endl;
+	  DeltaPtMatched->SetBinContent( bin, tdptlo->GetBinContent( bin ) );
+	  DeltaPtMatched->SetBinError( bin, tdptlo->GetBinError( bin ) );
+      	} else {
+	  tabline << "&lt;10<sup>-3</sup>" << ",";
+	  tabline << endl;
+      	}
+	CsvOut << tabline.str();
+      }
+      CsvOut.close();
+      RootOut->Write();
+    }       
+  }
+
+
+
+  //  return 0;
   new TCanvas;
   gPad->SetLogy();
   gPad->SetGridx(0);  gPad->SetGridy(0);
@@ -331,5 +407,6 @@
   // adpt2->ProfileX()->Draw();
   // new TCanvas;
   // adptlo2->ProfileX()->Draw();
+
 
 }

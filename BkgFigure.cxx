@@ -3,9 +3,14 @@
 #include "TStyle.h"
 #include "TColor.h"
 #include "TCanvas.h"
-
 #include <TObjArray.h>
+
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <string>
+
 using namespace std;
 
 void BkgFigure() {
@@ -26,6 +31,8 @@ void BkgFigure() {
   gStyle->SetOptStat(0);
   TCanvas* c = new TCanvas("c");
   gPad->SetGridx(0);  gPad->SetGridy(0);
+
+  bool MakeHtmlAndYaml=true;
 
   // TLegend* leg = new TLegend( 0.48, 0.7, 0.89, 0.9, "" );
   // if ( nofabs ) {
@@ -254,6 +261,51 @@ void BkgFigure() {
   // cout << "chi^2 between EC and AuAu: " << ECAJ_lo->Chi2Test(AuAuAJ_lo, "") << endl;
   // cout << "chi^2 between RC and EC: " << RCAJ_lo->Chi2Test(ECAJ_lo, "") << endl;
 
+  if ( MakeHtmlAndYaml ){
+    // AuAuAJ_hi, ppInAuAuAJ_hi, AuAuAJ_lo, ppInAuAuAJ_lo,
+    TString HtmlName = "BkgFigure.html";
+
+    if ( HtmlName != "" ){
+      ofstream HtmlOut ( HtmlName );
+      HtmlOut << "<table border=\"1\" cellpadding=\"5\">" << endl;
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th colspan=11>R=0.4</th>" << endl;
+      HtmlOut << "\t</tr>" << endl;
+
+      // HtmlOut << "\t<tr>" << endl;
+      // HtmlOut << "\t\t<th></th>" << endl;
+      // HtmlOut << "\t\t<th colspan=5>p_<sub>T</sub><sup>Cut</sup>&gt;0.2 GeV/<i>c</i>, matched</th>" << endl;
+      // HtmlOut << "\t</tr>" << endl;
+
+      HtmlOut << "\t<tr>" << endl;
+      HtmlOut << "\t\t<th>A<sub>J</sub></th>" << endl;
+      HtmlOut << "\t\t<th>Event Fraction<br>Random Cone</th>" << endl;
+      HtmlOut << "\t\t<th>stat. error</th>" << endl;
+      HtmlOut << "\t\t<th>Event Fraction<br>Eta Cone</th>" << endl;
+      HtmlOut << "\t\t<th>stat. error</th>" << endl;
+
+      HtmlOut << "\t</tr>" << endl;
+
+      for ( int bin = ppInAuAuAJ_lo->GetXaxis()->GetFirst(); bin<= ppInAuAuAJ_lo->GetXaxis()->GetLast(); ++bin ){
+	stringstream tabline;
+	tabline.precision(2);
+	tabline << "\t<tr>" << endl;
+	tabline << "\t\t<td>" << RCAJ_lo->GetBinCenter( bin ) << "</td>" << endl;
+	
+	tabline << "\t\t<td>" << RCAJ_lo->GetBinContent( bin ) << "</td>" << endl;
+	tabline << "\t\t<td>" << RCAJ_lo->GetBinError( bin ) << "</td>" << endl;
+	
+	tabline << "\t\t<td>" << ECAJ_lo->GetBinContent( bin ) << "</td>" << endl;
+	tabline << "\t\t<td>" << ECAJ_lo->GetBinError( bin ) << "</td>" << endl;
+	tabline << "\t</tr>" << endl;
+	HtmlOut << tabline.str();
+      }
+      HtmlOut << "</table>" << endl;
+      HtmlOut.close();
+    }
+    
+  }
+  
   
 }
 
