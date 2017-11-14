@@ -335,7 +335,7 @@ fastjet::PseudoJet MakePseudoJet ( const TLorentzVector* const lv );
 class JetAnalysisUserInfo: public fastjet::PseudoJet::UserInfoBase {
 public:
   /// Standard Constructor
-  JetAnalysisUserInfo(int quarkcharge=-999, std::string tag="") :  quarkcharge( quarkcharge ), tag ( tag)  {};
+  JetAnalysisUserInfo(int quarkcharge=-999, std::string tag="", float number=-1) :  quarkcharge( quarkcharge ), tag ( tag), number(number){};
   
   /// Charge in units of e/3
   int GetQuarkCharge() const { return quarkcharge; };
@@ -344,9 +344,14 @@ public:
   std::string GetTag() const { return tag; };
   // void SetTag( const std::string newtag ) { tag=newtag; };
 
+  /// Multi-purpose description
+  float GetNumber() const { return number; };
+  void SetNumber(const float f)  { number=f; };
+
 private:
   const int quarkcharge;   ///< Charge in units of e/3
-  std::string tag;
+  std::string tag;   ///< Multi-purpose
+  float number;   ///< Multi-purpose
 };
 
 // =============================================================================
